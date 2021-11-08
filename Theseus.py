@@ -6,10 +6,8 @@ Created on Thu Aug 12 07:02:11 2021
 @author: alejomonbar
 """
 import numpy as np
-from sympy import symbols
 import itertools
 import scipy.optimize as optimize
-from sympy.utilities.lambdify import lambdify
 import matplotlib.pyplot as plt
 
 
@@ -17,91 +15,70 @@ class Graph:
     def __init__(self, Dimensions):
         self.num_vertices = len(Dimensions)
         self.max_modes = np.array(Dimensions) 
-        self.vertices = self.node_paths()
-        self.combinations = self.AllCombinations()
-        self.TriggerableState = self.paths()
+        self.num_vars = self.num_init_vars()
+        self.TriggerableState = self.whole_state()
+        self.Combinations = self.iterables()
         
-    def AllCombinations(self):
-        """
-        Creating all possible paths
-        Parameters
-        ----------
-        abcd : List of sympy symbols
-    
-        Returns
-        -------
-        prod : np.array of sympy symbols
-            
-    
-        """
-        prod = 1
-        for i in self.vertices:
-            prod = np.kron(prod, i)
-        return prod
-    
-    def node_paths(self):
-        nodes = []
-        for n in range(self.num_vertices):
-            nodes.append(symbols(f"n{n}_:{self.max_modes[n]}"))
-        return nodes
-    
-    def state_symbol(self, state):
-        symb = 1
-        for n, i in enumerate(state):
-            symb *= self.vertices[n][i]
-        return symb
-    
-    def paths(self):
-        """
-        Create the second order state, i.e. two excited edges
-    
-        Parameters
-        ----------
-        vertices : List of sympy symbol
-        localDim : list of integers
-    
-        Returns
-        -------
-        FullState : List of sympy equations
-            Create a full state based on the edges combinations
-    
-        """
-        n = len(self.vertices)
-        localDim = self.max_modes
-        FullState = 0
-        for state in self.iterables():
-            whole_list = 1
-            for i in range(0,n,2):
-                ij = [state[i], state[i+1]]
-                lis = []
-                for l in itertools.product(range(localDim[ij[0]]), range(localDim[ij[1]])):
-                    lis.append(symbols(f"w_{ij[0]}{ij[1]}_{l[0]}{l[1]}")*self.vertices[ij[0]][l[0]]*self.vertices[ij[1]][l[1]])
-                whole_list = np.kron(whole_list, np.array(lis))
-            FullState += whole_list.sum()
-        return FullState
+    def tensor_weights(self, x, not_to_include=[]):
+        n = self.num_vertices
+        localDim = self.max_modes 
+        max_mode = max(localDim)
+        weights = np.zeros((n,n,max_mode, max_mode))
+        jj = 0 # counting positions
+        ii = 0 # counting variables
+        for i in range(n - 1):
+            for j in range(i + 1, n):
+                for c1 in range(localDim[i]):
+                    for c2 in range(localDim[j]):
+                        if not jj in not_to_include:
+                            weights[i, j, c1, c2] = x[ii]
+                            ii += 1
+                        jj += 1
+                        
+        return weights        
 
+    def num_init_vars(self):
+        n = self.num_vertices
+        localDim = self.max_modes 
+        num_vars = 0
+        for i in range(n - 1):
+            for j in range(i + 1, n):
+                num_vars += localDim[i] * localDim[j]
+        return num_vars
+    
+    def whole_state(self):
+        n = self.num_vertices
+        state = [[x] for x in range(self.max_modes[0])]
+        for i in range(1, n):
+            state = [x + [y] for x in state for y in range(self.max_modes[i])]
+        return np.array(state)
 
-    def fidelity(self, desired_state):
-        AllEquations = []
-        TargetEquations = []
-        for comb in self.combinations:
-            newEq = np.sum([i for i in self.TriggerableState.args if str(comb) in str(i)]).subs([(comb,1)])
-            for state in desired_state:
-                if comb == self.state_symbol(state):
-                    # This term is part of the quantum state we want
-                    TargetEquations.append(newEq)
-            AllEquations.append(newEq)
-        # Run the Optimization 
-        self.TargetEquation = TargetEquations
-        NormalisationConstant2 = np.sum(np.array(AllEquations)**2)
-        self.NormalisationConstant = NormalisationConstant2
-        Fidelity = np.sum(np.array(TargetEquations))**2/(len(TargetEquations)*NormalisationConstant2)
+    def fidelity(self, x, desired_state, not_to_include=[]):
+        Tensor_vars = self.tensor_weights(x, not_to_include)
+        NormalisationConstant = []
+        for state in self.TriggerableState:# create whole state
+            sum_of_w = 0   
+            for comb in self.Combinations:
+                mult = 1
+                for ii in np.array(comb).reshape(self.num_vertices//2, -1):
+                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]],state[ii[1]]] 
+                sum_of_w += mult
+            NormalisationConstant.append(sum_of_w)
+        
+        Normalisation = np.sum(np.array(NormalisationConstant) ** 2)  
+        TargetEquation = []
+        for state in desired_state:# Create the target state
+            sum_of_w = 0   
+            for comb in self.Combinations:
+                mult = 1
+                for ii in np.array(comb).reshape(self.num_vertices//2, -1):
+                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]],state[ii[1]]] 
+                sum_of_w += mult
+            TargetEquation.append(sum_of_w)
+        Fidelity = np.sum(np.array(TargetEquation)) ** 2 / (len(TargetEquation) * Normalisation)
         return Fidelity
-
-    def LossFun(self, variables, Loss2fun):
-        return Loss2fun(*variables)
     
-    def minimize(self, Fidelity, initial_weights=[], alpha=0):
+    def minimize(self, desired_state, not_to_include=[], initial_weights=[], alpha=0):
         """
         
 
@@ -115,14 +92,13 @@ class Graph:
         None.
 
         """
-        variables = list(Fidelity.free_symbols)
+        num_vars = self.num_vars - len(not_to_include)
+        Fidelity = lambda x: self.fidelity(x, desired_state, not_to_include)
         if len(initial_weights) == 0:
-            initial_weights = 2 * np.random.rand(len(variables)) - 1
-        loss = (1 - Fidelity) + alpha * np.sum(np.abs(variables))
-        loss2fun = lambdify(variables, loss, modules="numpy")
-        sol = optimize.minimize(self.LossFun, initial_weights, args=(loss2fun))
-        vars_ = [(key,value) for key, value in zip(variables,sol.x)]
-        return sol, vars_
+            initial_weights = 2 * np.random.rand(num_vars) - 1
+        loss = lambda x: (1 - Fidelity(x)) + alpha * np.sum(np.abs(x))
+        sol = optimize.minimize(loss, initial_weights, tol=1e-2)
+        return sol, sol.x
         
     def ampltiudes(self, vars_):
         """
@@ -142,49 +118,30 @@ class Graph:
         """
         return [i.subs(vars_) for i in self.TargetEquation]
         
-    def topological_optimization(self, Fidelity, initial_weights=[], alpha=0.5, loss_min=5e-2,
+    def topological_optimization(self, desired_state, initial_weights=[], alpha=0.5, loss_min=1e-2,
                                  max_counts=100, w_limit=1):
-        sol, vars_ = self.minimize(Fidelity, initial_weights, alpha=0)
+        sol, vars_ = self.minimize(desired_state, initial_weights, alpha=0)
         weight_last = sol.x
         count = 0
+        not_to_include = []
+        vars_list = list(range(self.num_vars))
         while count < max_counts:
-            self.Fidelity_last = Fidelity
-            variables = list(Fidelity.free_symbols)
-            ith_rid = np.random.choice(np.arange(len(variables)))
-            Fidelity = Fidelity.subs([(variables[ith_rid], 0)])
-            new_vars = list(Fidelity.free_symbols)
-            initial_weights = [i for n, i in enumerate(weight_last) if variables[n] in new_vars]
-            if len(initial_weights) == 0:
-                Fidelity = self.Fidelity_last
-                count += 1
+            ith_rid = np.random.choice(vars_list)
+            not_to_include.append(ith_rid)
+            initial_weights = [i for n, i in enumerate(weight_last) if vars_list[n] != ith_rid]
+            sol, vars_ = self.minimize(desired_state, not_to_include, initial_weights, alpha=alpha)
+            w_sum = np.abs(sol.x).sum()
+            if (sol.fun < loss_min) and (w_sum < w_limit):
+                count = 0
+                weight_last = sol.x
+                vars_list.remove(ith_rid)
             else:
-                sol, vars_ = self.minimize(Fidelity, initial_weights, alpha=alpha)
-                w_sum = np.abs(sol.x).sum()
-                if (sol.fun < loss_min) and (w_sum < w_limit):
-                    count = 0
-                    weight_last = sol.x
-                else:
-                    Fidelity = self.Fidelity_last
-                    count += 1
+                not_to_include.remove(ith_rid)
+                count += 1
             print(f"The solution:{sol.fun} - count:{count} - w_sum:{w_sum}")
-        self.weights = {str(i[0]):i[1] for i in vars_}
-        return sol, vars_
+            print(vars_list)
+        return sol, self.tensor_weights(sol.x, not_to_include)
         
-    # def iterables(self):
-    #     n = self.num_vertices
-    #     combinations = list(itertools.combinations(range(n),2))
-    #     Comb = []
-    #     for num, c0 in enumerate(combinations):
-    #         if c0[0] == 0:
-    #             cT = list(c0)
-    #             for c1 in combinations:
-    #                 c1 = list(c1)
-    #                 flag = any(item in c1 for item in cT)
-    #                 if not flag:
-    #                     cT += c1
-    #             Comb.append(cT)
-    #     return Comb
-    
     def iterables(self):
         n = self.num_vertices
         combinations = list(itertools.combinations(range(n),2))

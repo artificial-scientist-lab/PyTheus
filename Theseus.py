@@ -5,6 +5,8 @@ Created on Thu Aug 12 07:02:11 2021
 
 @author: alejomonbar
 """
+from typing import List, Union, Optional
+
 import numpy as np
 import itertools
 import scipy.optimize as optimize
@@ -12,18 +14,39 @@ import matplotlib.pyplot as plt
 
 
 class Graph:
-    def __init__(self, Dimensions):
-        self.num_vertices = len(Dimensions)
-        self.max_modes = np.array(Dimensions) 
-        self.num_vars = self.num_init_vars()
-        self.TriggerableState = self.whole_state()
-        self.Combinations = self.iterables()
+    """The algorithm THESEUS [1] automates the design of quantum optical experiments,
+    which is based on an abstract physics-inspired representation. We use it to
+    discover several previously unknown experimental configurations to realize
+    quantum states and transformations in the challenging high-dimensional and
+    multi-photonic regime, such as the generation of high-dimensional GHZ states.
+
+    References:
+        [1]: 'Theseus',
+        `Conceptual understanding through efficient automated design of quantum
+        optical experiments <https://arxiv.org/abs/2005.06443>`
+    """
+    def __init__(self, dimensions: List[int]) -> None:
+        """
+        Args:
+            dimensions : dimensions of the graph
+
+        Returns
+        -------
+        None
+            DESCRIPTION.
+
+        """
+        self._num_vertices = len(dimensions)
+        self._max_modes = np.array(dimensions) 
+        self._num_vars = self.num_init_vars()
+        self._triggerableState = self.whole_state()
+        self._combinations = self.iterables()
         
     def tensor_weights(self, x, not_to_include=[]):
-        n = self.num_vertices
-        localDim = self.max_modes 
+        n = self._num_vertices
+        localDim = self._max_modes 
         max_mode = max(localDim)
-        weights = np.zeros((n,n,max_mode, max_mode))
+        weights = np.zeros((n, n, max_mode, max_mode))
         jj = 0 # counting positions
         ii = 0 # counting variables
         for i in range(n - 1):

@@ -11,6 +11,7 @@ import numpy as np
 import itertools
 import scipy.optimize as optimize
 import matplotlib.pyplot as plt
+import sympy as sp
 
 
 class Graph:
@@ -42,22 +43,19 @@ class Graph:
         self._triggerableState = self.whole_state()
         self._combinations = self.iterables()
         
-    def tensor_weights(self, x, not_to_include=[]):
+    def tensor_weights(self):
+        x = sp.symbols(f"x(:{self._num_vars})")
         n = self._num_vertices
         localDim = self._max_modes 
         max_mode = max(localDim)
         weights = np.zeros((n, n, max_mode, max_mode))
-        jj = 0 # counting positions
         ii = 0 # counting variables
-        for i in range(n - 1):
-            for j in range(i + 1, n):
-                for c1 in range(localDim[i]):
-                    for c2 in range(localDim[j]):
-                        if not jj in not_to_include:
-                            weights[i, j, c1, c2] = x[ii]
-                            ii += 1
-                        jj += 1
-                        
+        for i in range(n - 1): # node i
+            for j in range(i + 1, n): # node j
+                for c1 in range(localDim[i]): # c1 edge color for node ith
+                    for c2 in range(localDim[j]): # c2 edge color for node jth
+                        weights[i, j, c1, c2] = x[ii]
+                        ii += 1
         return weights        
 
     def num_init_vars(self):
@@ -84,7 +82,7 @@ class Graph:
             for comb in self.Combinations:
                 mult = 1
                 for ii in np.array(comb).reshape(self.num_vertices//2, -1):
-                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]],state[ii[1]]] 
+                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]], state[ii[1]]] 
                 sum_of_w += mult
             NormalisationConstant.append(sum_of_w)
         

@@ -48,7 +48,7 @@ class Graph:
         n = self._num_vertices
         localDim = self._max_modes 
         max_mode = max(localDim)
-        weights = np.zeros((n, n, max_mode, max_mode))
+        weights = sp.MutableDenseNDimArray(np.zeros((n, n, max_mode, max_mode)))
         ii = 0 # counting variables
         for i in range(n - 1): # node i
             for j in range(i + 1, n): # node j
@@ -59,8 +59,8 @@ class Graph:
         return weights        
 
     def num_init_vars(self):
-        n = self.num_vertices
-        localDim = self.max_modes 
+        n = self._num_vertices
+        localDim = self._max_modes 
         num_vars = 0
         for i in range(n - 1):
             for j in range(i + 1, n):
@@ -68,21 +68,21 @@ class Graph:
         return num_vars
     
     def whole_state(self):
-        n = self.num_vertices
-        state = [[x] for x in range(self.max_modes[0])]
+        n = self._num_vertices
+        state = [[x] for x in range(self._max_modes[0])]
         for i in range(1, n):
-            state = [x + [y] for x in state for y in range(self.max_modes[i])]
+            state = [x + [y] for x in state for y in range(self._max_modes[i])]
         return np.array(state)
 
-    def fidelity(self, x, desired_state, not_to_include=[]):
-        Tensor_vars = self.tensor_weights(x, not_to_include)
+    def fidelity(self, desired_state: List[List[int]]) -> sp.core.mul:
+        tensor_vars = self.tensor_weights()
         NormalisationConstant = []
-        for state in self.TriggerableState:# create whole state
+        for state in self._triggerableState:# create whole state
             sum_of_w = 0   
-            for comb in self.Combinations:
+            for comb in self._combinations:
                 mult = 1
-                for ii in np.array(comb).reshape(self.num_vertices//2, -1):
-                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]], state[ii[1]]] 
+                for ii in np.array(comb).reshape(self._num_vertices//2, -1):
+                     mult *= tensor_vars[ii[0], ii[1], state[ii[0]], state[ii[1]]] 
                 sum_of_w += mult
             NormalisationConstant.append(sum_of_w)
         
@@ -90,10 +90,10 @@ class Graph:
         TargetEquation = []
         for state in desired_state:# Create the target state
             sum_of_w = 0   
-            for comb in self.Combinations:
+            for comb in self._combinations:
                 mult = 1
-                for ii in np.array(comb).reshape(self.num_vertices//2, -1):
-                     mult *= Tensor_vars[ii[0], ii[1], state[ii[0]],state[ii[1]]] 
+                for ii in np.array(comb).reshape(self._num_vertices//2, -1):
+                     mult *= tensor_vars[ii[0], ii[1], state[ii[0]],state[ii[1]]] 
                 sum_of_w += mult
             TargetEquation.append(sum_of_w)
         Fidelity = np.sum(np.array(TargetEquation)) ** 2 / (len(TargetEquation) * Normalisation)
@@ -164,7 +164,7 @@ class Graph:
         return sol, self.tensor_weights(sol.x, not_to_include)
         
     def iterables(self):
-        n = self.num_vertices
+        n = self._num_vertices
         combinations = list(itertools.combinations(range(n),2))
         Comb = []
         for comb in itertools.combinations(combinations, n // 2):

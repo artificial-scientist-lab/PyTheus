@@ -12,6 +12,8 @@ import itertools
 import scipy.optimize as optimize
 import matplotlib.pyplot as plt
 import sympy as sp
+from sympy.utilities.lambdify import lambdify
+
 
 
 class Graph:
@@ -40,25 +42,44 @@ class Graph:
         self._num_vertices = len(dimensions)
         self._max_modes = np.array(dimensions) 
         self._num_vars = self.num_init_vars()
-        self._triggerableState = self.whole_state()
+        self._triggerableState = self.all_states()
         self._combinations = self.iterables()
+        self._tensor_weights = self.tensor_weights()
         
-    def tensor_weights(self):
-        x = sp.symbols(f"x(:{self._num_vars})")
+    def tensor_weights(self) -> sp.MutableDenseNDimArray:
+        """
+        Storing the variables into a tensor with dimensions n x n x max_mode, max_mode
+        where n is the number of nodes and max_mode is max number of colors of the
+        graph.
+
+        Returns
+        -------
+        weights : sp.MutableDenseNDimArray
+            a symbolic tensor with the variables stored w_ij^c1c2, where i is node ith
+            and j is node jth. c1 and c2 are the colors of the graph.
+
+        """
         n = self._num_vertices
         localDim = self._max_modes 
         max_mode = max(localDim)
         weights = sp.MutableDenseNDimArray(np.zeros((n, n, max_mode, max_mode)))
-        ii = 0 # counting variables
         for i in range(n - 1): # node i
             for j in range(i + 1, n): # node j
                 for c1 in range(localDim[i]): # c1 edge color for node ith
                     for c2 in range(localDim[j]): # c2 edge color for node jth
-                        weights[i, j, c1, c2] = x[ii]
-                        ii += 1
+                        weights[i, j, c1, c2] += sp.symbols(f"w_{i}{j}_{c1}{c2}")
         return weights        
 
-    def num_init_vars(self):
+    def num_init_vars(self) -> int:
+        """
+        The number of weights before any optimization
+
+        Returns
+        -------
+        int
+            DESCRIPTION.
+
+        """
         n = self._num_vertices
         localDim = self._max_modes 
         num_vars = 0
@@ -67,12 +88,27 @@ class Graph:
                 num_vars += localDim[i] * localDim[j]
         return num_vars
     
-    def whole_state(self):
+    def all_states(self) -> np.array:
+        """
+        List of all possible states
+
+        Returns
+        -------
+        States
+            Ex: graph = Graph([2, 2)
+                graph.all_states()
+                
+                return -> np.array([[0, 0],
+                                    [0, 1],
+                                    [1, 0],
+                                    [1, 1]])
+
+        """
         n = self._num_vertices
-        state = [[x] for x in range(self._max_modes[0])]
+        states = [[x] for x in range(self._max_modes[0])] # max number of colors of each node
         for i in range(1, n):
-            state = [x + [y] for x in state for y in range(self._max_modes[i])]
-        return np.array(state)
+            states = [x + [y] for x in states for y in range(self._max_modes[i])]
+        return np.array(states)
 
     def fidelity(self, desired_state: List[List[int]]) -> sp.core.mul:
         tensor_vars = self.tensor_weights()
@@ -99,7 +135,10 @@ class Graph:
         Fidelity = np.sum(np.array(TargetEquation)) ** 2 / (len(TargetEquation) * Normalisation)
         return Fidelity
     
-    def minimize(self, desired_state, not_to_include=[], initial_weights=[], alpha=0):
+    def LossFun(self, variables, Loss2fun):
+        return Loss2fun(*variables)
+    
+    def minimize(self, Fidelity, initial_weights=[], alpha=0):
         """
         
 
@@ -113,13 +152,14 @@ class Graph:
         None.
 
         """
-        num_vars = self.num_vars - len(not_to_include)
-        Fidelity = lambda x: self.fidelity(x, desired_state, not_to_include)
+        variables = list(Fidelity.free_symbols)
         if len(initial_weights) == 0:
-            initial_weights = 2 * np.random.rand(num_vars) - 1
-        loss = lambda x: (1 - Fidelity(x)) + alpha * np.sum(np.abs(x))
-        sol = optimize.minimize(loss, initial_weights, tol=1e-2)
-        return sol, sol.x
+            initial_weights = 2 * np.random.rand(len(variables)) - 1
+        loss = (1 - Fidelity) + alpha * np.sum(np.abs(variables))
+        loss2fun = lambdify(variables, loss, modules="numpy")
+        sol = optimize.minimize(self.LossFun, initial_weights, args=(loss2fun))
+        vars_ = [(key,value) for key, value in zip(variables,sol.x)]
+        return sol, vars_
         
     def ampltiudes(self, vars_):
         """
@@ -139,29 +179,33 @@ class Graph:
         """
         return [i.subs(vars_) for i in self.TargetEquation]
         
-    def topological_optimization(self, desired_state, initial_weights=[], alpha=0.5, loss_min=1e-2,
+    def topological_optimization(self, Fidelity, initial_weights=[], alpha=0.5, loss_min=5e-2,
                                  max_counts=100, w_limit=1):
-        sol, vars_ = self.minimize(desired_state, initial_weights, alpha=0)
+        sol, vars_ = self.minimize(Fidelity, initial_weights, alpha=0)
         weight_last = sol.x
         count = 0
-        not_to_include = []
-        vars_list = list(range(self.num_vars))
         while count < max_counts:
-            ith_rid = np.random.choice(vars_list)
-            not_to_include.append(ith_rid)
-            initial_weights = [i for n, i in enumerate(weight_last) if vars_list[n] != ith_rid]
-            sol, vars_ = self.minimize(desired_state, not_to_include, initial_weights, alpha=alpha)
-            w_sum = np.abs(sol.x).sum()
-            if (sol.fun < loss_min) and (w_sum < w_limit):
-                count = 0
-                weight_last = sol.x
-                vars_list.remove(ith_rid)
-            else:
-                not_to_include.remove(ith_rid)
+            self.Fidelity_last = Fidelity
+            variables = list(Fidelity.free_symbols)
+            ith_rid = np.random.choice(np.arange(len(variables)))
+            Fidelity = Fidelity.subs([(variables[ith_rid], 0)])
+            new_vars = list(Fidelity.free_symbols)
+            initial_weights = [i for n, i in enumerate(weight_last) if variables[n] in new_vars]
+            if len(initial_weights) == 0:
+                Fidelity = self.Fidelity_last
                 count += 1
+            else:
+                sol, vars_ = self.minimize(Fidelity, initial_weights, alpha=alpha)
+                w_sum = np.abs(sol.x).sum()
+                if (sol.fun < loss_min) and (w_sum < w_limit):
+                    count = 0
+                    weight_last = sol.x
+                else:
+                    Fidelity = self.Fidelity_last
+                    count += 1
             print(f"The solution:{sol.fun} - count:{count} - w_sum:{w_sum}")
-            print(vars_list)
-        return sol, self.tensor_weights(sol.x, not_to_include)
+        self.weights = {str(i[0]):i[1] for i in vars_}
+        return sol, vars_
         
     def iterables(self):
         n = self._num_vertices

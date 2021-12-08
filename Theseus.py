@@ -323,12 +323,12 @@ def targetEquation(coefficients, states, avail_states=None):
     norm = np.conjugate(coefficients)@coefficients
     if norm != 1: coefficients = np.array(coefficients)/sqrt(norm)
     if avail_states == None: 
-        avail_states = {tuple(st):th.allColorGraphs(st) for st in states}
+        avail_states = {tuple(st):allColorGraphs(st) for st in states}
     equation = 0
     for coef, st in zip(coefficients,states):
         terms = 0
         for graph in avail_states[tuple(st)]:
-            terms += th.weightProduct(graph)
+            terms += weightProduct(graph)
         equation += coef*terms
     return abs(equation)**2
 

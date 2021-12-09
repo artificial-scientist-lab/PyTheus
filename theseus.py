@@ -306,9 +306,9 @@ def findEdgeCovers(graph, order, show_start=False):
 
 
 factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
-edgeWeight = lambda edge: symbols(f'w_{edge[0]}\,{edge[1]}^{edge[2]}\,{edge[3]}')
+edgeWeight = lambda edge: symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')
 weightProduct = lambda graph: np.product([edgeWeight(edge) for edge in graph])
-creatorState = lambda nodes: np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
+creatorState = lambda nodes: np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
 
 def targetEquation(coefficients, states, avail_states=None):
     '''

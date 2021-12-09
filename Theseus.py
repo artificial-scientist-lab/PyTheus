@@ -214,9 +214,7 @@ def allEdgeCovers(dimensions, order=1):
     crowded_graph = [list(range(num_nodes))]*len(added_pairs)
     for ii, pair in enumerate(added_pairs): 
         crowded_graph[ii] = sorted(crowded_graph[ii] + list(pair))
-    color_dict = {}
-    #all_colors = []
-    #all_color_graphs = [] 
+    color_dict = {} #all_colors = [],all_color_graphs = [] 
     for crowd in crowded_graph:
         color_nodes = []
         # Given the crowded graph, a list of nodes in which some of them are repeated, 
@@ -252,21 +250,21 @@ def findPerfectMatchings(graph):
     recursivePerfectMatchings(graph, perfect_matchings)
     return perfect_matchings
 
-def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=None, order=0):
+def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[], order=0):
     '''
     The heavy lifting of findEdgeCovers.
     '''
-    if nodes_left==None: nodes_left = np.unique(np.array(graph)[:,:2]) 
+    if len(nodes_left)==0: nodes_left = np.unique(np.array(graph)[:,:2]) 
     if edges_left==None: edges_left = order + len(nodes_left)/2
     case = 2*edges_left - len(nodes_left)
     if case>1:
         for edge in graph: 
             recursiveEdgeCover(graph, store, matches+[edge], edges_left-1, 
-                               [node for node in nodes_left if node not in edge]) 
+                               [node for node in nodes_left if node not in edge[:2]]) 
     elif case==1: 
         for edge in targetEdges(nodes_left, graph):
             if edges_left>1:
-                new_nodes_left = [node for node in nodes_left if node not in edge]
+                new_nodes_left = [node for node in nodes_left if node not in edge[:2]]
                 recursiveEdgeCover(targetEdges(new_nodes_left,graph), store, 
                                    matches+[edge], edges_left-1, new_nodes_left)
             if edges_left==1 and not (sorted(matches + [edge]) in store):

@@ -308,6 +308,7 @@ def findEdgeCovers(graph, order, show_start=False):
 factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
 edgeWeight = lambda edge: symbols(f'w_{edge[0]}\,{edge[1]}^{edge[2]}\,{edge[3]}')
 weightProduct = lambda graph: np.product([edgeWeight(edge) for edge in graph])
+creatorState = lambda nodes: np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
 
 def targetEquation(coefficients, states, avail_states=None):
     '''
@@ -366,6 +367,42 @@ class Norm:
         for order in range(min_order, max_order+1):
             norm += Norm.fromDictionary(allEdgeCovers(dimensions,order))
         return norm  
+
+class State:
+    '''
+    Set of functions to compute the state.
+    '''
+    def fromDictionary(states_dict):
+        '''
+        Build a superposition of all the states of a dictionary.
+        '''
+        state = 0
+        for key in states_dict.keys():
+            term = 0
+            for graph in states_dict[key]:
+                term += weightProduct(graph)/factProduct(graph)
+            state += sqrt(factProduct(key))*term*creatorState(key)
+        return state
+    
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0):
+        '''
+        Returns the superposition (up to an arbitrary order) of all states that can be 
+        build with an edge cover of the available edges.
+        '''
+        state = 0
+        for order in range(min_order, max_order+1):
+            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order)))
+        return state
+    
+    def fromDimensions(dimensions, max_order=0, min_order=0):
+        '''
+        Given a list of dimensions for several particles, returns the superposition of all
+        possible states involving all the particles at least once, up arbitrary order.
+        '''
+        state = 0
+        for order in range(min_order, max_order+1):
+            state += State.fromDictionary(allEdgeCovers(dimensions,order))
+        return state  
 
 
 ###################################

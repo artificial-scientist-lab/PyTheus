@@ -372,7 +372,7 @@ class State:
     '''
     Set of functions to compute the state.
     '''
-    def fromDictionary(states_dict):
+    def fromDictionary(states_dict, q_factor=False):
         '''
         Build a superposition of all the states of a dictionary.
         '''
@@ -381,27 +381,29 @@ class State:
             term = 0
             for graph in states_dict[key]:
                 term += weightProduct(graph)/factProduct(graph)
-            state += sqrt(factProduct(key))*term*creatorState(key)
+            term *= creatorState(key)
+            if q_factor: term *= sqrt(factProduct(key))
+            state += term
         return state
     
-    def fromEdgeCovers(edge_list, max_order=0, min_order=0):
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, q_factor=False):
         '''
         Returns the superposition (up to an arbitrary order) of all states that can be 
         build with an edge cover of the available edges.
         '''
         state = 0
         for order in range(min_order, max_order+1):
-            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order)))
+            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order)),q_factor)
         return state
     
-    def fromDimensions(dimensions, max_order=0, min_order=0):
+    def fromDimensions(dimensions, max_order=0, min_order=0, q_factor=False):
         '''
         Given a list of dimensions for several particles, returns the superposition of all
         possible states involving all the particles at least once, up arbitrary order.
         '''
         state = 0
         for order in range(min_order, max_order+1):
-            state += State.fromDictionary(allEdgeCovers(dimensions,order))
+            state += State.fromDictionary(allEdgeCovers(dimensions,order),q_factor)
         return state  
 
 

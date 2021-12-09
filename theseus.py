@@ -295,6 +295,57 @@ def findEdgeCovers(graph, order, show_start=False):
         recursiveEdgeCover(graph, covers, starting, edges_left, nodes_left, order)
     return covers
 
+###############################
+###############################
+###                         ###
+###   HERALDING FUNCTIONS   ###
+###                         ###
+###############################
+###############################
+
+def findTriggerEdgeCover(edge_list, triggers, order):
+    '''
+    Returns all edge covers of the trigger vertices given a list of edges, up to a certain order.
+    '''
+    covers = []
+    nodes_left = triggers 
+    edges_left = order + len(nodes_left)//2
+    recursiveEdgeCover(edge_list, covers, edges_left= edges_left,nodes_left= nodes_left)
+    return covers
+
+def findTriggerState(edge_list,num_nodes,num_trigger):
+    '''
+    Returns sympy expression of the state heralded by measuring the trigger nodes.
+    Convention: num_nodes is the total number of nodes, the trigger nodes are the last num_trigger nodes
+    '''
+
+    triggers = list(range(num_nodes-num_trigger,num_nodes))
+
+    #PREPARING TRIGGERED STATE 
+    #define the range of orders we are interested in (for heralded bell states it is orders 0 and 1)
+    #order 0 is the smallest order that can still cover all trigger vertices
+    #highestorder is the minimum order that can cover all vertices of the entire graph
+    highestorder = (num_nodes-num_trigger)//2
+    allcovers = []
+    state = 0
+    for order in range(highestorder+1):
+        #find all edge covers of the trigger with specific order
+        covers = findTriggerEdgeCover(edge_list,triggers,order)
+        #save covers of each order
+        allcovers.append(covers)
+        #turn covers into sympy expression with theseus library functions
+        cat = stateCatalog(covers)
+        state += State.fromDictionary(cat)
+
+    #dictionary for substitution: edge symbol -> edge weight
+    edge_dict = {}
+    for edge in edge_list:
+        edge_dict[symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')]=edge[4]
+
+    sympy_expression = state.subs(edge_dict)
+
+    return sympy_expression
+
         
 ################################
 ################################

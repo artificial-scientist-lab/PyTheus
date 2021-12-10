@@ -440,7 +440,7 @@ class State:
             term = 0
             for graph in states_dict[key]:
                 term += weightProduct(graph,padding)/factProduct(graph)
-            term *= creatorState(key)
+            term *= creatorState(key,padding)
             if q_factor: term *= sqrt(factProduct(key))
             state += term
         return state

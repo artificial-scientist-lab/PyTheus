@@ -3,7 +3,7 @@
 """
 Created on Thu Aug 12 07:02:11 2021
 
-@author: alejomonbar and cruizgo
+@author: alejomonbar, cruizgo and soerenarlt
 """
 import itertools
 from math import factorial

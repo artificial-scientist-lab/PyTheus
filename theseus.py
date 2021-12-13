@@ -92,28 +92,28 @@ def edgeBleach(color_edges): # this may end up being useless
         bleached_edges[edge[:2]].append(edge[2:])
     return bleached_edges
 
-def nodeDegrees(edge_lst, nodes_lst=[], rising=True):
+def nodeDegrees(edge_list, nodes_list=[], rising=True):
     '''
     Compute the degree of each node of a graph.
     By default, it sorts the nodes by their degree.
     '''
-    if len(nodes_lst)==0:
-        nodes_lst = np.unique(np.array(edge_lst)[:,:2])
-    links = {ii:0 for ii in nodes_lst}
-    for edge in edge_lst:
+    if len(nodes_list)==0:
+        nodes_list = np.unique(np.array(edge_list)[:,:2])
+    links = {ii:0 for ii in nodes_list}
+    for edge in edge_list:
         links[edge[0]] += 1
         links[edge[1]] += 1
     if rising: 
         return sorted(links.items(), key=lambda item: item[1])
     return [(k,v) for k,v in zip(links.keys(),links.values())]
 
-def stateCatalog(graph_lst):
+def stateCatalog(graph_list):
     '''
     Given a list of colored graphs, returns a dictionary with graphs grouped 
     by the state they generate.
     '''
     state_dict = {}
-    for graph in graph_lst:
+    for graph in graph_list:
         coloring = []
         for ed in graph: coloring += [(ed[0],ed[2])] + [(ed[1],ed[3])]
         coloring = tuple(sorted(coloring))
@@ -279,20 +279,24 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
     else: pass
 # for large orders we could compute a first pack of edges at once using itertools 
 
-def findEdgeCovers(graph, order, show_start=False):
+def findEdgeCovers(edge_list, nodes_left=[], order=1, quick_start=False):
     '''
     Returns all possible edge covers given a list of edges, up to a certain order.
     '''
     covers = []
-    starting = deadEndEdges(graph)
-    if len(starting)==0: recursiveEdgeCover(graph, covers, order=order)
-    else:
-        if show_start: print(starting)
-        nodes_left = np.unique(np.array(graph)[:,:2]) 
-        edges_left = order + len(nodes_left)/2 - len(starting)
-        nodes_left = [node for node in nodes_left if node not 
-                      in np.unique(np.array(starting)[:,:2])]
-        recursiveEdgeCover(graph, covers, starting, edges_left, nodes_left, order)
+    if quick_start:
+        starting = deadEndEdges(edge_list)
+        if len(starting)==0:
+            print('There are no nodes with degree 1.')
+            recursiveEdgeCover(edge_list, covers, nodes_left=nodes_left, order=order)
+        else:
+            print(starting)
+            if len(nodes_left)==0: nodes_left = np.unique(np.array(edge_list)[:,:2])
+            edges_left = order + len(nodes_left)/2 - len(starting)
+            nodes_left = [node for node in nodes_left if node not 
+                          in np.unique(np.array(starting)[:,:2])]
+            recursiveEdgeCover(edge_list, covers, starting, edges_left, nodes_left, order)
+    else: recursiveEdgeCover(edge_list, covers, nodes_left=nodes_left, order=order)
     return covers
 
 ###############################
@@ -342,8 +346,11 @@ def findTriggerState(edge_list,num_nodes,num_trigger):
     for edge in edge_list:
         edge_dict[symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')]=edge[4]
 
-    sympy_expression = state.subs(edge_dict)
-
+    if state != 0:
+        sympy_expression = state.subs(edge_dict)
+    else:
+        sympy_expression = 0
+        
     return sympy_expression
 
         
@@ -413,7 +420,7 @@ class Norm:
         '''
         norm = 0
         for order in range(min_order, max_order+1):
-            norm += Norm.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order)),padding)
+            norm += Norm.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order=order)),padding)
         return norm
     
     def fromDimensions(dimensions, max_order=0, min_order=0, padding=True):
@@ -452,7 +459,7 @@ class State:
         '''
         state = 0
         for order in range(min_order, max_order+1):
-            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order)),
+            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order=order)),
                                           q_factor,padding)
         return state
     
@@ -791,11 +798,11 @@ class Graph:
 #         lst_nodes = [item for sublist in self.vertices for item in sublist]
 #         return lst_nodes
     
-#     # def add_nodes(self, nodes_lst):
+#     # def add_nodes(self, nodes_list):
 #     #     '''
 #     #     Add new nodes to the existing ones. Usually in pairs for the higher order equations.
 #     #     '''
-#     #     for node in nodes_lst:
+#     #     for node in nodes_list:
 #     #         self.vertices[node[0]].append(node)
 #     #         self.vertices[node[0]].sort()    
         

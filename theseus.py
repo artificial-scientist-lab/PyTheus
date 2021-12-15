@@ -420,7 +420,7 @@ class Norm:
             norm += factProduct(key)*(term**2)
         return norm
     
-    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False padding=True):
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, padding=True):
         '''
         Returns the normalization constant (up to an arbitrary order) of all states 
         that can be build with an edge cover of the available edges.
@@ -460,25 +460,25 @@ class State:
             state += term
         return state
     
-    def fromEdgeCovers(edge_list, max_order=0, min_order=0, q_factor=False, padding=True):
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, q_factor=False, padding=True):
         '''
         Returns the superposition (up to an arbitrary order) of all states that can be 
         build with an edge cover of the available edges.
         '''
         state = 0
         for order in range(min_order, max_order+1):
-            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list, order=order)),
+            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list,order=order,loops=loops)),
                                           q_factor,padding)
         return state
     
-    def fromDimensions(dimensions, max_order=0, min_order=0, q_factor=False, padding=True):
+    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, q_factor=False, padding=True):
         '''
         Given a list of dimensions for several particles, returns the superposition of all
         possible states involving all the particles at least once, up arbitrary order.
         '''
         state = 0
         for order in range(min_order, max_order+1):
-            state += State.fromDictionary(allEdgeCovers(dimensions,order),q_factor,padding)
+            state += State.fromDictionary(allEdgeCovers(dimensions,order,loops),q_factor,padding)
         return state  
 
 dumbFunction = lambda inputs, function: function(*inputs)

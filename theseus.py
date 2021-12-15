@@ -283,7 +283,7 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
     else: pass
 # for large orders we could compute a first pack of edges at once using itertools 
 
-def findEdgeCovers(edge_list, nodes_left=[], order=1, loops=False, quick_start=False):
+def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=False, quick_start=False):
     '''
     Returns all possible edge covers given a list of edges, up to a certain order.
     '''
@@ -292,18 +292,17 @@ def findEdgeCovers(edge_list, nodes_left=[], order=1, loops=False, quick_start=F
         starting = deadEndEdges(edge_list)
         if len(starting)==0:
             print('There are no nodes with degree 1.')
-            recursiveEdgeCover(edge_list, covers, nodes_left=nodes_left, order=order)
+            recursiveEdgeCover(edge_list, covers, edges_left=edges_left, nodes_left=nodes_left, order=order)
         else:
             print(starting)
             if len(nodes_left)==0: nodes_left = np.unique(np.array(edge_list)[:,:2])
             edges_left = order + len(nodes_left)/2 - len(starting)
             nodes_left = [node for node in nodes_left if node not 
                           in np.unique(np.array(starting)[:,:2])]
-            graph, store, matches=[], edges_left=None, nodes_left=[], order=1, loops=False
-                
             recursiveEdgeCover(edge_list, covers, matches=starting, edges_left=edges_left, 
                                nodes_left=nodes_left, order=order, loops=loops)
-    else: recursiveEdgeCover(edge_list, covers, nodes_left=nodes_left, order=order, loops=loops)
+    else: recursiveEdgeCover(edge_list, covers, edges_left=edges_left, nodes_left=nodes_left, 
+                             order=order, loops=loops)
     return covers
 
 ###############################

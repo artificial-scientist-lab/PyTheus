@@ -640,7 +640,7 @@ def sympyMinimizer(loss_function,variables=[],initial_values=[],bounds=None,meth
     if len(variables)==0: variables = list(loss_function.free_symbols)
     if len(initial_values)==0: initial_values = 2*np.random.random(len(variables)) - 1
     loss_scipy = lambdify(variables, loss_function, modules="numpy")
-    return optimize.minimize(dumbFunction, x0=initial_values, bounds=bounds, method=None, args=(loss_scipy))
+    return optimize.minimize(dumbFunction, x0=initial_values, bounds=bounds, method=method, args=(loss_scipy))
 
 ###################################
 ###################################

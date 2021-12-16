@@ -31,22 +31,22 @@ def allPairSplits(lst):
     """ 
     Generate all sets of unique pairs from a list `lst`.
 
-    This is equivalent to all _partitions_ of `lst` (considered as an indexed set) 
-    which have 2 elements in each partition.
+    This is equivalent to all _partitions_ of `lst` (considered as an indexed 
+    set) which have 2 elements in each partition.
 
-    Recall how we compute the total number of such partitions. Starting with a list
+    Recall how we compute the total number of such partitions. Starting with 
+    a list [1, 2, 3, 4, 5, 6]
     
-    [1, 2, 3, 4, 5, 6]
-    
-    one takes off the first element, and chooses its pair [from any of the remaining 
-    5]. For example, we might choose our first pair to be (1, 4). Then, we take off 
-    the next element, 2, and choose which element it is paired to (say, 3). So, 
-    there are 5 * 3 * 1 = 15 such partitions.
+    one takes off the first element, and chooses its pair [from any of the 
+    remaining 5]. For example, we might choose our first pair to be (1, 4). 
+    Then, we take off the next element, 2, and choose which element it is 
+    paired to (say, 3). So, there are 5 * 3 * 1 = 15 such partitions.
 
-    That sounds like a lot of nested loops (i.e. recursion), because 1 could pick 2, 
-    in which case our next element is 3. But, if one abstracts "what the next element 
-    is", and instead just thinks of what index it is in the remaining list, our 
-    choices are static and can be aided by the itertools.product() function.
+    That sounds like a lot of nested loops (i.e. recursion), because 1 could 
+    pick 2, in which case our next element is 3. But, if one abstracts "what 
+    the next element is", and instead just thinks of what index it is in the 
+    remaining list, our choices are static and can be aided by the 
+    itertools.product() function.
     
     From selfgatoatigrado: https://stackoverflow.com/a/13020502
     """
@@ -61,17 +61,20 @@ def allPairSplits(lst):
             result.append( (tmp.pop(0), tmp.pop(index)) )
         yield result # use yield and then turn it into a list is faster than append
 
+        
 def targetEdges(nodes, graph):
     '''
     Returns all graph's edges which connect to the input nodes.
     '''    
     return [ed for ed in graph if (ed[0] in nodes)or(ed[1] in nodes)]
 
+
 def removeNodes(nodes, graph):
     '''
     Removes all graph's edges which connect to the input nodes.
     '''
     return [ed for ed in graph if not ((ed[0] in nodes)or(ed[1] in nodes))]
+
 
 def deadEndEdges(graph):
     '''
@@ -80,6 +83,7 @@ def deadEndEdges(graph):
     unq, counts = np.unique(np.array(graph)[:,:2], return_counts=True)
     return targetEdges(unq[counts==1],graph)
 # Careful when applying this in subgraphs, the dead ends may be covered already
+
 
 def edgeBleach(color_edges): # this may end up being useless
     '''
@@ -92,30 +96,58 @@ def edgeBleach(color_edges): # this may end up being useless
         bleached_edges[edge[:2]].append(edge[2:])
     return bleached_edges
 
+
 def nodeDegrees(edge_list, nodes_list=[], rising=True):
     '''
-    Compute the degree of each node of a graph.
-    By default, it sorts the nodes by their degree.
+    Compute the degree of each node of a graph. Returning a list of tuples
+    such that: [(node1, degree1), (node2, degree2) ...]
+    By default, it sorts the nodes by their degree in increasing order.
+    
+    Parameters
+    ----------
+    edge_list : list
+        List of all available edges.
+    nodes_list : list, optional
+        List of all nodes. By default, the list is obtained from the nodes 
+        that appear in edge_list.
+    rising : boolean, optional
+        If True, the nodes are ordered by degree.
+
+    Returns
+    -------
+    links : list
+        List of nodes and their degrees: [(node1, degree1), ...]
     '''
-    if len(nodes_list)==0:
-        nodes_list = np.unique(np.array(edge_list)[:,:2])
+    if len(nodes_list)==0: nodes_list = np.unique(np.array(edge_list)[:,:2])
     links = {ii:0 for ii in nodes_list}
     for edge in edge_list:
         links[edge[0]] += 1
         links[edge[1]] += 1
-    if rising: 
-        return sorted(links.items(), key=lambda item: item[1])
-    return [(k,v) for k,v in zip(links.keys(),links.values())]
+    if rising: return sorted(links.items(), key=lambda item: item[1])
+    else: return [(k,v) for k,v in zip(links.keys(),links.values())]
+
 
 def stateCatalog(graph_list):
     '''
     Given a list of colored graphs, returns a dictionary with graphs grouped 
-    by the state they generate.
+    by the state they generate. Each of these states is a dictionary key.
+    
+    Parameters
+    ----------
+    graph_list : list
+        List of graphs.
+
+    Returns
+    -------
+    state_dict : dictionary
+        Dictionary with all the states created by each graph as keys. If more 
+        than one graph leads to the same state their are listed together in 
+        the corresponding entrance of the dictionary.
     '''
     state_dict = {}
     for graph in graph_list:
         coloring = []
-        for ed in graph: coloring += [(ed[0],ed[2])] + [(ed[1],ed[3])]
+        for ed in graph: coloring += [(ed[0], ed[2]), (ed[1], ed[3])]
         coloring = tuple(sorted(coloring))
         try: state_dict[coloring] += [graph]
         except KeyError: state_dict[coloring] = [graph]
@@ -130,10 +162,30 @@ def stateCatalog(graph_list):
 ############################
 ############################
 
+
 def buildAllEdges(dimensions, loops=False, symbolic=False, padding=True):
     '''
-    Given a collection of vertices, each with several possible dimensions, 
-    find all possible edges of the network.
+    Given a collection of nodes, each with several possible colors/dimensions, 
+    returns all possible edges of the graph.
+    
+    Parameters
+    ----------
+    dimensions : array_like
+        Accesible dimensions (colors) for each of the nodes of the graph.
+    loops : boolean, optional
+        Allow edges to connect twice the same node.
+    symbolic : boolean, optional
+        If True, it returns a list of sympy symbols instead of tuples. 
+    padding : boolean, optional
+        If symbolic is True, padding determines whether the nodes numbers are
+        padded with one zero or not: 0X if True, X if false. 
+        
+    Returns
+    -------
+    all_edges : list
+        List of all possible edges given the dimensions of the nodes.
+        If symbolic, it returns a list of sympy symbols.
+        Else, it returns a list of tuples: (node1, node2, color1, color2).
     '''
     num_vertices = len(dimensions)
     all_edges = []
@@ -142,9 +194,10 @@ def buildAllEdges(dimensions, loops=False, symbolic=False, padding=True):
     for pair in combination_function(range(num_vertices),2):
         for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
             all_edges.append((pair[0],pair[1],dims[0],dims[1]))
-    if symbolic:
-        return [edgeWeight(edge,padding) for edge in all_edges]
-    return all_edges
+    # returns edges whether as tuples or as sympy symbols
+    if symbolic: return [edgeWeight(edge,padding) for edge in all_edges]
+    else: return all_edges
+
 
 def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
     '''
@@ -152,8 +205,9 @@ def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
     with a given number of edges that connects all nodes.
     '''
     all_edges = buildAllEdges(dimensions,loops=loops)
-    if sorted(dimensions)[-1]==1:
-        all_edges = [edge[:2] for edge in all_edges]
+    # even when only one dimension is available we put it on the symbols
+    # if sorted(dimensions)[-1]==1:
+    #     all_edges = [edge[:2] for edge in all_edges]
     if cover_all:
         num_nodes = len(dimensions)
         if 2*num_edges > num_nodes:
@@ -165,10 +219,28 @@ def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
         return sorted(graph)
     else: return sorted(random.sample(all_edges,num_edges))
 
+
 def allColorGraphs(color_nodes,loops=False):
     '''
-    Given a list on nodes with their respective dimensions (colors) build
-    all possible graphs that reproduce such states.
+    Given a list of colored nodes, i.e., an state. It uses AllPairSplits to 
+    generate all graphs that leads to such state.
+    This function is a building block of the function 'allEdgeCovers'.
+    
+    Parameters
+    ----------
+    color_nodes : list
+        List of all colored nodes: [(node,color)...] Some may be repeated.
+    loops : boolean, optional
+        Allow edges to connect twice the same node, not necessarily with a
+        single color: (node1, node1, color1, color2).
+        
+    Returns
+    -------
+    graph_list : list of tuples
+        Nested list with all graphs that produce a given state.
+        Example: given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces:
+            [[(0, 0, 0, 1), (1, 1, 1, 1)],    - only if loops are allowed -
+             [(0, 1, 0, 1), (0, 1, 1, 1)]]
     '''
     color_graph = list(allPairSplits(sorted(list(color_nodes))))
     for graph in color_graph: graph.sort()
@@ -185,57 +257,65 @@ def allColorGraphs(color_nodes,loops=False):
                        if len(graph)==len(color_nodes)/2]
     return [[tuple(ed) for ed in graph] for graph in np.unique(color_graph,axis=0)]
 
+
 def allEdgeCovers(dimensions, order=1, loops=False):
     '''
-    List of all graphs that triggers all detectors up to arbitrary order and the states 
-    generated by them in terms of color nodes (creators). The graphs can present higher 
-    order and duplicated edges (multigraphs).
-    The graphs described in the n-th element of all_color_graphs lead to the n-th combo 
-    of colored nodes of all_colors.
+    Given a collection of nodes with different dimensions/colors available, 
+    it produces all possible states that erase from these and the different 
+    graphs that can produce such states.
+    The graphs nodes can present different degres, the edges may be duplicated
+    (multigraph) and loops may also appear.
     
     Parameters
     ----------
     dimensions : array_like
-        Accesible dimensions (colors) for each of the nodes (particles) of the graph.
+        Accesible dimensions (colors) for each of the nodes of the graph.
     order : int, optional
-        Orders above the minimum required to trigger all detectors. If 0, the output are 
-        only perfect machings, the minimum edges to cover all nodes.
-    
+        Orders above the minimum required to cover all nodes. If 0, the 
+        output are only perfect machings, with all nodes having degree 1. 
+    loops : boolean, optional
+        Allow edges to connect twice the same node. These cannot appear for
+        perfect matchings, thus only available for order>0.
+        
     Returns
     -------
-    all_colors : list of tuples
-        List of colored nodes combos (creator operators). It tells the produced state. 
-        The employed notation is: (node, color/dimension).
-    all_color_graphs : list of lists of tuples
-        List of possible graphs that produce each of the elements of all_colors.
-        The employed notation for the edges is: (node1, node2, color1, color2).
+    color_dict : dictionary
+        Dictionary of available states. The keys are the different combinations 
+        of colored nodes (creator operators), that is, the state produced. 
+        For each or state, the dictionary stores a list of all possible graphs
+        that produce such state.
+        The notation employed for the nodes is: (node, color/dimension).
+        The notation employed for the edges is: (node1, node2, color1, color2).
+        Node2 cannot be lower than Node1.
     '''
-    # Given a list with N nodes, the following code produce all the ways in which the 
-    # nodes can be repeated, adding them by pairs, and without order considerations.
     num_nodes = len(dimensions)
-    added_pairs = list(itertools.combinations_with_replacement(range(num_nodes),2*order))
-    crowded_graph = [list(range(num_nodes))]*len(added_pairs)
-    for ii, pair in enumerate(added_pairs): 
-        crowded_graph[ii] = sorted(crowded_graph[ii] + list(pair))
-    color_dict = {} #all_colors = [],all_color_graphs = [] 
+    # Given a list with N different nodes, if order>0 some nodes will have degree
+    # larger than 1, i.e., their creator operators will be repeated.
+    # crowded_graph stores all ways in which these repeatitions may occur.
+    # For N=4 and order=1: 000123, 001123, 001223, 001233, 011123, 011223...
+    additions = list(itertools.combinations_with_replacement(range(num_nodes),2*order))
+    crowded_graph = [list(range(num_nodes))] * len(additions)
+    for ii, added in enumerate(additions):
+        crowded_graph[ii] = sorted(crowded_graph[ii] + list(added))    
+    color_dict = {} 
     for crowd in crowded_graph:
+        # For each list of nodes in crowded_graph (with possible repetitions) 
+        # we store all dimensions/coloring the nodes can have in color_nodes.
         color_nodes = []
-        # Given the crowded graph, a list of nodes in which some of them are repeated, 
-        # the next code generates all the ways in which we can color them.
-        for coloring in itertools.product(*[list(range(dimensions[nn])) for nn in crowd]):
-            color_nodes.append(sorted([[crowd[ii], coloring[ii]] for ii in range(len(crowd))]))
         # We distinguish between nodes but not between repeated nodes.
         # [(node1,color1),(node1,color2)] = [(node1,color2),(node1,color1)]
-        # After sorting the list in the previous line, the next one erase duplicities.
+        for coloring in itertools.product(*[list(range(dimensions[nn])) for nn in crowd]):
+            color_nodes.append(sorted([[crowd[ii], coloring[ii]] for ii in range(len(crowd))]))
+        # After sorting the list of colored nodes, the next one erase duplicities.
         color_nodes = [[tuple(ed) for ed in graph] for graph in np.unique(color_nodes,axis=0)]
-        #all_colors += color_nodes
-        for coloring in color_nodes: #all_color_graphs.append(allColorGraphs(coloring))
+        for coloring in color_nodes: 
             color_dict[tuple(coloring)] = allColorGraphs(coloring,loops)
-    return color_dict #, all_colors, all_color_graphs
+    return color_dict 
+
 
 def recursivePerfectMatchings(graph, store, matches=[], edges_left=None):
     '''
-    The heavy lifting of findPerfectMatchings and used in findEdgeCovers.
+    The heavy lifting of findPerfectMatchings. Also used in recursiveEdgeCover.
     '''
     if edges_left==None: edges_left = len(np.unique(np.array(graph)[:,:2]))/2
     if len(graph)>0:
@@ -245,6 +325,7 @@ def recursivePerfectMatchings(graph, store, matches=[], edges_left=None):
     elif len(graph)==0 and edges_left==0: store.append(sorted(matches))
     else: pass # Some nodes are not matched and never will
 
+
 def findPerfectMatchings(graph):
     '''
     Returns all possible perfect matchings (if any) given a list of edges.
@@ -253,9 +334,39 @@ def findPerfectMatchings(graph):
     recursivePerfectMatchings(graph, perfect_matchings)
     return perfect_matchings
 
+
 def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[], order=1, loops=False):
     '''
-    The heavy lifting of findEdgeCovers.
+    Pseudorecursive function that append all possible edge covers of a 
+    graph in a given list 'store'. 
+    It does the heavy lifting of findEdgeCovers.
+    
+    Parameters
+    ----------
+    graph : list
+        List of all available edges.
+    store : list
+        List to store the edge covers.
+    matches : list, optional
+        List of edges to build a perfect matching. If it fulfils all
+        requirements it will end up in store
+    edges_left : int, optional
+        Total number of edges of each edge cover. If None, this is computed 
+        as the minimum edges required to cover all nodes plus the order.
+    nodes_left : list, optional
+        List of all nodes to be covered. By default, the list is obtained 
+        from the nodes covered in edge_list but it can be set to target
+        specific nodes.
+    order : int, optional
+        Orders above the minimum required to cover all nodes. If 0, the 
+        output are only perfect machings, with all nodes having degree 1. 
+    loops : boolean, optional
+        Allow edges to connect twice the same node. These cannot appear for
+        perfect matchings. 
+        
+    Returns
+    -------
+    None, but now the input list 'store' contains all possible edge covers. 
     '''
     if len(nodes_left)==0: nodes_left = np.unique(np.array(graph)[:,:2]) 
     if edges_left==None: edges_left = order + len(nodes_left)/2
@@ -263,13 +374,13 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
     if case>1:
         for edge in graph: 
             recursiveEdgeCover(graph, store, matches+[edge], edges_left-1, 
-                        [node for node in nodes_left if node not in edge[:2]], loops=loops) 
+                [node for node in nodes_left if node not in edge[:2]], loops=loops) 
     elif case==1: 
         for edge in targetEdges(nodes_left, graph):
             if edges_left>1:
                 new_nodes_left = [node for node in nodes_left if node not in edge[:2]]
-                recursiveEdgeCover(targetEdges(new_nodes_left,graph), store, matches+[edge],
-                                   edges_left-1, new_nodes_left, loops=loops)
+                recursiveEdgeCover(targetEdges(new_nodes_left,graph), store, 
+                        matches+[edge], edges_left-1, new_nodes_left, loops=loops)
             if edges_left==1 and not (sorted(matches + [edge]) in store):
                 store.append(sorted(matches + [edge]))
     elif case==0:
@@ -283,27 +394,58 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
     else: pass
 # for large orders we could compute a first pack of edges at once using itertools 
 
+
 def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=False, quick_start=False):
     '''
-    Returns all possible edge covers given a list of edges, up to a certain order.
+    Given a list of edges, returns all possible edge covers, up to a certain
+    order or using a certain number of edges. 
+    
+    Parameters
+    ----------
+    edge_list : list
+        List of all available edges.
+    edges_left : int, optional
+        Total number of edges of each edge cover. If None, this is computed 
+        as the minimum edges required to cover all nodes plus the order.
+    nodes_left : list, optional
+        List of all nodes to be covered. By default, the list is obtained 
+        from the nodes covered in edge_list but it can be set to target
+        specific nodes.
+    order : int, optional
+        Orders above the minimum required to cover all nodes. If 0, the 
+        output are only perfect machings, with all nodes having degree 1. 
+    loops : boolean, optional
+        Allow edges to connect twice the same node. These cannot appear for
+        perfect matchings.
+    quick_start: boolean, optional
+        If True, it stores all edges connected to nodes with degree one. 
+        
+    Returns
+    -------
+    covers : list
+        List of graphs with all nodes having, at least, degree 1.
     '''
     covers = []
     if quick_start: # this is just to speed up stuff (or at least try it)
         starting = deadEndEdges(edge_list)
         if len(starting)==0:
             print('There are no nodes with degree 1.')
-            recursiveEdgeCover(edge_list, covers, edges_left=edges_left, nodes_left=nodes_left, order=order)
+            recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
+                               nodes_left=nodes_left, order=order)
         else:
             print(starting)
-            if len(nodes_left)==0: nodes_left = np.unique(np.array(edge_list)[:,:2])
+            if len(nodes_left)==0: 
+                nodes_left = np.unique(np.array(edge_list)[:,:2])
             edges_left = order + len(nodes_left)/2 - len(starting)
             nodes_left = [node for node in nodes_left if node not 
                           in np.unique(np.array(starting)[:,:2])]
-            recursiveEdgeCover(edge_list, covers, matches=starting, edges_left=edges_left, 
-                               nodes_left=nodes_left, order=order, loops=loops)
-    else: recursiveEdgeCover(edge_list, covers, edges_left=edges_left, nodes_left=nodes_left, 
-                             order=order, loops=loops)
+            recursiveEdgeCover(edge_list, covers, matches=starting, 
+                               edges_left=edges_left, nodes_left=nodes_left, 
+                               order=order, loops=loops)
+    else: recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
+                             nodes_left=nodes_left, order=order, loops=loops)
     return covers
+
 
 ###############################
 ###############################
@@ -312,6 +454,7 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
 ###                         ###
 ###############################
 ###############################
+
 
 def findTriggerEdgeCover(edge_list, triggers, order):
     '''
@@ -322,6 +465,7 @@ def findTriggerEdgeCover(edge_list, triggers, order):
     edges_left = order + len(nodes_left)//2
     recursiveEdgeCover(edge_list, covers, edges_left= edges_left,nodes_left= nodes_left)
     return covers
+
 
 def findTriggerState(edge_list,num_nodes,num_trigger):
     '''
@@ -368,19 +512,24 @@ def findTriggerState(edge_list,num_nodes,num_trigger):
 ################################
 ################################
 
+
 # This expression could also be UNlambdified so we add some check for the Counter
 factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
+
 
 def edgeWeight(edge, padding=True): 
     if padding: return symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')
     else: return symbols(f'w_{edge[0]}\,{edge[1]}^{edge[2]}\,{edge[3]}')
 
+
 def weightProduct(graph, padding=True):
     return np.product([edgeWeight(edge,padding) for edge in graph])
+
 
 def creatorState(nodes, padding=True):
     if padding: return np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
     else: return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
+
 
 def targetEquation(coefficients, states, avail_states=None, padding=True):
     '''
@@ -402,6 +551,7 @@ def targetEquation(coefficients, states, avail_states=None, padding=True):
             terms += weightProduct(graph,padding)
         equation += coef*terms
     return equation**2
+
 
 class Norm:
     '''
@@ -441,6 +591,7 @@ class Norm:
             norm += Norm.fromDictionary(allEdgeCovers(dimensions,order,loops),padding)
         return norm  
 
+    
 class State:
     '''
     Set of functions to compute the state.
@@ -480,13 +631,14 @@ class State:
             state += State.fromDictionary(allEdgeCovers(dimensions,order,loops),q_factor,padding)
         return state  
 
+    
 dumbFunction = lambda inputs, function: function(*inputs)
 def sympyMinimizer(loss_function,variables=[],initial_values=[],bounds=None,method=None):
     '''
     Apply scipy minimizer on a sympy expression.
     '''
     if len(variables)==0: variables = list(loss_function.free_symbols)
-    if len(initial_values)==0: initial_values = np.random.random(len(variables))
+    if len(initial_values)==0: initial_values = 2*np.random.random(len(variables)) - 1
     loss_scipy = lambdify(variables, loss_function, modules="numpy")
     return optimize.minimize(dumbFunction, x0=initial_values, bounds=bounds, method=None, args=(loss_scipy))
 

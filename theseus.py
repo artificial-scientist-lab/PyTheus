@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug 12 07:02:11 2021
-
 @author: alejomonbar, cruizgo and soerenarlt
 """
 import itertools
@@ -30,10 +29,8 @@ import json
 def allPairSplits(lst):
     """ 
     Generate all sets of unique pairs from a list `lst`.
-
     This is equivalent to all _partitions_ of `lst` (considered as an indexed 
     set) which have 2 elements in each partition.
-
     Recall how we compute the total number of such partitions. Starting with 
     a list [1, 2, 3, 4, 5, 6]
     
@@ -41,7 +38,6 @@ def allPairSplits(lst):
     remaining 5]. For example, we might choose our first pair to be (1, 4). 
     Then, we take off the next element, 2, and choose which element it is 
     paired to (say, 3). So, there are 5 * 3 * 1 = 15 such partitions.
-
     That sounds like a lot of nested loops (i.e. recursion), because 1 could 
     pick 2, in which case our next element is 3. But, if one abstracts "what 
     the next element is", and instead just thinks of what index it is in the 
@@ -112,7 +108,6 @@ def nodeDegrees(edge_list, nodes_list=[], rising=True):
         that appear in edge_list.
     rising : boolean, optional
         If True, the nodes are ordered by degree.
-
     Returns
     -------
     links : list
@@ -136,7 +131,6 @@ def stateCatalog(graph_list):
     ----------
     graph_list : list
         List of graphs.
-
     Returns
     -------
     state_dict : dictionary
@@ -163,7 +157,7 @@ def stateCatalog(graph_list):
 ############################
 
 
-def buildAllEdges(dimensions, loops=False, symbolic=False, padding=True):
+def buildAllEdges(dimensions, loops=False, symbolic=False, padding=False):
     '''
     Given a collection of nodes, each with several possible colors/dimensions, 
     returns all possible edges of the graph.
@@ -395,7 +389,7 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
 # for large orders we could compute a first pack of edges at once using itertools 
 
 
-def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=False, quick_start=False):
+def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=False):#, quick_start=False):
     '''
     Given a list of edges, returns all possible edge covers, up to a certain
     order or using a certain number of edges. 
@@ -417,8 +411,6 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
     loops : boolean, optional
         Allow edges to connect twice the same node. These cannot appear for
         perfect matchings.
-    quick_start: boolean, optional
-        If True, it stores all edges connected to nodes with degree one. 
         
     Returns
     -------
@@ -426,26 +418,29 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
         List of graphs with all nodes having, at least, degree 1.
     '''
     covers = []
-    if quick_start: # this is just to speed up stuff (or at least try it)
-        starting = deadEndEdges(edge_list)
-        if len(starting)==0:
-            print('There are no nodes with degree 1.')
-            recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
-                               nodes_left=nodes_left, order=order)
-        else:
-            print(starting)
-            if len(nodes_left)==0: 
-                nodes_left = np.unique(np.array(edge_list)[:,:2])
-            edges_left = order + len(nodes_left)/2 - len(starting)
-            nodes_left = [node for node in nodes_left if node not 
-                          in np.unique(np.array(starting)[:,:2])]
-            recursiveEdgeCover(edge_list, covers, matches=starting, 
-                               edges_left=edges_left, nodes_left=nodes_left, 
-                               order=order, loops=loops)
-    else: recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
-                             nodes_left=nodes_left, order=order, loops=loops)
+    recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
+                       nodes_left=nodes_left, order=order, loops=loops)
+    # IGNORE THE NEXT LINES FOR NOW, THEY DON'T SEEM TO HELP
+    #quick_start: boolean, optional
+    #    If True, it stores all edges connected to nodes with degree one. 
+    # if quick_start: # this is just to speed up stuff (or at least try it)
+    #     starting = deadEndEdges(edge_list)
+    #     if len(starting)==0:
+    #         print('There are no nodes with degree 1.')
+    #         recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
+    #                            nodes_left=nodes_left, order=order)
+    #     else:
+    #         print(starting)
+    #         if len(nodes_left)==0: 
+    #             nodes_left = np.unique(np.array(edge_list)[:,:2])
+    #         edges_left = order + len(nodes_left)/2 - len(starting)
+    #         nodes_left = [node for node in nodes_left if node not 
+    #                       in np.unique(np.array(starting)[:,:2])]
+    #         recursiveEdgeCover(edge_list, covers, matches=starting, 
+    #                            edges_left=edges_left, 
+    #                            nodes_left=nodes_left, 
+    #                            order=order, loops=loops)
     return covers
-
 
 def findEdgeCoversColorLater(edge_list):
     '''Extension of findEdgeCovers (atm only for order=0). Better time complexity for graphs with high dimension.'''
@@ -466,8 +461,6 @@ def findEdgeCoversColorLater(edge_list):
                 color_pm.append(edge+color) #add colored edge to colored PM
             pms.append(color_pm)
     return pms
-
-
 
 ###############################
 ###############################
@@ -539,21 +532,21 @@ def findTriggerState(edge_list,num_nodes,num_trigger):
 factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
 
 
-def edgeWeight(edge, padding=True): 
+def edgeWeight(edge, padding=False): 
     if padding: return symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')
     else: return symbols(f'w_{edge[0]}\,{edge[1]}^{edge[2]}\,{edge[3]}')
 
 
-def weightProduct(graph, padding=True):
+def weightProduct(graph, padding=False):
     return np.product([edgeWeight(edge,padding) for edge in graph])
 
 
-def creatorState(nodes, padding=True):
+def creatorState(nodes, padding=False):
     if padding: return np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
     else: return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
 
 
-def targetEquation(coefficients, states, avail_states=None, padding=True):
+def targetEquation(coefficients, states, avail_states=None, padding=False):
     '''
     Introducing the coefficients for each ket of the states list, it builds a 
     non-normalized fidelity function with all the ways the state can be build 
@@ -579,7 +572,7 @@ class Norm:
     '''
     Set of functions to compute the normalization constant.
     '''
-    def fromDictionary(states_dict, padding=True):
+    def fromDictionary(states_dict, padding=False):
         '''
         Build a normalization constant with all the states of a dictionary.
         '''
@@ -591,7 +584,7 @@ class Norm:
             norm += factProduct(key)*(term**2)
         return norm
     
-    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, padding=True):
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, padding=False):
         '''
         Returns the normalization constant (up to an arbitrary order) of all states 
         that can be build with an edge cover of the available edges.
@@ -600,8 +593,8 @@ class Norm:
         for order in range(min_order, max_order+1):
             norm += Norm.fromDictionary(stateCatalog(findEdgeCovers(edge_list,
                                                             order=order,loops=loops)),padding)
-        return norm
-    
+        return norm 
+        
     def fromEdgeCoversColorLater(edge_list, max_order=0, min_order=0, loops=False, padding=True):
         '''
         Returns the normalization constant (up to an arbitrary order) of all states 
@@ -612,7 +605,7 @@ class Norm:
             norm += Norm.fromDictionary(stateCatalog(findEdgeCoversColorLater(edge_list)),padding)
         return norm
     
-    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, padding=True):
+    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, padding=False):
         '''
         Given a list of dimensions for several particles, returns the normalization
         constant for all possible states involving all the particles at least once,
@@ -628,7 +621,7 @@ class State:
     '''
     Set of functions to compute the state.
     '''
-    def fromDictionary(states_dict, q_factor=False, padding=True):
+    def fromDictionary(states_dict, q_factor=False, padding=False):
         '''
         Build a superposition of all the states of a dictionary.
         '''
@@ -642,7 +635,7 @@ class State:
             state += term
         return state
     
-    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, q_factor=False, padding=True):
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
         '''
         Returns the superposition (up to an arbitrary order) of all states that can be 
         build with an edge cover of the available edges.
@@ -653,7 +646,7 @@ class State:
                                           q_factor,padding)
         return state
     
-    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, q_factor=False, padding=True):
+    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
         '''
         Given a list of dimensions for several particles, returns the superposition of all
         possible states involving all the particles at least once, up arbitrary order.
@@ -776,16 +769,13 @@ class Graph:
     def minimize(self, Fidelity, initial_weights=[], alpha=0):
         """
         
-
         Parameters
         ----------
         alpha : float
             Regularization constant.
-
         Returns
         -------
         None.
-
         """
         variables = list(Fidelity.free_symbols)
         if len(initial_weights) == 0:
@@ -800,17 +790,14 @@ class Graph:
         """
         Returns the w's of the problem: for example the GHZ of 4 qubits. This function
         return's: w_|0000> and w_|1111>
-
         Parameters
         ----------
         vars_ : List of tuples
             value of the w's variables based on the minimization problem.
-
         Returns
         -------
         list
             As in the example above [w_|0000>, w_|1111>] 
-
         """
         return [i.subs(vars_) for i in self.TargetEquation]
         
@@ -1251,6 +1238,3 @@ class Graph:
 #                     ax.plot(xp[len(xp)//2:], yp[len(xp)//2:], color=color[0], **args)
 #                 else:
 #                     ax.plot(xp, yp, color=color, **args)
-            
-
-

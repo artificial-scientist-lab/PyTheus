@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug 12 07:02:11 2021
-
 @author: alejomonbar, cruizgo and soerenarlt
 """
 import itertools
@@ -30,10 +29,8 @@ import json
 def allPairSplits(lst):
     """ 
     Generate all sets of unique pairs from a list `lst`.
-
     This is equivalent to all _partitions_ of `lst` (considered as an indexed 
     set) which have 2 elements in each partition.
-
     Recall how we compute the total number of such partitions. Starting with 
     a list [1, 2, 3, 4, 5, 6]
     
@@ -41,7 +38,6 @@ def allPairSplits(lst):
     remaining 5]. For example, we might choose our first pair to be (1, 4). 
     Then, we take off the next element, 2, and choose which element it is 
     paired to (say, 3). So, there are 5 * 3 * 1 = 15 such partitions.
-
     That sounds like a lot of nested loops (i.e. recursion), because 1 could 
     pick 2, in which case our next element is 3. But, if one abstracts "what 
     the next element is", and instead just thinks of what index it is in the 
@@ -112,7 +108,6 @@ def nodeDegrees(edge_list, nodes_list=[], rising=True):
         that appear in edge_list.
     rising : boolean, optional
         If True, the nodes are ordered by degree.
-
     Returns
     -------
     links : list
@@ -136,7 +131,6 @@ def stateCatalog(graph_list):
     ----------
     graph_list : list
         List of graphs.
-
     Returns
     -------
     state_dict : dictionary
@@ -189,11 +183,19 @@ def buildAllEdges(dimensions, loops=False, symbolic=False, padding=False):
     '''
     num_vertices = len(dimensions)
     all_edges = []
-    if loops: combination_function = itertools.combinations_with_replacement
-    else: combination_function = itertools.combinations
-    for pair in combination_function(range(num_vertices),2):
-        for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
-            all_edges.append((pair[0],pair[1],dims[0],dims[1]))
+    if loops:
+        combo_function = itertools.combinations_with_replacement
+        for pair in combo_function(range(num_vertices),2):
+            if pair[0]==pair[1]: # (node1, node1, 1, 0) is not stored
+                for dims in combo_function(range(dimensions[pair[0]]),2):
+                    all_edges.append((pair[0],pair[1],dims[0],dims[1]))
+            else:
+                for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                    all_edges.append((pair[0],pair[1],dims[0],dims[1]))
+    else:
+        for pair in itertools.combinations(range(num_vertices),2):
+            for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                all_edges.append((pair[0],pair[1],dims[0],dims[1]))
     # returns edges whether as tuples or as sympy symbols
     if symbolic: return [edgeWeight(edge,padding) for edge in all_edges]
     else: return all_edges
@@ -448,6 +450,25 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
     #                            order=order, loops=loops)
     return covers
 
+def findEdgeCoversColorLater(edge_list):
+    '''Extension of findEdgeCovers (atm only for order=0). Better time complexity for graphs with high dimension.'''
+    
+    # get uncolored graph and find perfect matchings and store what colored edges are permitted
+    edgedict = edgeBleach(edge_list)
+    uc_edge_list = list(edgedict.keys())
+    uc_pms = findEdgeCovers(uc_edge_list,order=0)
+
+    pms = []
+    #reintroduce color to uncolored pms (all combinations that are possible with edge_list)  
+    for pm in uc_pms:
+        edgemult = [range(len(edgedict[edge])) for edge in pm] #how many colored edges are there for each edge in the uncolored pm
+        for coloring in itertools.product(*edgemult): #go through all combinations of colored edges that produce the same PM if colorblind
+            color_pm = []
+            for ii , edge in enumerate(pm):
+                color = edgedict[edge][coloring[ii]] #read out the color
+                color_pm.append(edge+color) #add colored edge to colored PM
+            pms.append(color_pm)
+    return pms
 
 ###############################
 ###############################
@@ -580,6 +601,16 @@ class Norm:
         for order in range(min_order, max_order+1):
             norm += Norm.fromDictionary(stateCatalog(findEdgeCovers(edge_list,
                                                             order=order,loops=loops)),padding)
+        return norm 
+        
+    def fromEdgeCoversColorLater(edge_list, max_order=0, min_order=0, loops=False, padding=True):
+        '''
+        Returns the normalization constant (up to an arbitrary order) of all states 
+        that can be build with an edge cover of the available edges.
+        '''
+        norm = 0
+        for order in range(min_order, max_order+1):
+            norm += Norm.fromDictionary(stateCatalog(findEdgeCoversColorLater(edge_list)),padding)
         return norm
     
     def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, padding=False):
@@ -746,16 +777,13 @@ class Graph:
     def minimize(self, Fidelity, initial_weights=[], alpha=0):
         """
         
-
         Parameters
         ----------
         alpha : float
             Regularization constant.
-
         Returns
         -------
         None.
-
         """
         variables = list(Fidelity.free_symbols)
         if len(initial_weights) == 0:
@@ -770,17 +798,14 @@ class Graph:
         """
         Returns the w's of the problem: for example the GHZ of 4 qubits. This function
         return's: w_|0000> and w_|1111>
-
         Parameters
         ----------
         vars_ : List of tuples
             value of the w's variables based on the minimization problem.
-
         Returns
         -------
         list
             As in the example above [w_|0000>, w_|1111>] 
-
         """
         return [i.subs(vars_) for i in self.TargetEquation]
         
@@ -1221,6 +1246,3 @@ class Graph:
 #                     ax.plot(xp[len(xp)//2:], yp[len(xp)//2:], color=color[0], **args)
 #                 else:
 #                     ax.plot(xp, yp, color=color, **args)
-            
-
-

@@ -119,7 +119,7 @@ def nodeDegrees(edge_list, nodes_list=[], rising=True):
         links[edge[0]] += 1
         links[edge[1]] += 1
     if rising: return sorted(links.items(), key=lambda item: item[1])
-    else: return [(k,v) for k,v in zip(links.keys(),links.values())]
+    else: return [(k,v) for k,v in links.items()]
 
 
 def stateCatalog(graph_list):
@@ -585,9 +585,9 @@ class Norm:
         Build a normalization constant with all the states of a dictionary.
         '''
         norm = 0
-        for key in states_dict.keys():
+        for key, values in states_dict.items():
             term = 0
-            for graph in states_dict[key]:
+            for graph in values:
                 term += weightProduct(graph,padding)/factProduct(graph)
             norm += factProduct(key)*(term**2)
         return norm
@@ -634,9 +634,9 @@ class State:
         Build a superposition of all the states of a dictionary.
         '''
         state = 0
-        for key in states_dict.keys():
+        for key, values in states_dict.items():
             term = 0
-            for graph in states_dict[key]:
+            for graph in values:
                 term += weightProduct(graph,padding)/factProduct(graph)
             term *= creatorState(key,padding)
             if q_factor: term *= sqrt(factProduct(key))

@@ -450,6 +450,29 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
     #                            order=order, loops=loops)
     return covers
 
+
+def paintPerfectMatchings(graph):
+    avail_colors = edgeBleach(graph)
+    raw_matchings = findPerfectMatchings(list(avail_colors.keys())) 
+    painted_matchings = []
+    for match in raw_matchings:
+        for coloring in itertools.product(*[avail_colors[edge] for edge in match]):
+            color_match = [edge+color for edge, color in zip(match, coloring)]
+            painted_matchings.append(color_match)
+    return painted_matchings
+
+
+def paintEdgeCovers(graph, order=1, loops=False):
+    avail_colors = edgeBleach(graph)
+    raw_covers = findEdgeCovers(list(avail_colors.keys()),order=order,loops=loops) 
+    painted_covers = []
+    for cover in raw_covers:
+        for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
+            color_cover = [edge+color for edge, color in zip(cover, coloring)]
+            painted_covers.append(sorted(color_cover))       
+    return list(np.unique(painted_covers,axis=0))
+
+
 def findEdgeCoversColorLater(edge_list):
     '''Extension of findEdgeCovers (atm only for order=0). Better time complexity for graphs with high dimension.'''
     

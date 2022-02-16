@@ -332,9 +332,15 @@ def findPerfectMatchings(graph):
     '''
     Returns all possible perfect matchings (if any) given a list of edges.
     '''
-    perfect_matchings = []
-    recursivePerfectMatchings(graph, perfect_matchings)
-    return perfect_matchings
+    avail_colors = edgeBleach(graph)
+    raw_matchings = []
+    recursivePerfectMatchings(list(avail_colors.keys()), raw_matchings) 
+    painted_matchings = []
+    for match in raw_matchings:
+        for coloring in itertools.product(*[avail_colors[edge] for edge in match]):
+            color_match = [edge+color for edge, color in zip(match, coloring)]
+            painted_matchings.append(color_match)
+    return painted_matchings
 
 
 def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[], order=1, loops=False):
@@ -357,7 +363,7 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
         as the minimum edges required to cover all nodes plus the order.
     nodes_left : list, optional
         List of all nodes to be covered. By default, the list is obtained 
-        from the nodes covered in edge_list but it can be set to target
+        from the nodes covered in graph but it can be set to target
         specific nodes.
     order : int, optional
         Orders above the minimum required to cover all nodes. If 0, the 
@@ -397,21 +403,21 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
 # for large orders we could compute a first pack of edges at once using itertools 
 
 
-def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=False):#, quick_start=False):
+def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
     '''
     Given a list of edges, returns all possible edge covers, up to a certain
     order or using a certain number of edges. 
     
     Parameters
     ----------
-    edge_list : list
+    graph : list
         List of all available edges.
     edges_left : int, optional
         Total number of edges of each edge cover. If None, this is computed 
         as the minimum edges required to cover all nodes plus the order.
     nodes_left : list, optional
         List of all nodes to be covered. By default, the list is obtained 
-        from the nodes covered in edge_list but it can be set to target
+        from the nodes covered in graph but it can be set to target
         specific nodes.
     order : int, optional
         Orders above the minimum required to cover all nodes. If 0, the 
@@ -425,46 +431,10 @@ def findEdgeCovers(edge_list, edges_left=None, nodes_left=[], order=1, loops=Fal
     covers : list
         List of graphs with all nodes having, at least, degree 1.
     '''
-    covers = []
-    recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
+    avail_colors = edgeBleach(graph)
+    raw_covers = []
+    recursiveEdgeCover(list(avail_colors.keys()), raw_covers, edges_left=edges_left, 
                        nodes_left=nodes_left, order=order, loops=loops)
-    # IGNORE THE NEXT LINES FOR NOW, THEY DON'T SEEM TO HELP
-    #quick_start: boolean, optional
-    #    If True, it stores all edges connected to nodes with degree one. 
-    # if quick_start: # this is just to speed up stuff (or at least try it)
-    #     starting = deadEndEdges(edge_list)
-    #     if len(starting)==0:
-    #         print('There are no nodes with degree 1.')
-    #         recursiveEdgeCover(edge_list, covers, edges_left=edges_left, 
-    #                            nodes_left=nodes_left, order=order)
-    #     else:
-    #         print(starting)
-    #         if len(nodes_left)==0: 
-    #             nodes_left = np.unique(np.array(edge_list)[:,:2])
-    #         edges_left = order + len(nodes_left)/2 - len(starting)
-    #         nodes_left = [node for node in nodes_left if node not 
-    #                       in np.unique(np.array(starting)[:,:2])]
-    #         recursiveEdgeCover(edge_list, covers, matches=starting, 
-    #                            edges_left=edges_left, 
-    #                            nodes_left=nodes_left, 
-    #                            order=order, loops=loops)
-    return covers
-
-
-def paintPerfectMatchings(graph):
-    avail_colors = edgeBleach(graph)
-    raw_matchings = findPerfectMatchings(list(avail_colors.keys())) 
-    painted_matchings = []
-    for match in raw_matchings:
-        for coloring in itertools.product(*[avail_colors[edge] for edge in match]):
-            color_match = [edge+color for edge, color in zip(match, coloring)]
-            painted_matchings.append(color_match)
-    return painted_matchings
-
-
-def paintEdgeCovers(graph, order=1, loops=False):
-    avail_colors = edgeBleach(graph)
-    raw_covers = findEdgeCovers(list(avail_colors.keys()),order=order,loops=loops) 
     painted_covers = []
     for cover in raw_covers:
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):

@@ -443,26 +443,6 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
     return list(np.unique(painted_covers,axis=0))
 
 
-def findEdgeCoversColorLater(edge_list):
-    '''Extension of findEdgeCovers (atm only for order=0). Better time complexity for graphs with high dimension.'''
-    
-    # get uncolored graph and find perfect matchings and store what colored edges are permitted
-    edgedict = edgeBleach(edge_list)
-    uc_edge_list = list(edgedict.keys())
-    uc_pms = findEdgeCovers(uc_edge_list,order=0)
-
-    pms = []
-    #reintroduce color to uncolored pms (all combinations that are possible with edge_list)  
-    for pm in uc_pms:
-        edgemult = [range(len(edgedict[edge])) for edge in pm] #how many colored edges are there for each edge in the uncolored pm
-        for coloring in itertools.product(*edgemult): #go through all combinations of colored edges that produce the same PM if colorblind
-            color_pm = []
-            for ii , edge in enumerate(pm):
-                color = edgedict[edge][coloring[ii]] #read out the color
-                color_pm.append(edge+color) #add colored edge to colored PM
-            pms.append(color_pm)
-    return pms
-
 ###############################
 ###############################
 ###                         ###
@@ -593,17 +573,7 @@ class Norm:
         norm = 0
         for order in range(min_order, max_order+1):
             norm += Norm.fromDictionary(stateCatalog(findEdgeCovers(edge_list,
-                                                            order=order,loops=loops)),padding)
-        return norm 
-        
-    def fromEdgeCoversColorLater(edge_list, max_order=0, min_order=0, loops=False, padding=True):
-        '''
-        Returns the normalization constant (up to an arbitrary order) of all states 
-        that can be build with an edge cover of the available edges.
-        '''
-        norm = 0
-        for order in range(min_order, max_order+1):
-            norm += Norm.fromDictionary(stateCatalog(findEdgeCoversColorLater(edge_list)),padding)
+                                                    order=order,loops=loops)),padding)
         return norm
     
     def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, padding=False):

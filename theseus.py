@@ -196,9 +196,11 @@ def buildAllEdges(dimensions, loops=False, string=False, real=True):
             for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
                 all_edges.append((pair[0],pair[1],dims[0],dims[1]))
     # returns edges whether as tuples or as sympy symbols
-    if string: return [edgeWeight(edge) for edge in all_edges]
+    if string: 
+        if real: return [edgeWeight(edge) for edge in all_edges]
+        else: return (['r_{}_{}_{}_{}'.format(*edge) for edge in all_edges] +
+                        ['th_{}_{}_{}_{}'.format(*edge) for edge in all_edges])
     else: return all_edges
-    
 
 def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
     '''

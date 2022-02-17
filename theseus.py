@@ -528,15 +528,18 @@ def weightProduct(graph, real=True):
 #     else: return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
 
 
-def targetEquation(coefficients, states, avail_states=None, real=True):
+def targetEquation(states, coefficients=None, avail_states=None, real=True):
     '''
     Introducing the coefficients for each ket of the states list, it builds a 
     non-normalized fidelity function with all the ways the state can be build 
     according to the dictionary avail_states. If no dictionary is introduced 
     it builds all possible graphs that generate the desired states.
     '''
-    if len(coefficients)!=len(states):
-        raise ValueError('The number of coefficients and states should be the same')
+    if coefficients == None:
+        coefficients = [1]*len(states)
+    else:   
+        if len(coefficients)!=len(states):
+            raise ValueError('The number of coefficients and states should be the same')
     norm2 = abs(np.conjugate(coefficients)@coefficients)
     if norm2 != 1: norm2 = str(norm2)
     if avail_states == None: 
@@ -548,7 +551,6 @@ def targetEquation(coefficients, states, avail_states=None, real=True):
         equation_sum.append(f'({coef})*({term_sum})')
     equation_sum = ' + '.join(equation_sum)
     return f'(({equation_sum})**2)/{norm2}'
-
 
 class Norm:
     '''

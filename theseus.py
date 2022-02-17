@@ -644,7 +644,7 @@ def sympyMinimizer(loss_function,variables=[],initial_values=[],bounds=None,meth
     return optimize.minimize(dumbFunction, x0=initial_values, bounds=bounds, method=method, options=options, args=(loss_scipy))
 
 def buildLossString(loss_function, variables):
-    loss_string = 'lambda ' + ', '.join(variables) + f': {loss}'
+    loss_string = 'lambda ' + ', '.join(variables) + f': {loss_function}'
     loss_string = f'func = lambda inputs: ({loss_string})(*inputs) ' 
     exec(loss_string)
     return loss_string, func

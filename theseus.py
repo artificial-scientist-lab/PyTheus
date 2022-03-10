@@ -501,13 +501,13 @@ def findTriggerState(edge_list, num_nodes, num_trigger):
     return sympy_expression
 
         
-################################
-################################
-###                          ###
-###   SYMBOLIC EXPRESSIONS   ###
-###                          ###
-################################
-################################
+##############################
+##############################
+###                        ###
+###   STRING EXPRESSIONS   ###
+###                        ###
+##############################
+##############################
 
 
 # This expression could also be UNlambdified so we add some check for the Counter
@@ -521,11 +521,6 @@ def edgeWeight(edge, real=True):
 
 def weightProduct(graph, real=True):
     return '*'.join([edgeWeight(edge, real) for edge in graph])
-
-
-# def creatorState(nodes, padding=False): # DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE IT PROPERLY
-#     if padding: return np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
-#     else: return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
 
 
 def targetEquation(states, coefficients=None, avail_states=None, real=True):
@@ -567,7 +562,7 @@ class Norm:
             term_sum = '+'.join(term_sum)
             if real: norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)') 
             else: norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)') 
-        return ' + '.join(norm_sum).replace('/1+','+') # To reduce useless terms
+        return ' + '.join(norm_sum).replace('/1+','+').replace('/1)',')') # To reduce useless terms
     
     def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, real=True):
         '''
@@ -593,46 +588,6 @@ class Norm:
         return ' + '.join(norm_sum)
 
     
-# class State: THESE DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE THEM PROPERLY
-#     '''
-#     Set of functions to compute the state.
-#     '''
-#     def fromDictionary(states_dict, q_factor=False, padding=False):
-#         '''
-#         Build a superposition of all the states of a dictionary.
-#         '''
-#         state = 0
-#         for key, values in states_dict.items():
-#             term = 0
-#             for graph in values:
-#                 term += weightProduct(graph,padding)/factProduct(graph)
-#             term *= creatorState(key,padding)
-#             if q_factor: term *= sqrt(factProduct(key))
-#             state += term
-#         return state
-    
-#     def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
-#         '''
-#         Returns the superposition (up to an arbitrary order) of all states that can be 
-#         build with an edge cover of the available edges.
-#         '''
-#         state = 0
-#         for order in range(min_order, max_order+1):
-#             state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list,order=order,loops=loops)),
-#                                           q_factor,padding)
-#         return state
-    
-#     def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
-#         '''
-#         Given a list of dimensions for several particles, returns the superposition of all
-#         possible states involving all the particles at least once, up arbitrary order.
-#         '''
-#         state = 0
-#         for order in range(min_order, max_order+1):
-#             state += State.fromDictionary(allEdgeCovers(dimensions,order,loops),q_factor,padding)
-#         return state  
-
-    
 dumbFunction = lambda inputs, function: function(*inputs)
 def sympyMinimizer(loss_function,variables=[],initial_values=[],bounds=None,method=None,options=None):
     '''
@@ -652,6 +607,71 @@ def buildLossString(loss_function, variables):
     exec(loss_string, globals())
     return func, loss_string # we can keep the second as a security check
 
+    
+################################
+################################
+###                          ###
+###   SYMBOLIC EXPRESSIONS   ###
+###                          ###
+################################
+################################
+
+# There's still no replacement for the state functions and they are needed sometimes
+
+    
+def edgeWeightSYM(edge, padding=False): 
+    if padding: return symbols(f'w_{edge[0]:02d}\,{edge[1]:02d}^{edge[2]}\,{edge[3]}')
+    else: return symbols('w_{}\,{}^{}\,{}'.format(*edge))  
+
+
+def weightProductSYM(graph, padding=False):
+    return np.product([edgeWeightSYM(edge,padding) for edge in graph])
+
+
+def creatorState(nodes, padding=False): # DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE IT PROPERLY
+    if padding: return np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
+    else: return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
+    
+    
+class State: #THESE DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE THEM PROPERLY
+    '''
+    Set of functions to compute the state with sympy.
+    '''
+    def fromDictionary(states_dict, q_factor=False, padding=False):
+        '''
+        Build a superposition of all the states of a dictionary.
+        '''
+        state = 0
+        for key, values in states_dict.items():
+            term = 0
+            for graph in values:
+                term += weightProductSYM(graph,padding)/factProduct(graph)
+            term *= creatorState(key,padding)
+            if q_factor: term *= sqrt(factProduct(key))
+            state += term
+        return state
+    
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
+        '''
+        Returns the superposition (up to an arbitrary order) of all states that can be 
+        build with an edge cover of the available edges.
+        '''
+        state = 0
+        for order in range(min_order, max_order+1):
+            state += State.fromDictionary(stateCatalog(findEdgeCovers(edge_list,order=order,loops=loops)),
+                                          q_factor,padding)
+        return state
+    
+    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, q_factor=False, padding=False):
+        '''
+        Given a list of dimensions for several particles, returns the superposition of all
+        possible states involving all the particles at least once, up arbitrary order.
+        '''
+        state = 0
+        for order in range(min_order, max_order+1):
+            state += State.fromDictionary(allEdgeCovers(dimensions,order=order,loops=loops),q_factor,padding)
+        return state  
+
 
 ###################################
 ###################################
@@ -661,7 +681,8 @@ def buildLossString(loss_function, variables):
 ###################################
 ###################################
     
-    
+'''  
+
 class Graph:
     def __init__(self, Dimensions):
         self.num_vertices = len(Dimensions)
@@ -907,3 +928,6 @@ class Graph:
                     ax.plot(xp[len(xp)//2:], yp[len(xp)//2:], color=color[0], **args)
                 else:
                     ax.plot(xp, yp, color=color, **args)
+
+
+'''

@@ -671,6 +671,45 @@ class State: #THESE DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE THEM PROP
         for order in range(min_order, max_order+1):
             state += State.fromDictionary(allEdgeCovers(dimensions,order=order,loops=loops),q_factor,padding)
         return state  
+    
+class NormSYM:
+    '''
+    Set of functions to compute the normalization constant.
+    '''
+    def fromDictionary(states_dict, padding=False):
+        '''
+        Build a normalization constant with all the states of a dictionary.
+        '''
+        norm = 0
+        for key, values in states_dict.items():
+            term = 0
+            for graph in values:
+                term += weightProductSYM(graph,padding)/factProduct(graph)
+            norm += factProduct(key)*(term**2)
+        return norm
+    
+    def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, padding=False):
+        '''
+        Returns the normalization constant (up to an arbitrary order) of all states 
+        that can be build with an edge cover of the available edges.
+        '''
+        norm = 0
+        for order in range(min_order, max_order+1):
+            norm += NormSYM.fromDictionary(stateCatalog(findEdgeCovers(edge_list,
+                                                            order=order,loops=loops)),padding)
+        return norm
+
+    def fromDimensions(dimensions, max_order=0, min_order=0, loops=False, padding=False):
+        '''
+        Given a list of dimensions for several particles, returns the normalization
+        constant for all possible states involving all the particles at least once,
+        up arbitrary order.
+        '''
+        norm = 0
+        for order in range(min_order, max_order+1):
+            norm += NormSYM.fromDictionary(allEdgeCovers(dimensions,order=order,loops=loops),padding)
+        return norm  
+
 
 
 ###################################

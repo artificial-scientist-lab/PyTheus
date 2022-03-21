@@ -392,7 +392,7 @@ def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[],
                         matches+[edge], edges_left-1, new_nodes_left, loops=loops)
             if edges_left==1 and not (sorted(matches + [edge]) in store):
                 store.append(sorted(matches + [edge]))
-    elif case==0:
+    elif case==0: # We are in the perfect matching situation
         subgraph = [ed for ed in graph if (ed[0] in nodes_left)&(ed[1] in nodes_left)]
         if loops: subgraph = [edge for edge in subgraph if edge[0]!=edge[1]]
         perfect_matchings = []
@@ -685,7 +685,7 @@ class NormSYM:
             term = 0
             for graph in values:
                 term += weightProductSYM(graph,padding)/factProduct(graph)
-            norm += factProduct(key)*(term**2)
+            norm += factProduct(key)*(abs(term)**2)
         return norm
     
     def fromEdgeCovers(edge_list, max_order=0, min_order=0, loops=False, padding=False):

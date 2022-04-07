@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+# +
 import theseus as th
 import topopt as top
 import numpy as np
@@ -22,9 +23,11 @@ from scipy import optimize
 import sys
 sys.setrecursionlimit(10000000)
 
+import graphplot as gp
+
 # +
 #define target state and starting graph. can use defineGHZ or any arbitrary combination of state and edge_list.
-pdv = (5,3,8)
+pdv = (6,3,8)
 state, edge_list = top.defineGHZ(pdv, unicolor = True)
 real = True # define if weights should be real or complex numbers
     
@@ -32,11 +35,14 @@ print('target state:')
 print('    ψ =',top.stateToString(state),'\n')
 print('starting graph:')
 print('    #edges =',len(edge_list))
+# -
 
+
+graph = gp.graphPlot(edge_list,scaled_weights=True,show=True,max_thickness = 10)
 
 # + tags=[]
 #optimization parameters
-samples = 100 #set how many solutions to produce
+samples = 1 #set how many solutions to produce
 bulk_thr = 0.01 #threshold for truncating graph after optimization
 fid_thr = 0.1 # (1- fidelity) needs to be below this for good solution
 cr_thr = 0.3 # (1-count rate) needs to be below this for good solution
@@ -121,21 +127,28 @@ while samples>0:
             #set up new edge list with weights after deleting one edge
             delind = top.setDeletedIndexSingle(x_cur,rep,real=real)
             edge_list_new, x_new = top.deleteEdges(edge_list_cur,x_cur,delind,real=real)
-            
-            #redefine loss functions for reduced graph
-            cr_new, _ = top.makeLossString(state,edge_list_new,real=real)
-            fid_new, _ = top.makeLossString(state,edge_list_new,mode="fid",real=real)
-            
-            #optimization of reduced graph
-            initial_values, bounds_new = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
-            result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B') 
+            contains_target = True
+            try:
+                #redefine loss functions for reduced graph
+                cr_new, _ = top.makeLossString(state,edge_list_new,real=real)
+                fid_new, _ = top.makeLossString(state,edge_list_new,mode="fid",real=real)
+
+                #optimization of reduced graph
+                initial_values, bounds_new = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
+                result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B')
+            except KeyError:
+                contains_target = False
+                
             
         else: # try same edge with random initial value
             initial_values, bounds_new = top.prepOptimizer(len(edge_list_new),real=real)
             result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B') 
             
-        #CHECKING IF NEW SOLUTION IS GOOD      
-        if result_new.fun>cr_thr: #checking if count rate fails
+        #CHECKING IF NEW SOLUTION IS GOOD
+        if contains_target == False:
+            rep += 1 # increase edge index
+            rep2 =0 # reset attempt counter
+        elif result_new.fun>cr_thr: #checking if count rate fails
             rep2 += 1 # increase attempt counter
             if rep2 >=5: # same edge has been tried 6 times --> seems to be necessary, trying next biggest edge instead
                 rep += 1 # increase edge index
@@ -178,5 +191,7 @@ while samples>0:
         print('rough solution saved to file')
     print('FINISHED with '+str(len(edge_list_cur))+' edges. took '+str(round(time.perf_counter()-ttot,2))+'s',flush=True)
 # -
+graph = gp.graphPlot(edge_list_cur,scaled_weights=True,show=True,max_thickness = 10)
+
 
 

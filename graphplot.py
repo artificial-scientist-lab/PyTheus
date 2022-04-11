@@ -8,7 +8,7 @@ import theseus as th
 
 
 def drawEdge(edge,verts,ind,mult,scale_max=None,max_thickness = 10):
-    colors = ['blue','red','green','darkorange','purple']
+    colors = ['blue','red','green','darkorange','purple','yellow','cyan']
     col1 = colors[int(edge[2])]
     col2 = colors[int(edge[3])]
 

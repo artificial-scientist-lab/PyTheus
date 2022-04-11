@@ -107,9 +107,8 @@ def deleteEdges(edge_list,x,delind,real=True):
     '''
     deletes specified indices from edge list and weights.
     '''
-    if type(delind) is int or np.int64:
+    if (type(delind) is int) or (type(delind) is np.int64):
         delind = [delind]
-        
     edge_list_new = [edge for ii, edge in enumerate(edge_list) if ii not in delind]
     if real:
         x_new = [elem for ii, elem in enumerate(x) if ii not in delind]

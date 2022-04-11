@@ -25,12 +25,12 @@ sys.setrecursionlimit(10000000)
 
 import graphplot as gp
 
-# +
+# + tags=[]
 #define target state and starting graph. can use defineGHZ or any arbitrary combination of state and edge_list.
 pdv = (4,4,8)
 state, edge_list = top.defineGHZ(pdv, unicolor = True)
 real = True # define if weights should be real or complex numbers
-    
+
 print('target state:')
 print('    ψ =',top.stateToString(state),'\n')
 print('starting graph:')
@@ -46,7 +46,7 @@ samples = 1 #set how many solutions to produce
 bulk_thr = 0.01 #threshold for truncating graph after optimization
 fid_thr = 0.1 # (1- fidelity) needs to be below this for good solution
 cr_thr = 0.3 # (1-count rate) needs to be below this for good solution
-ftol = 1e-04
+ftol = 1e-05
 
 
 # defining loss functions (count rate and fidelity)
@@ -81,23 +81,33 @@ while samples>0:
             #checking solution
             fid_check = fid(result.x)
             if result.fun<cr_thr or fid_check<fid_thr: cont = False
+                
+            #count weights below bulk threshold
+            numtrunc = np.sum([abs(result.x)<bulk_thr])
         
-        print("- optimizing truncated graph")
-        #delete edges with small weight below a threshold
-        thr = bulk_thr
-        delind = top.setDeletedIndexThr(result.x,thr,real=real)
-        edge_list_new, x_new = top.deleteEdges(edge_list,result.x,delind,real=real)
+        if numtrunc == 0:
+            print("- no truncation")
+            edge_list_new = edge_list
+            result_new = result
+            cr_new = cr
+            fid_new = fid
+            condition = True
+        else:
+            print("- optimizing truncated graph, deleted edges:",str(numtrunc))
+            #delete edges with small weight below a threshold
+            thr = bulk_thr
+            delind = top.setDeletedIndexThr(result.x,thr,real=real)
+            edge_list_new, x_new = top.deleteEdges(edge_list,result.x,delind,real=real)
+            #redefine loss functions for truncated graph
+            cr_new, _  = top.makeLossString(state,edge_list_new,real=real)
+            fid_new, _ = top.makeLossString(state,edge_list_new,mode="fid",real=real)
 
-        #redefine loss functions for truncated graph
-        cr_new, _  = top.makeLossString(state,edge_list_new,real=real)
-        fid_new, _ = top.makeLossString(state,edge_list_new,mode="fid",real=real)
-        
-        #optimization of truncated graph with initial values given by initial solution
-        initial_values, bounds = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
-        result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds,method ='L-BFGS-B',options={'ftol':ftol}) 
+            #optimization of truncated graph with initial values given by initial solution
+            initial_values, bounds = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
+            result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds,method ='L-BFGS-B',options={'ftol':ftol}) 
 
-        #check fidelity of truncated solution
-        condition = fid_new(result_new.x)<fid_thr
+            #check fidelity of truncated solution
+            condition = fid_new(result_new.x)<fid_thr
 
     #setting up for stepwise topological optimization
     edge_list_cur = edge_list_new
@@ -193,6 +203,3 @@ while samples>0:
     print('FINISHED with '+str(len(edge_list_cur))+' edges. took '+str(round(time.perf_counter()-ttot,2))+'s',flush=True)
 # -
 graph = gp.graphPlot(edge_list_cur,scaled_weights=True,show=True,max_thickness = 10)
-
-
-

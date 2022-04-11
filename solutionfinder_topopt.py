@@ -27,7 +27,7 @@ import graphplot as gp
 
 # +
 #define target state and starting graph. can use defineGHZ or any arbitrary combination of state and edge_list.
-pdv = (6,3,8)
+pdv = (4,4,8)
 state, edge_list = top.defineGHZ(pdv, unicolor = True)
 real = True # define if weights should be real or complex numbers
     
@@ -46,6 +46,7 @@ samples = 1 #set how many solutions to produce
 bulk_thr = 0.01 #threshold for truncating graph after optimization
 fid_thr = 0.1 # (1- fidelity) needs to be below this for good solution
 cr_thr = 0.3 # (1-count rate) needs to be below this for good solution
+ftol = 1e-04
 
 
 # defining loss functions (count rate and fidelity)
@@ -75,7 +76,7 @@ while samples>0:
             print("- optimizing starting graph")
             #initial optimization with random initial variables
             initial_values, bounds = top.prepOptimizer(len(edge_list),real=real)
-            result = optimize.minimize(cr,x0=initial_values, bounds=bounds,method='L-BFGS-B')#  use this to show bfgs progress: options={'disp':99}
+            result = optimize.minimize(cr,x0=initial_values, bounds=bounds,method='L-BFGS-B',options={'ftol':ftol})#  use this to show bfgs progress: options={'disp':99}
             
             #checking solution
             fid_check = fid(result.x)
@@ -93,14 +94,14 @@ while samples>0:
         
         #optimization of truncated graph with initial values given by initial solution
         initial_values, bounds = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
-        result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds,method ='L-BFGS-B') 
+        result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds,method ='L-BFGS-B',options={'ftol':ftol}) 
 
         #check fidelity of truncated solution
         condition = fid_new(result_new.x)<fid_thr
 
     #setting up for stepwise topological optimization
     edge_list_cur = edge_list_new
-    x_cur = x_new
+    x_cur = result_new.x
     cr_cur = cr_new
     fid_cur = fid_new
     rep = 0
@@ -135,14 +136,14 @@ while samples>0:
 
                 #optimization of reduced graph
                 initial_values, bounds_new = top.prepOptimizer(len(edge_list_new),x=x_new,real=real)
-                result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B')
+                result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B',options={'ftol':ftol})
             except KeyError:
                 contains_target = False
                 
             
         else: # try same edge with random initial value
             initial_values, bounds_new = top.prepOptimizer(len(edge_list_new),real=real)
-            result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B') 
+            result_new = optimize.minimize(cr_new,x0 = initial_values, bounds = bounds_new,method ='L-BFGS-B',options={'ftol':ftol}) 
             
         #CHECKING IF NEW SOLUTION IS GOOD
         if contains_target == False:

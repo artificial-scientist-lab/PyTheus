@@ -43,10 +43,11 @@ graph = gp.graphPlot(edge_list,scaled_weights=True,show=True,max_thickness = 10)
 # + tags=[]
 #optimization parameters
 samples = 1 #set how many solutions to produce
-bulk_thr = 0.01 #threshold for truncating graph after optimization
+bulk_thr = 0.01 #threshold for truncating graph after optimization (set to zero if you don't want to truncate)
 fid_thr = 0.1 # (1- fidelity) needs to be below this for good solution
 cr_thr = 0.3 # (1-count rate) needs to be below this for good solution
 ftol = 1e-05
+preopt = False # set to True and define 'weights=[...]' to set preoptimized parameters
 
 
 # defining loss functions (count rate and fidelity)
@@ -72,11 +73,17 @@ while samples>0:
     print("starting with",len(edge_list),"edges")
     while not condition: #keep going until truncated optimization is good
         cont = True
+        firsttry = True
         while cont: #keep going until first optimization is good
             print("- optimizing starting graph")
             #initial optimization with random initial variables
-            initial_values, bounds = top.prepOptimizer(len(edge_list),real=real)
+            if firsttry and preopt:
+                initial_values, bounds = top.prepOptimizer(len(edge_list),x=weights,real=real)
+                firsttry = False
+            else:
+                initial_values, bounds = top.prepOptimizer(len(edge_list),real=real)
             result = optimize.minimize(cr,x0=initial_values, bounds=bounds,method='L-BFGS-B',options={'ftol':ftol})#  use this to show bfgs progress: options={'disp':99}
+            
             
             #checking solution
             fid_check = fid(result.x)

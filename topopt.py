@@ -81,6 +81,38 @@ def defineGHZ(pdv, unicolor = False):
     return state, edge_list
     
 
+def addAncillas(state,num):
+    '''
+    takes a state and add num ancillas to it. this way ancillas don't have to be written in state string.
+    
+    example:
+    input: [((0, 0), (1, 0), (2, 0), (3, 0)),
+                 ((0, 1), (1, 1), (2, 1), (3, 1))]
+    output: [((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)),
+                 ((0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1))]
+    '''
+    particles = len(state[0])
+    for ii, ket in enumerate(state):
+        tempket = list(ket)
+        for jj in range(num):
+            tempket.append(tuple([jj+particles,0]))
+        state[ii] = tempket
+    return state
+
+def removeConnections(edge_list,connection_list):
+    '''
+    removes all edges that connect certain pairs of vertices.
+    
+    example:
+    input: edge_list, [[0,1],[3,5]]
+    output: edge_list without any edges that connect 0-1 or 3-5.
+    '''
+    new_edge_list = edge_list
+    for connection in connection_list:
+        new_edge_list = [edge for edge in new_edge_list if (edge[0]!=connection[0] or edge[1]!=connection[1])]
+    return new_edge_list
+    
+
 def setDeletedIndexThr(x,thr,real=True):
     '''
     returns indices of all edges that have abs(weight) smaller than a threshold.

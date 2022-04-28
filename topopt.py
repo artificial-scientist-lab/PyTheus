@@ -69,15 +69,24 @@ def makeUnicolor(edge_list,num_nodes):
     '''
     return [edge for edge in edge_list if (((edge[0] not in range(num_nodes)) or (edge[1] not in range(num_nodes))) or (edge[2]==edge[3]))]
 
+def makeEdgesFromPDV(pdv, unicolor = False):
+    '''
+    input vector [p,d,v]
+    make edge_list for a graph with v vertices. the first p vertices are data particles with local dimensions d.
+    unicolor allows multicolored edges between data vertices.
+    '''
+    locdim = [pdv[1]]*pdv[0] + [1]*(pdv[2]-pdv[0]) #local dimensions
+    edge_list = th.buildAllEdges(locdim) # make edge list from local dimension
+    if unicolor: edge_list = makeUnicolor(edge_list,pdv[0])
+    return edge_list
+
 
 def defineGHZ(pdv, unicolor = False):
     '''
     returns state and starting graph for a GHZ search specified by (particles, dimension, vertices).
     '''
     state = makeGHZ(pdv)
-    locdim = [pdv[1]]*pdv[0] + [1]*(pdv[2]-pdv[0]) #local dimensions
-    edge_list = th.buildAllEdges(locdim) # make edge list from local dimension
-    if unicolor: edge_list = makeUnicolor(edge_list,pdv[0])
+    edge_list = makeEdgesFromPDV(pdv,unicolor=unicolor)
     return state, edge_list
     
 

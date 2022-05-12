@@ -16,6 +16,7 @@
 # +
 import theseus as th
 import topopt as top
+import graphplot as gp
 import numpy as np
 import time
 from scipy import optimize
@@ -25,8 +26,6 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 sys.setrecursionlimit(10000000)
-
-import graphplot as gp
 
 # + tags=[]
 # define target state and starting graph. can use defineGHZ or any arbitrary combination of state and edge_list.
@@ -51,7 +50,7 @@ bulk_thr = 0.01  # threshold for truncating graph after optimization (set to zer
 fid_thr = 0.1  # (1- fidelity) needs to be below this for good solution
 cr_thr = 0.3  # (1-count rate) needs to be below this for good solution
 ftol = 1e-05
-preopt = False  # set to True and define 'weights=[...]' to set preoptimized parameters
+preoptweights = []  # set preoptimized parameters. empty list means no preoptimization
 
 # defining loss functions (count rate and fidelity)
 cr, cr_string = top.makeLossString(state, edge_list, coeff=coeff, real=real)
@@ -80,8 +79,8 @@ while samples > 0:
         while cont:  # keep going until first optimization is good
             print("- optimizing starting graph")
             # initial optimization with random initial variables
-            if firsttry and preopt:
-                initial_values, bounds = top.prepOptimizer(len(edge_list), x=weights, real=real)
+            if firsttry and len(preoptweights) != 0:
+                initial_values, bounds = top.prepOptimizer(len(edge_list), x=preoptweights, real=real)
                 firsttry = False
             else:
                 initial_values, bounds = top.prepOptimizer(len(edge_list), real=real)
@@ -169,7 +168,7 @@ while samples > 0:
                                            options={'ftol': ftol})
 
             # CHECKING IF NEW SOLUTION IS GOOD
-        if contains_target == False:
+        if not contains_target:
             rep += 1  # increase edge index
             rep2 = 0  # reset attempt counter
         elif result_new.fun > cr_thr:  # checking if count rate fails

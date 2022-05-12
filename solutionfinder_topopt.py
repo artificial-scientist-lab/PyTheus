@@ -40,7 +40,6 @@ print('starting graph:')
 print('    #edges =', len(edge_list))
 # -
 
-
 graph_init = gp.graphPlot(edge_list, scaled_weights=True, show=True, max_thickness=10)
 
 # + tags=[]

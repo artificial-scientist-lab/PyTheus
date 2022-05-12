@@ -32,6 +32,7 @@ import graphplot as gp
 # define target state and starting graph. can use defineGHZ or any arbitrary combination of state and edge_list.
 pdv = (4, 4, 8)
 state, edge_list = top.defineGHZ(pdv, unicolor=True)
+coeff = None
 real = True  # define if weights should be real or complex numbers
 
 print('target state:')
@@ -53,8 +54,8 @@ ftol = 1e-05
 preopt = False  # set to True and define 'weights=[...]' to set preoptimized parameters
 
 # defining loss functions (count rate and fidelity)
-cr, cr_string = top.makeLossString(state, edge_list, real=real)
-fid, fid_string = top.makeLossString(state, edge_list, mode="fid", real=real)
+cr, cr_string = top.makeLossString(state, edge_list, coeff=coeff, real=real)
+fid, fid_string = top.makeLossString(state, edge_list, coeff=coeff, mode="fid", real=real)
 
 while samples > 0:
     ttot = time.perf_counter()
@@ -108,8 +109,8 @@ while samples > 0:
             delind = top.setDeletedIndexThr(result.x, thr, real=real)
             edge_list_new, x_new = top.deleteEdges(edge_list, result.x, delind, real=real)
             # redefine loss functions for truncated graph
-            cr_new, _ = top.makeLossString(state, edge_list_new, real=real)
-            fid_new, _ = top.makeLossString(state, edge_list_new, mode="fid", real=real)
+            cr_new, _ = top.makeLossString(state, edge_list_new, coeff=coeff, real=real)
+            fid_new, _ = top.makeLossString(state, edge_list_new, coeff=coeff, mode="fid", real=real)
 
             # optimization of truncated graph with initial values given by initial solution
             initial_values, bounds = top.prepOptimizer(len(edge_list_new), x=x_new, real=real)
@@ -151,8 +152,8 @@ while samples > 0:
             contains_target = True
             try:
                 # redefine loss functions for reduced graph
-                cr_new, _ = top.makeLossString(state, edge_list_new, real=real)
-                fid_new, _ = top.makeLossString(state, edge_list_new, mode="fid", real=real)
+                cr_new, _ = top.makeLossString(state, edge_list_new, coeff=coeff, real=real)
+                fid_new, _ = top.makeLossString(state, edge_list_new, coeff=coeff, mode="fid", real=real)
 
                 # optimization of reduced graph
                 initial_values, bounds_new = top.prepOptimizer(len(edge_list_new), x=x_new, real=real)

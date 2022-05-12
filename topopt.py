@@ -172,13 +172,13 @@ def deleteEdges(edge_list, x, delind, real=True):
     return edge_list_new, x_new
 
 
-def makeLossString(state, edge_list, mode="cr", real=True):
+def makeLossString(state, edge_list, coeff=None, mode="cr", real=True):
     '''
     define loss as lambda function from target state and available edges. this is done by writing its definition out as string and executing it, without needing sympy.
     '''
     cat = th.stateCatalog(th.findPerfectMatchings(edge_list))
 
-    target = th.targetEquation(state, avail_states=cat, real=real)
+    target = th.targetEquation(state, coefficients=coeff, avail_states=cat, real=real)
     norm = th.Norm.fromDictionary(cat, real=real)
     if real:
         variables = ["w_{}_{}_{}_{}".format(*edge) for edge in edge_list]

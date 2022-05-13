@@ -563,8 +563,9 @@ def targetEquation(states, coefficients=None, avail_states=None, real=True):
         term_sum = [weightProduct(graph, real) for graph in avail_states[tuple(st)]]
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')
-    equation_sum = ' + '.join(equation_sum)
-    return f'(({equation_sum})**2)/{norm2}'
+    equation_sum = '+'.join(equation_sum)
+    if real: return f'(({equation_sum})**2)/{norm2}'
+    else: return f'(abs({equation_sum})**2)/{norm2}'
 
 
 class Norm:
@@ -661,6 +662,31 @@ def creatorState(nodes, padding=False):  # DO NOT WORK RIGHT NOW BUT WE NEED A W
         return np.product([symbols(f'v_{nn[0]:02d}^{nn[1]}') for nn in nodes])
     else:
         return np.product([symbols(f'v_{nn[0]}^{nn[1]}') for nn in nodes])
+
+
+def targetEquationSYM(states, coefficients=None, avail_states=None, padding=False):
+    '''
+    Introducing the coefficients for each ket of the states list, it builds a
+    non-normalized fidelity function with all the ways the state can be build
+    according to the dictionary avail_states. If no dictionary is introduced
+    it builds all possible graphs that generate the desired states.
+    '''
+    if coefficients == None:
+        coefficients = [1]*len(states)
+    else:
+        if len(coefficients)!=len(states):
+            raise ValueError('The number of coefficients and states should be the same')
+    norm = np.conjugate(coefficients)@coefficients
+    if norm != 1: coefficients = np.array(coefficients)/sqrt(norm)
+    if avail_states == None:
+        avail_states = {tuple(st):allColorGraphs(st) for st in states}
+    equation = 0
+    for coef, st in zip(coefficients,states):
+        terms = 0
+        for graph in avail_states[tuple(st)]:
+            terms += weightProductSYM(graph,padding)
+        equation += coef*terms
+    return equation**2
 
 
 class State:  # THESE DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE THEM PROPERLY

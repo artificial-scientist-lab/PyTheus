@@ -559,7 +559,7 @@ def targetEquation(states, coefficients=None, avail_states=None, real=True):
     if avail_states == None:
         avail_states = {tuple(st): allColorGraphs(st) for st in states}
     equation_sum = []
-    for coef, st in zip(coefficients, states):
+    for coef, st in zip(np.conjugate(coefficients), states):
         term_sum = [weightProduct(graph, real) for graph in avail_states[tuple(st)]]
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')

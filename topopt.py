@@ -172,19 +172,27 @@ def deleteEdges(edge_list, x, delind, real=True):
     return edge_list_new, x_new
 
 
-def makeLossString(state, edge_list, coeff=None, mode="cr", real=True):
+def makeLossString(state, edge_list, coeff=None, mode="cr", real=True, fixededges=[]):
     '''
     define loss as lambda function from target state and available edges. this is done by writing its definition out as string and executing it, without needing sympy.
+    the edges in fixededges (which should not be contained in edge_list) are set to a constant weight = 1
     '''
-    cat = th.stateCatalog(th.findPerfectMatchings(edge_list))
-
+    cat = th.stateCatalog(th.findPerfectMatchings(edge_list + fixededges))  # include fixed edges for building PMs
     target = th.targetEquation(state, coefficients=coeff, avail_states=cat, real=real)
     norm = th.Norm.fromDictionary(cat, real=real)
     if real:
         variables = ["w_{}_{}_{}_{}".format(*edge) for edge in edge_list]
+        for edge in fixededges:
+            target = target.replace("w_{}_{}_{}_{}".format(*edge), '1')
+            norm = norm.replace("w_{}_{}_{}_{}".format(*edge), '1')
     else:
         variables = ["r_{}_{}_{}_{}".format(*edge) for edge in edge_list] + ["th_{}_{}_{}_{}".format(*edge) for edge in
                                                                              edge_list]
+        for edge in fixededges:
+            target = target.replace("r_{}_{}_{}_{}".format(*edge), '1')
+            norm = norm.replace("r_{}_{}_{}_{}".format(*edge), '1')
+            target = target.replace("th_{}_{}_{}_{}".format(*edge), '0')
+            norm = norm.replace("th_{}_{}_{}_{}".format(*edge), '0')
 
     if mode == "cr":
         lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])

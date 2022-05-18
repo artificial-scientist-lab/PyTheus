@@ -175,7 +175,7 @@ def deleteEdges(edge_list, x, delind, real=True):
 def makeLossString(state, edge_list, coeff=None, mode="cr", real=True, fixededges=[]):
     '''
     define loss as lambda function from target state and available edges. this is done by writing its definition out as string and executing it, without needing sympy.
-    the edges in fixededges (which should not be contained in edge_list) are set to a constant weight = 1
+    the edges in fixededges (which should not be contained in edge_list) are set to a constant weight = 1.
     '''
     cat = th.stateCatalog(th.findPerfectMatchings(edge_list + fixededges))  # include fixed edges for building PMs
     target = th.targetEquation(state, coefficients=coeff, avail_states=cat, real=real)

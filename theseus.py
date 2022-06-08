@@ -223,7 +223,7 @@ def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
     #     all_edges = [edge[:2] for edge in all_edges]
     if cover_all:
         num_nodes = len(dimensions)
-        if 2 * num_edges > num_nodes:
+        if 2 * num_edges >= num_nodes:
             all_covered = False
         else:
             raise ValueError('num_edges is too low to cover all nodes')

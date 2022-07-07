@@ -154,6 +154,28 @@ def stateCatalog(graph_list):
     return state_dict
 
 
+def graphDimensions(edge_list):
+    '''
+    Estimate the dimensions of a graph from its edges.
+    
+    The output dimensions are in decreasing order: we assume 
+    the dimension of a node N, is equal or larger than the 
+    dimension of a node N+1.
+    '''
+    color_nodes = set()
+    for edge in edge_list:
+        color_nodes.add((edge[0],edge[2]))
+        color_nodes.add((edge[1],edge[3]))
+    color_nodes = sorted(color_nodes,reverse=True)
+    max_node = color_nodes[0][0]
+    max_dim = color_nodes[0][1]
+    dimensions = np.array([max_dim + 1] * (max_node + 1))
+    for node in color_nodes:
+        if node[1] > max_dim:
+            max_dim = node[1]
+            dimensions[:(node[0]+1)] = max_dim + 1
+    return list(dimensions)
+
 ############################
 ############################
 ###                      ###
@@ -270,10 +292,10 @@ def allColorGraphs(color_nodes, loops=False):
                         if nd[0][0] != nd[1][0]] for graph in color_graph]
         color_graph = [graph for graph in color_graph
                        if len(graph) == len(color_nodes) / 2]
-    return [[tuple(ed) for ed in graph] for graph in np.unique(color_graph, axis=0)]
+    return [tuple(tuple(ed) for ed in graph) for graph in np.unique(color_graph, axis=0)]
 
-
-def allEdgeCovers(dimensions, order=1, loops=False):
+# This function may lead to scoop
+def allEdgeCovers(dimensions, order=1, loops=False): #SCOOP
     '''
     Given a collection of nodes with different dimensions/colors available, 
     it produces all possible states that erase from these and the different 
@@ -354,7 +376,7 @@ def findPerfectMatchings(graph):
     for match in raw_matchings:
         for coloring in itertools.product(*[avail_colors[edge] for edge in match]):
             color_match = [edge + color for edge, color in zip(match, coloring)]
-            painted_matchings.append(color_match)
+            painted_matchings.append(tuple(color_match))
     return painted_matchings
 
 
@@ -772,9 +794,75 @@ class NormSYM:
             norm += NormSYM.fromDictionary(allEdgeCovers(dimensions, order=order, loops=loops), real, padding)
         return norm
 
-    ###################################
+    
+#######################################
+#######################################
+###                                 ###
+###  FUNCTIONS FOR THE NEW CLASSES  ###
+###                                 ###
+#######################################
+#######################################
+   
+    
+def edgeWeight2(edge, imaginary = False):
+    if imaginary == False:
+        return 'w_{}_{}_{}_{}'.format(*edge)
+    elif imaginary == 'cartesian':
+        return '(r_{}_{}_{}_{}+1j*th_{}_{}_{}_{})'.format(*edge * 2)
+    elif imaginary == 'polar':
+        return 'r_{}_{}_{}_{}*np.exp(1j*th_{}_{}_{}_{})'.format(*edge * 2)
+    else:
+        raise ValueError('Introduce a valid input `imaginary`.')
+
+        
+def weightProduct2(graph, imaginary = False):
+    return '*'.join([edgeWeight2(edge, imaginary) for edge in graph])
 
 
+def writeNorm(states_dict, imaginary = False): # The publishable Norm function
+    '''
+    Build a normalization constant with all the states of a dictionary.
+    '''
+    norm_sum = []
+    for key, values in states_dict.items():
+        term_sum = [f'{weightProduct2(graph,imaginary)}' for graph in values]
+        term_sum = ' + '.join(term_sum)
+        if imaginary == False:
+            norm_sum.append(f'({term_sum})**2')
+        else:
+            norm_sum.append(f'abs({term_sum})**2')
+    return ' + '.join(norm_sum)
+
+
+def targetEquation2(states, coefficients=None, avail_states=None, imaginary=False):
+    '''
+    Introducing the coefficients for each ket of the states list, it builds a 
+    non-normalized fidelity function with all the ways the state can be build 
+    according to the dictionary avail_states. If no dictionary is introduced 
+    it builds all possible graphs that generate the desired states.
+    '''
+    if coefficients == None:
+        coefficients = [1] * len(states)
+    else:
+        if len(coefficients) != len(states):
+            raise ValueError('The number of coefficients and states should be the same')
+    norm2 = abs(np.conjugate(coefficients) @ coefficients)
+    if norm2 != 1: norm2 = str(norm2)
+    if avail_states == None:
+        avail_states = {tuple(st): allColorGraphs(st) for st in states}
+    equation_sum = []
+    for coef, st in zip(np.conjugate(coefficients), states):
+        term_sum = [weightProduct2(graph, imaginary) for graph in avail_states[tuple(st)]]
+        term_sum = '+'.join(term_sum)
+        equation_sum.append(f'({coef})*({term_sum})')
+    equation_sum = '+'.join(equation_sum)
+    if imaginary == False: 
+        return f'(({equation_sum})**2)/{norm2}'
+    else: 
+        return f'(abs({equation_sum})**2)/{norm2}'
+
+    
+###################################
 ###################################
 ###                             ###
 ###   MAIN CLASS (FIRST CODE)   ###

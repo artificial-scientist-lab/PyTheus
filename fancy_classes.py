@@ -18,7 +18,7 @@ def defaultValues(length, imaginary):
 
 # # The Graph class
 
-class Graph(): # should this be an overpowered dictionary? NOPE     
+class Graph(): # should this be an overpowered dictionary? NOPE
     def __init__(self,
                  edges, # list/tuple of edges, dictionary with weights, 'full' or 'empty'
                  dimensions = None,
@@ -125,32 +125,23 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     def __getitem__(self, edge):
         return self.graph[tuple(edge)]
     
-    def __setitem__(self, edge, weight, imaginary=False):
+    def __setitem__(self, edge, weight):
         if isinstance(edge, (tuple,list)) and len(edge)==4:
             if isinstance(weight, (int,float,complex)):
                 if self.imaginary == 'polar':
                     self.graph[tuple(edge)] = (abs(weight), np.angle(weight))
+                    print('Weight stored in polar notation.')
                 else:
                     self.graph[tuple(edge)] = weight
                     if type(weight) == complex:
                         self.imaginary = 'cartesian'
-            # This may lead to error, the text may help as a warning
-            elif isinstance(weight, (tuple,list)) and len(weight)==2:                
-                if imaginary == 'cartesian':
-                    weight = weight[0] + 1j*weight[1]
-                    if self.imaginary == 'polar':
-                        self.graph[edge] = (abs(weight), np.angle(weight))
-                    else:
-                        self.graph[edge] = weight
-                        self.imaginary = 'cartesian'
-                elif imaginary == 'polar':
-                    if self.imaginary == 'polar':
-                        self.graph[edge] = tuple(weight)
-                    else:
-                        self.graph[edge] = weight[0] * np.exp(1j*weight[1])
-                        self.imaginary = 'cartesian'
+            elif isinstance(weight, (tuple,list)) and len(weight)==2:
+                if self.imaginary == 'polar':
+                    self.graph[edge] = tuple(weight)
                 else:
-                    raise ValueError('Introduce a valid input `imaginary`: cartesian or polar.')  
+                    self.graph[edge] = weight[0] * np.exp(1j*weight[1])
+                    self.imaginary = 'cartesian'
+                    print('Weight stored in cartesian notation.')
             else:
                 raise ValueError('Invalid weight.')
         else:
@@ -171,7 +162,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         # if update:
         #    if self.norm != DEFAULT_NORM: self.getNorm()
         #    if self.state != DEFAULT_STATE: self.getState()
-            
+
     # DEFINE GET, SET AND DEL ITEM
         
     @property
@@ -204,14 +195,14 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             raise ValueError('The weights are NOT defined correctly.')
     
     # imaginary could be redefined as one of these properties
-    
-    def addEdge(self, edge, weight=None, imaginary=False, update=True):
+
+    def addEdge(self, edge, weight=None, update=True):
         if len(edge)==4 and all(isinstance(val, int) for val in edge):
             edge = tuple(edge)
         else:
-            raise ValueError('Introduce a single valid edge.')
-        if edge in self.edges():                
-            print('The edge has been redefined.')
+            raise ValueError('Introduce a valid edge.')
+        if edge in self.edges():
+            print('The edge is going to be redefined.')
             update = False # there's no need to update the state_catalog
         else: # the edge is included
             self.graph[edge] = True
@@ -375,7 +366,9 @@ class State():
 
         # Verification of appropiate kets            
         kets_shape = np.shape(kets)
-        if kets_shape[2] == 2: 
+        if all(isinstance(kt, str) for kt in kets):
+            kets = [tuple((ii, int(dim)) for ii, dim in enumerate(kt)) for kt in kets]
+        elif kets_shape[2] == 2:
             pass # The third component must have 2 dimensions: (node, dim)
         else:
             raise ValueError('Introduce valid input `kets`.')
@@ -422,6 +415,32 @@ class State():
     
     def __getitem__(self, ket):
         return self.state[ket]
+
+    def __setitem__(self, ket, amplitude):
+        if isinstance(ket, str):
+            ket = tuple((ii, int(dim)) for ii, dim in enumerate(ket))
+        elif isinstance(ket, (tuple,list)):
+            pass # seems legit
+        else:
+            raise ValueError('Invalid ket.')
+
+        if isinstance(amplitude, (int,float,complex)):
+            if self.imaginary == 'polar':
+                self.state[tuple(ket)] = (abs(amplitude), np.angle(amplitude))
+                print('Amplitude stored in polar notation.')
+            else:
+                self.state[tuple(ket)] = amplitude
+                if type(amplitude) == complex:
+                    self.imaginary = 'cartesian'
+        elif isinstance(amplitude, (tuple,list)) and len(amplitude)==2:
+            if self.imaginary == 'polar':
+                self.state[ket] = tuple(amplitude)
+            else:
+                self.state[ket] = amplitude[0] * np.exp(1j*amplitude[1])
+                self.imaginary = 'cartesian'
+                print('Amplitude stored in cartesian notation.')
+        else:
+            raise ValueError('Invalid amplitude.')
     
     def __matmul__(self, other):
         '''
@@ -474,6 +493,22 @@ class State():
             return True
         else:
             raise ValueError('The amplitudes are NOT defined correctly.')
+
+    def addKet(self, ket, amplitude=None):
+        if isinstance(ket, str):
+            ket = tuple((ii, int(dim)) for ii, dim in enumerate(ket))
+        elif isinstance(ket, (tuple,list)):
+            pass # seems legit
+        else:
+            raise ValueError('Invalid ket.')
+        if ket in self.kets():
+            print('The ket is going to be redefined.')
+        else: # the ket is included
+            self.state[ket] = True
+        if amplitude == None:
+            self[ket] = defaultValues(1, self.imaginary)
+        else:
+            self[ket] = amplitude
     
     def toCartesian(self):
         if self.imaginary == 'cartesian':

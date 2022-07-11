@@ -2,7 +2,6 @@ import numpy as np
 import theseus as th
 
 # +
-DEFAULT_CATALOG = 'Not stored yet. You have to run getStateCatalog().'
 DEFAULT_NORM = 'Not stored yet. You have to run getNorm().'
 DEFAULT_STATE = 'Not stored yet. You have to run getState().'
 
@@ -13,28 +12,28 @@ def defaultValues(length, imaginary):
         return [(True,False)]*length
     else:
         raise ValueError('Introduce a valid input `imaginary`: `cartesian` or `polar`.')
+
+
 # -
 
 # # The Graph class
 
-class Graph(): # should this be an overpowered dictionary? NOPE
-#1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890           
+class Graph(): # should this be an overpowered dictionary? NOPE     
     def __init__(self,
                  edges, # list/tuple of edges, dictionary with weights, 'full' or 'empty'
                  dimensions = None,
                  weights = None, # list of values or tuples encoding imaginary values
                  imaginary = False, # 'cartesian' or 'polar'
-                 state_catalog = False,
-                 norm = False,
-                 state = False,
+                 norm = False,  # For the sake of perfomance, compute
+                 state = False, # norm and state only when needed.
                 ):
         self.dimensions = dimensions
         self.imaginary = imaginary
         self.full = True if edges=='full' else False
-        self.graph = self.graphStarter(edges, weights) # This may redefine previous properties
+        # The next line may redefine previous properties
+        self.graph = self.graphStarter(edges, weights) # MAIN PROPERTY
         # This may not be elegant, but it works
-        self.state_catalog = DEFAULT_CATALOG
-        if state_catalog: self.getStateCatalog()
+        self.state_catalog = self.getStateCatalog()
         self.norm = DEFAULT_NORM
         if norm: self.getNorm()
         self.state = DEFAULT_STATE
@@ -126,28 +125,32 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     def __getitem__(self, edge):
         return self.graph[tuple(edge)]
     
-    def __setitem__(self, edge, weight):
+    def __setitem__(self, edge, weight, imaginary=False):
         if isinstance(edge, (tuple,list)) and len(edge)==4:
-            if isinstance(weight, (int,float)):
+            if isinstance(weight, (int,float,complex)):
                 if self.imaginary == 'polar':
                     self.graph[tuple(edge)] = (abs(weight), np.angle(weight))
                 else:
                     self.graph[tuple(edge)] = weight
-            elif isinstance(weight, complex):
-                if self.imaginary == 'polar':
-                    self.graph[tuple(edge)] = (abs(weight), np.angle(weight))
-                else:
-                    self.graph[tuple(edge)] = weight
-                    self.imaginary = 'cartesian'
+                    if type(weight) == complex:
+                        self.imaginary = 'cartesian'
             # This may lead to error, the text may help as a warning
-            elif isinstance(weight, (tuple,list)) and len(weight)==2:
-                if self.imaginary == 'polar':
-                    self.graph[tuple(edge)] = tuple(weight)
-                    print('Complex weight stored in polar notation.')
+            elif isinstance(weight, (tuple,list)) and len(weight)==2:                
+                if imaginary == 'cartesian':
+                    weight = weight[0] + 1j*weight[1]
+                    if self.imaginary == 'polar':
+                        self.graph[edge] = (abs(weight), np.angle(weight))
+                    else:
+                        self.graph[edge] = weight
+                        self.imaginary = 'cartesian'
+                elif imaginary == 'polar':
+                    if self.imaginary == 'polar':
+                        self.graph[edge] = tuple(weight)
+                    else:
+                        self.graph[edge] = weight[0] * np.exp(1j*weight[1])
+                        self.imaginary = 'cartesian'
                 else:
-                    self.graph[tuple(edge)] = weight[0] + 1j*weight[1] 
-                    self.imaginary = 'cartesian'
-                    print('Complex weight stored in cartesian notation.')   
+                    raise ValueError('Introduce a valid input `imaginary`: cartesian or polar.')  
             else:
                 raise ValueError('Invalid weight.')
         else:
@@ -165,6 +168,10 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                         remove_ket_list.append(ket)
             for ket in remove_ket_list:
                 del self.state_catalog[ket]
+        # if update:
+        #    if self.norm != DEFAULT_NORM: self.getNorm()
+        #    if self.state != DEFAULT_STATE: self.getState()
+            
     # DEFINE GET, SET AND DEL ITEM
         
     @property
@@ -197,6 +204,32 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             raise ValueError('The weights are NOT defined correctly.')
     
     # imaginary could be redefined as one of these properties
+    
+    def addEdge(self, edge, weight=None, imaginary=False, update=True):
+        if len(edge)==4 and all(isinstance(val, int) for val in edge):
+            edge = tuple(edge)
+        else:
+            raise ValueError('Introduce a single valid edge.')
+        if edge in self.edges():                
+            print('The edge has been redefined.')
+            update = False # there's no need to update the state_catalog
+        else: # the edge is included
+            self.graph[edge] = True
+        if weight == None:
+            self[edge] = defaultValues(1, self.imaginary)
+        else:
+            self[edge] = weight
+        if update:
+            other_nodes = [node for node in range(num_nodes) if node not in edge[:2]]
+            subgraph = th.targetEdges(other_nodes, self.graph)
+            new_states = th.findPerfectMatchings(subgraph + [edge])
+            for ket, perfect_matchings in new_states.items():
+                try:
+                    state_catalog[ket] += perfect_matchings
+                except KeyError:
+                    state_catalog[ket] = perfect_matchings
+        #     if self.norm != DEFAULT_NORM: self.getNorm()
+        # if self.state != DEFAULT_STATE: self.getState()
 
     # This could be also a property, but then we cannot introduce arguments
     def node_degrees(self, ascending=False): # 

@@ -63,11 +63,11 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             if edge_shape[1] == 4:
                 pass # seems legit 
             elif edge_shape[1] == 5: # The weights will be the last term of each item
-                edges = [ed[:4] for ed in edges]
                 weights = [ed[-1] for ed in edges]
-            elif edge_shape[1] == 6: # The weights will be the last 2 terms of each item
                 edges = [ed[:4] for ed in edges]
+            elif edge_shape[1] == 6: # The weights will be the last 2 terms of each item
                 weights = [tuple(ed[-2], ed[-1]) for ed in edges]
+                edges = [ed[:4] for ed in edges]
             else:
                 raise ValueError('Introduce a valid input `edges`.')
         elif type(edges) == dict:

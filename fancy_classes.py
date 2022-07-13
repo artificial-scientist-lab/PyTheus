@@ -33,7 +33,8 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         # The next line may redefine previous properties
         self.graph = self.graphStarter(edges, weights) # MAIN PROPERTY
         # This may not be elegant, but it works
-        self.state_catalog = self.getStateCatalog()
+        self.state_catalog = None
+        if self.state_catalog == None: self.getStateCatalog()
         self.norm = DEFAULT_NORM
         if norm: self.getNorm()
         self.state = DEFAULT_STATE
@@ -62,10 +63,10 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             if edge_shape[1] == 4:
                 pass # seems legit 
             elif edge_shape[1] == 5: # The weights will be the last term of each item
-                edges = sorted(edges)
+                edges = sorted([ed[:4] for ed in edges])
                 weights = [ed[-1] for ed in edges]
             elif edge_shape[1] == 6: # The weights will be the last 2 terms of each item
-                edges = sorted(edges)
+                edges = sorted([ed[:4] for ed in edges])
                 weights = [tuple(ed[-2], ed[-1]) for ed in edges]
             else:
                 raise ValueError('Introduce a valid input `edges`.')
@@ -150,15 +151,14 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     # this should be __del__ but then you would have to do: del self.graph[] etc
     def remove(self, edge, update=True):
         del self.graph[edge]
-        if self.state_catalog != DEFAULT_CATALOG:
-            remove_ket_list = []
-            for ket, pm_list in self.state_catalog.items():
-                if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
-                    self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
-                    if update and len(self.state_catalog[ket]) == 0:
-                        remove_ket_list.append(ket)
-            for ket in remove_ket_list:
-                del self.state_catalog[ket]
+        remove_ket_list = []
+        for ket, pm_list in self.state_catalog.items():
+            if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
+                if update and len(self.state_catalog[ket]) == 0:
+                    remove_ket_list.append(ket)
+        for ket in remove_ket_list:
+            del self.state_catalog[ket]
         # if update:
         #    if self.norm != DEFAULT_NORM: self.getNorm()
         #    if self.state != DEFAULT_STATE: self.getState()
@@ -179,8 +179,6 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     
     @property
     def perfect_matchings(self):
-        if self.state_catalog == DEFAULT_CATALOG:
-            self.getStateCatalog() # this redefines self.state_catalog
         return sum(self.state_catalog.values(), [])  
     
     @property
@@ -233,20 +231,15 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             self.state_catalog = th.allEdgeCovers(self.dimensions, order=0)
         else:
             self.state_catalog = th.stateCatalog(th.findPerfectMatchings(self.edges))
-        print('Perfect matchings stored by the ket they produce in property `state_catalog`.')
     
     # the employed norm function is simplified (only pm) and uses the new imaginary notation
-    def getNorm(self): 
-        if self.state_catalog == DEFAULT_CATALOG:
-            self.getStateCatalog()
+    def getNorm(self):
         self.norm = th.writeNorm(self.state_catalog, self.imaginary)
         
     def getState(self):
-        if self.state_catalog == DEFAULT_CATALOG:
-            self.getStateCatalog()
         kets = list(self.state_catalog.keys())
         if self.is_weighted:
-            ampltidues = []
+            amplitudes = []
             conversion = self.imaginary == 'polar'
             if conversion: 
                 self.toCartesian()
@@ -351,7 +344,6 @@ class State():
     def stateStarter(self, kets, amplitudes):
         '''
         Function to initiate a State instance with different inputs.
-
         This version is not so flexible with the input format as the analogous from Graph.
         '''
         if type(kets) == dict:

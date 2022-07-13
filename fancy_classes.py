@@ -21,8 +21,8 @@ def defaultValues(length, imaginary):
 class Graph(): # should this be an overpowered dictionary? NOPE
     def __init__(self,
                  edges, # list/tuple of edges, dictionary with weights, 'full' or 'empty'
-                 dimensions = None,
-                 weights = None, # list of values or tuples encoding imaginary values
+                 dimensions = [],
+                 weights = [], # list of values or tuples encoding imaginary values
                  imaginary = False, # 'cartesian' or 'polar'
                  norm = False,  # For the sake of perfomance, compute
                  state = False, # norm and state only when needed.
@@ -48,11 +48,11 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         Once the edges and weights are correct, it returns an property graph.
         '''
         if edges == 'full': # If True, dimensions must be defined.
-            if self.dimensions == None:
+            if len(self.dimensions) == 0:
                 raise ValueError('Introduce the dimensions to get a fully connected graph')
             else:
                 edges = th.buildAllEdges(self.dimensions)
-                if weights == None:
+                if len(weights) == 0:
                     weights = defaultValues(len(edges), self.imaginary)
                 else:
                     raise ValueError('The input `full` does not allow to specify the weights.')
@@ -83,7 +83,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         else:
             raise ValueError('Introduce a valid input `edges`.')
             
-        if weights == None: # The default option True behaves (mostly) as 1
+        if len(weights) == 0: # The default option True behaves (mostly) as 1
             weights = defaultValues(len(edges), self.imaginary)
         else:
             weight_shape = np.shape(weights)
@@ -105,7 +105,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             else:
                 raise ValueError('Introduce valid weights.')
                 
-        if self.dimensions == None:
+        if len(self.dimensions) == 0:
             self.dimensions = th.graphDimensions(edges) # a nice function should be defined here
         # Once edges and weights are properly defined, we return a graph
         return {ed:val for ed,val in zip(edges,weights)}
@@ -211,14 +211,13 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         else:
             self[edge] = weight
         if update:
-            other_nodes = [node for node in range(num_nodes) if node not in edge[:2]]
-            subgraph = th.targetEdges(other_nodes, self.graph)
+            subgraph = th.removeNodes(edge[:2], self.edges)
             new_states = th.findPerfectMatchings(subgraph + [edge])
             for ket, perfect_matchings in new_states.items():
                 try:
-                    state_catalog[ket] += perfect_matchings
+                    self.state_catalog[ket] += perfect_matchings
                 except KeyError:
-                    state_catalog[ket] = perfect_matchings
+                    self.state_catalog[ket] = perfect_matchings
         #     if self.norm != DEFAULT_NORM: self.getNorm()
         # if self.state != DEFAULT_STATE: self.getState()
 
@@ -259,7 +258,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             if conversion:
                 self.toPolar()
         else:
-            amplitudes = None
+            amplitudes = []
         self.state = State(kets, amplitudes, self.imaginary)  
         
     # This could also be defined as __abs__, but what do you give back? The dictionary?
@@ -339,7 +338,7 @@ class State():
     
     def __init__(self,
                  kets, 
-                 amplitudes = None, # list of values or tuples encoding imaginary values
+                 amplitudes = [], # list of values or tuples encoding imaginary values
                  imaginary = False, # 'cartesian' or 'polar'
                  normalize = False,
                 ):
@@ -374,7 +373,7 @@ class State():
             raise ValueError('Introduce valid input `kets`.')
 
         # Verification and setting of appropiate amplitudes
-        if amplitudes == None: # The default option True behaves (mostly) as 1
+        if len(amplitudes) == 0: # The default option True behaves (mostly) as 1
             amplitudes = defaultValues(len(kets), self.imaginary)
         else:
             amplitude_shape = np.shape(amplitudes)

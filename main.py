@@ -16,7 +16,7 @@ import theseus as th
 import help_functions as hf
 import sys
 from state import state1
-
+import saver
 # %%
 
 
@@ -53,8 +53,11 @@ print(f'start graph has {len(edge_list)} edges.')
 start_graph = Graph(edge_list)
 
 # topological optimization
-optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state)
-graph_res = optimizer.topologicalOptimization()
+sv = saver.saver()
+for i in range(confi.samples):
+    optimizer = topological_opti(start_graph,ent_dic = sys_dict, target_state=target_state)
+    graph_res = optimizer.topologicalOptimization()
+    sv.safe_graph(optimizer)
 
 graph_res.getState()
 print(f'finished with graph with {len(graph_res.edges)} edges.')

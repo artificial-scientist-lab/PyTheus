@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 ###############################
-##### generell settings  ######
+##### general settings  ######
 ###############################
 
+safe_hist =  True
 real = True
 loss_func = 'cr'  # which lossfunciton: 'ent' , 'fid' or 'cr'
 
@@ -21,6 +22,7 @@ ftol = 1e-6
 
 ### safe directory ###
 suffix = 'test' # suffix for directory eg. for 2222 name of savedirectory is 2222/suffix
+foldername = 'test1'
 
 ###############################
 ### entanglement settings  ####

@@ -20,7 +20,7 @@ class topological_opti:
     def __init__(self, start_graph: Graph, ent_dic=None, target_state=None):
 
         self.real = confi.real
-        if confi.opt_for_ent:
+        if confi.loss_func == 'ent':
             self.ent_dic = ent_dic
         else:
             self.target = target_state  # object of State class
@@ -45,12 +45,12 @@ class topological_opti:
 
         """
 
-        if confi.opt_for_ent:
+        if confi.loss_func == 'ent':
             if abs(result.fun) - abs(self.loss_val) > confi.thresholds[0]:
                 return False
         else:
-            #uncomment to see where checks fail
-            #print(result.fun, confi.thresholds[0])
+            # uncomment to see where checks fail
+            # print(result.fun, confi.thresholds[0])
             if result.fun > confi.thresholds[0]:
                 return False
             # check if all loss functions are under the corresponding threshold
@@ -67,7 +67,7 @@ class topological_opti:
         """
         # get loss function acc. to config
         lossfunctions = loss_dic[confi.loss_func]
-        if confi.opt_for_ent:  # than we only optimize for entanglement
+        if confi.loss_func == 'ent':  # we optimize for entanglement
             return [func(current_graph, self.ent_dic) for func in lossfunctions]
         else:
             return [func(self.target.kets,
@@ -85,6 +85,7 @@ class topological_opti:
                                             bounds=bounds,
                                             method=confi.optimizer,
                                             options={'ftol': confi.ftol})
+            self.loss_val = best_result.fun
             valid = self.check(best_result, losses)
 
         for __ in range(confi.num_pre - 1):
@@ -102,7 +103,11 @@ class topological_opti:
 
         preopt_graph = Graph(graph.edges, weights=best_result.x)
 
-        if confi.bulk_thr > 0:
+        try:
+            bulk_thr = confi.bulk_thr
+        except:
+            bulk_thr = 0
+        if bulk_thr > 0:
             # cut all edges smaller than bulk_thr and optimize again
             # this can save a lot of time
             cont = True
@@ -111,7 +116,7 @@ class topological_opti:
                 # delete smallest edges one by one
                 idx_of_edge = preopt_graph.minimum()
                 amplitude = preopt_graph[idx_of_edge]
-                if abs(amplitude) < confi.bulk_thr:
+                if abs(amplitude) < bulk_thr:
                     preopt_graph.remove(idx_of_edge)
                     num_deleted += 1
                 else:
@@ -123,9 +128,9 @@ class topological_opti:
                 initial_values, bounds = self.prepOptimizer(len(preopt_graph))
                 losses = self.get_loss_functions(preopt_graph)
                 trunc_result = optimize.minimize(losses[0], x0=initial_values,
-                                                bounds=bounds,
-                                                method=confi.optimizer,
-                                                options={'ftol': confi.ftol})
+                                                 bounds=bounds,
+                                                 method=confi.optimizer,
+                                                 options={'ftol': confi.ftol})
                 self.loss_val = trunc_result.fun
                 print(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
@@ -161,7 +166,7 @@ class topological_opti:
         conditions that stop optimization
 
         """
-        if confi.opt_for_ent:
+        if confi.loss_func=='ent':
             return len(self.graph) > confi.min_edge and reps < 1
         else:
             return reps < min(len(self.graph), confi.minimal_cycles)

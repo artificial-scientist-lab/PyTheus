@@ -27,13 +27,6 @@ suffix = 'test' # suffix for directory eg. for 2222 name of savedirectory is 222
 ###############################
 
 ### Quantum infos  ###
-#dim = 33333311
-
-### loss function ###
-# Loss = mean_of_concurrence + variance * variance_of_concurence
-var_factor = 0
-K = 2 # lenght of bipar optimize for (K=2 for 2-uniform state or K = 'all' )
-min_edge = 12
 
 ###############################
 ###  statefinder settings   ###
@@ -50,11 +43,7 @@ unicolor = True
 epsilon = 0 #?maybe?
 minimal_cycles = 1
 
-# extra calculations
-if target_state is None:
-    opt_for_ent = True
-else:
-    opt_for_ent = False
+
 
 
 

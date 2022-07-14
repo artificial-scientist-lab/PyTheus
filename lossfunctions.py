@@ -110,7 +110,7 @@ def make_lossString_entanglment(graph, sys_dict: dict, real = True):
     """
     
     cat = graph.state_catalog
-    target = th.entangelment_fast(cat, sys_dict, real = real)
+    target = th.entangelment_fast(cat, sys_dict)
     #norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
     if real:
         variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]

@@ -111,9 +111,9 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         # Once edges and weights are properly defined, we return a graph
         return {ed:val for ed,val in zip(edges,weights)}
     
-    def __str__(self):
+    def __repr__(self):
         '''
-        What you see when using print().
+        What you see when using print() or calling the instance.
         '''
         return '{' + ',\n '.join(f'{kk}: {vv}' for kk,vv in self.graph.items()) + '}'
     
@@ -315,6 +315,36 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         if conversion:
             self.toPolar()
             
+    def minimum(self, *args):
+        '''
+        returns the key of the edge with the smallest weight, e.g:
+            graph.minimum() smallest edge
+            graph.minimum(-1) biggest edge
+            graph.minimum(0,5) first 5 smallest edges 
+        '''
+        if len(args) == 0:
+            n_th_smallest = 0  # takes smallest
+        elif len(args) == 1:
+            n_th_smallest = args[0]  # takes nth given
+        else:
+            n_th_smallest = slice(*args)
+        #idx = np.argsort(abs(np.array(list(self.graph.values()))))
+        idx = np.argsort(abs(np.array(self.weights)))
+
+        # now check if input is valid
+        try:
+            delind = idx[n_th_smallest]
+        except IndexError:
+            lenght_graph = len(self.graph)
+            max_given_n = max(args)
+            raise ValueError(
+                f'Given n_th is to large (n starts 0): {max_given_n+1=} > {lenght_graph=}')
+
+        if type(delind) is np.int64:  # makes sure that we can iterate by return
+            return self.edges[delind]
+
+        return [self.edges[ii] for ii in delind]
+            
     def clamp(maximum=1, minimum=None): #, rescale=False):
         if maximum >= 0:
             if minimum == None:
@@ -390,9 +420,9 @@ class State():
         # Once kets and amplitudes are properly defined, we return a state
         return {kt:val for kt,val in zip(kets, amplitudes)}
     
-    def __str__(self):
+    def __repr__(self):
         '''
-        What you see when using print().
+        What you see when using print() or calling the instance.
         '''
         return '{' + ',\n '.join(f'{kk}: {vv}' for kk,vv in self.state.items()) + '}'
     
@@ -405,6 +435,8 @@ class State():
     # - Using the inner product, but a@b=-.9999, is it equal? threshold needed 
     
     def __getitem__(self, ket):
+        if type(ket) == str:
+            ket = tuple((ii, int(dim)) for ii, dim in enumerate(ket))
         return self.state[ket]
 
     def __setitem__(self, ket, amplitude):

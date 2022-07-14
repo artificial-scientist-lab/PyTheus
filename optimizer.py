@@ -71,7 +71,7 @@ class topological_opti:
             return [func(current_graph, self.ent_dic) for func in lossfunctions]
         else:
             return [func(self.target.kets,
-                         current_graph.edges,
+                         current_graph,
                          coefficients=self.target.amplitudes,
                          real=self.real) for func in lossfunctions]
 

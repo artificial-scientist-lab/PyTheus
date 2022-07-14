@@ -9,40 +9,36 @@ import theseus as th
 import numpy as np
 import config as confi
 
-def state_countrate(state, edge_list, real=True, coefficients=None):
-    cat = th.stateCatalog(th.findPerfectMatchings(edge_list))
+
+def state_countrate(state, graph, real=True, coefficients=None):
     if len(coefficients) == 0:
-        coefficients = [1]*len(state)
+        coefficients = [1] * len(state)
     target = th.targetEquation(
-        state, avail_states=cat, coefficients=coefficients, real=real)
-    norm = th.Norm.fromDictionary(cat, real=real)
+        state, avail_states=graph.state_catalog, coefficients=coefficients, real=real)
     if real:
-        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in edge_list]
+        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
     else:
         variables = ["r_{}_{}_{}_{}".format(
-            *edge) for edge in edge_list]+["th_{}_{}_{}_{}".format(*edge) for edge in edge_list]
-
-    
-    lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
+            *edge) for edge in graph.edges] + ["th_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
+    graph.getNorm()
+    lambdaloss = "".join(["1-", target, "/(1+", graph.norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
-def state_fidelity(state, edge_list, real=True, coefficients=None):
-    cat = th.stateCatalog(th.findPerfectMatchings(edge_list))
+
+def state_fidelity(state, graph, real=True, coefficients=None):
     if len(coefficients) == 0:
         coefficients = [1]*len(state)
     target = th.targetEquation(
-        state, avail_states=cat, coefficients=coefficients, real=real)
-    norm = th.Norm.fromDictionary(cat, real=real)
+        state, avail_states=graph.state_catalog, coefficients=coefficients, real=real)
     if real:
-        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in edge_list]
+        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
     else:
         variables = ["r_{}_{}_{}_{}".format(
-            *edge) for edge in edge_list]+["th_{}_{}_{}_{}".format(*edge) for edge in edge_list]
-
-    lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
+            *edge) for edge in graph.edges]+["th_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
+    graph.getNorm()
+    lambdaloss = "".join(["1-", target, "/(0+", graph.norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
-
     return func
 
 

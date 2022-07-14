@@ -44,7 +44,7 @@ def state_fidelity(state, graph, real=True, coefficients=None):
 
 
 
-def compute_entangelment(qstate: np.array, sys_dict: dict)-> float:
+def compute_entanglement(qstate: np.array, sys_dict: dict)-> float:
     """
     calculate for a set of bipartions given in config the mean of
     trace[ rho_A ], where rho_A is reduced density matrix of given state
@@ -82,7 +82,7 @@ def compute_entangelment(qstate: np.array, sys_dict: dict)-> float:
         var = sum([ (x-mean)**2 for x in loss_vec])/(lenght)
         return mean + confi.var_factor  * var  
 
-def make_lossString_entanglment(graph, sys_dict: dict, real = True):
+def make_lossString_entanglement(graph, sys_dict: dict, real = True):
     """
     get the loss funcitons of a graph for the concuurence:
         C( |Psi> ) = √( 2 * ( 1 - TR_M( <Psi|Psi> ) ) ) 
@@ -106,7 +106,7 @@ def make_lossString_entanglment(graph, sys_dict: dict, real = True):
     """
     
     cat = graph.state_catalog
-    target = th.entangelment_fast(cat, sys_dict)
+    target = th.entanglement_fast(cat, sys_dict)
     #norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
     if real:
         variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
@@ -123,7 +123,7 @@ def make_lossString_entanglment(graph, sys_dict: dict, real = True):
 
 
 
-loss_dic = {'ent': [make_lossString_entanglment],
+loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [state_fidelity,state_countrate],
             'cr': [state_countrate,state_fidelity]}
 

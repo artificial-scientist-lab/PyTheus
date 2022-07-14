@@ -157,24 +157,37 @@ def stateCatalog(graph_list):
 def graphDimensions(edge_list):
     '''
     Estimate the dimensions of a graph from its edges.
-    
+
     The output dimensions are in decreasing order: we assume 
     the dimension of a node N, is equal or larger than the 
     dimension of a node N+1.
     '''
     color_nodes = set()
     for edge in edge_list:
-        color_nodes.add((edge[0],edge[2]))
-        color_nodes.add((edge[1],edge[3]))
-    color_nodes = sorted(color_nodes,reverse=True)
+        color_nodes.add((edge[0], edge[2]))
+        color_nodes.add((edge[1], edge[3]))
+    color_nodes = sorted(color_nodes, reverse=True)
     max_node = color_nodes[0][0]
     max_dim = color_nodes[0][1]
     dimensions = np.array([max_dim + 1] * (max_node + 1))
     for node in color_nodes:
         if node[1] > max_dim:
             max_dim = node[1]
-            dimensions[:(node[0]+1)] = max_dim + 1
+            dimensions[:(node[0] + 1)] = max_dim + 1
     return list(dimensions)
+
+
+def stateDimensions(ket_list):
+    '''
+    Give the local dimensions necessary for a given state.
+    '''
+    num_particles = len(ket_list[0])
+    dim = [1] * num_particles
+    for ket in ket_list:
+        for ii, op in enumerate(ket):
+            dim[ii] = np.maximum(dim[ii], op[1] + 1)
+    return dim
+
 
 ############################
 ############################
@@ -294,8 +307,9 @@ def allColorGraphs(color_nodes, loops=False):
                        if len(graph) == len(color_nodes) / 2]
     return [tuple(tuple(ed) for ed in graph) for graph in np.unique(color_graph, axis=0)]
 
+
 # This function may lead to scoop
-def allEdgeCovers(dimensions, order=1, loops=False): #SCOOP
+def allEdgeCovers(dimensions, order=1, loops=False):  # SCOOP
     '''
     Given a collection of nodes with different dimensions/colors available, 
     it produces all possible states that erase from these and the different 
@@ -586,8 +600,10 @@ def targetEquation(states, coefficients=None, avail_states=None, real=True):
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')
     equation_sum = '+'.join(equation_sum)
-    if real: return f'(({equation_sum})**2)/{norm2}'
-    else: return f'(abs({equation_sum})**2)/{norm2}'
+    if real:
+        return f'(({equation_sum})**2)/{norm2}'
+    else:
+        return f'(abs({equation_sum})**2)/{norm2}'
 
 
 class Norm:
@@ -694,21 +710,21 @@ def targetEquationSYM(states, coefficients=None, avail_states=None, padding=Fals
     it builds all possible graphs that generate the desired states.
     '''
     if coefficients == None:
-        coefficients = [1]*len(states)
+        coefficients = [1] * len(states)
     else:
-        if len(coefficients)!=len(states):
+        if len(coefficients) != len(states):
             raise ValueError('The number of coefficients and states should be the same')
-    norm = np.conjugate(coefficients)@coefficients
-    if norm != 1: coefficients = np.array(coefficients)/sqrt(norm)
+    norm = np.conjugate(coefficients) @ coefficients
+    if norm != 1: coefficients = np.array(coefficients) / sqrt(norm)
     if avail_states == None:
-        avail_states = {tuple(st):allColorGraphs(st) for st in states}
+        avail_states = {tuple(st): allColorGraphs(st) for st in states}
     equation = 0
-    for coef, st in zip(coefficients,states):
+    for coef, st in zip(coefficients, states):
         terms = 0
         for graph in avail_states[tuple(st)]:
-            terms += weightProductSYM(graph,padding)
-        equation += coef*terms
-    return equation**2
+            terms += weightProductSYM(graph, padding)
+        equation += coef * terms
+    return equation ** 2
 
 
 class State:  # THESE DO NOT WORK RIGHT NOW BUT WE NEED A WAY TO REPLACE THEM PROPERLY
@@ -794,7 +810,7 @@ class NormSYM:
             norm += NormSYM.fromDictionary(allEdgeCovers(dimensions, order=order, loops=loops), real, padding)
         return norm
 
-    
+
 #######################################
 #######################################
 ###                                 ###
@@ -802,9 +818,9 @@ class NormSYM:
 ###                                 ###
 #######################################
 #######################################
-   
-    
-def edgeWeight2(edge, imaginary = False):
+
+
+def edgeWeight2(edge, imaginary=False):
     if imaginary == False:
         return 'w_{}_{}_{}_{}'.format(*edge)
     elif imaginary == 'cartesian':
@@ -814,18 +830,18 @@ def edgeWeight2(edge, imaginary = False):
     else:
         raise ValueError('Introduce a valid input `imaginary`.')
 
-        
-def weightProduct2(graph, imaginary = False):
+
+def weightProduct2(graph, imaginary=False):
     return '*'.join([edgeWeight2(edge, imaginary) for edge in graph])
 
 
-def writeNorm(states_dict, imaginary = False): # The publishable Norm function
+def writeNorm(states_dict, imaginary=False):  # The publishable Norm function
     '''
     Build a normalization constant with all the states of a dictionary.
     '''
     norm_sum = []
     for key, values in states_dict.items():
-        term_sum = [f'{weightProduct2(graph,imaginary)}' for graph in values]
+        term_sum = [f'{weightProduct2(graph, imaginary)}' for graph in values]
         term_sum = ' + '.join(term_sum)
         if imaginary == False:
             norm_sum.append(f'({term_sum})**2')
@@ -856,12 +872,12 @@ def targetEquation2(states, coefficients=None, avail_states=None, imaginary=Fals
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')
     equation_sum = '+'.join(equation_sum)
-    if imaginary == False: 
+    if imaginary == False:
         return f'(({equation_sum})**2)/{norm2}'
-    else: 
+    else:
         return f'(abs({equation_sum})**2)/{norm2}'
 
-    
+
 ###################################
 ###################################
 ###                             ###

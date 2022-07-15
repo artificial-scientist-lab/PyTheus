@@ -189,7 +189,8 @@ class saver:
         """
 
         file_name = str(len(graph.graph)) + '-'
-        file_name += str(len(graph.state_catalog)) + '-'
+        graph.getStateCatalog()
+        file_name += str(len(graph.perfect_matchings)) + '-'
 
         file_name += f'{loss:.4f} '
         return file_name

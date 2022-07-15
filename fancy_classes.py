@@ -589,3 +589,9 @@ class State():
     
     def normalize(self):
         self.rescale( constant = 1/self.norm )
+        
+    def targetEquation(self, ket_list = self.kets, 
+                       coefficients = self.amplitudes, 
+                       state_catalog = None, 
+                       imaginary = self.imaginary):
+        return targetEquation2(ket_list, coefficients, state_catalog, imaginary)

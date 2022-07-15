@@ -70,7 +70,7 @@ class saver:
                         if not item.startswith("__") and not item.endswith("__")}
         self.best_state = None
         self.safe_path = self.get_and_create_safe_directory()
-        self.best_graph = None
+        self.best_opt = None
 
     def get_folder_name(self) -> str:
         """
@@ -148,21 +148,29 @@ class saver:
 
         return ret_dict
 
-    def safe_graph(self, topo: object) -> None:
+    def check_best_opt(self, topo):
+        # check if opt is better than previous best_opt
+        # this may not only depend on the loss function. for example, a solution with fidelity 0.994 and 16 edges
+        # is 'better' in some cases than fidelity 0.999 and 23 edges
+        # TODO: implement the choice of which criteria is used
+        return self.best_opt is None or topo.loss_val < self.best_opt.loss_val
+
+    def save_graph(self, topo: object) -> None:
         """
-        we use an object from the class topological_opti to safe all
+        we use an object from the class topological_opti to save all
         infos: - the optimized graph
-               - corrospoding loss
+               - correspoding loss
                - if confi.safe_hist is True we also safe the loss during
-                 each deletion and the corosponding graph
+                 each deletion and the corresponding graph
 
         """
 
-        last_lost = topo.loss_val
-        abs_path = self.safe_path / self.get_file_name(topo.graph, last_lost)
+        abs_path = self.safe_path / self.get_file_name(topo.graph, topo.loss_val)
         # update best graph
-        if self.best_graph is None or last_lost < self.best_graph.loss_val:
-            self.best_graph = topo
+        if self.check_best_opt(topo):
+            self.best_opt = topo
+            self.summary['best_graph'] = self.best_opt.graph
+            # TODO: rewrite summary file to include best_graph on this line (then we get best graph even if run is cancelled before it is finished)
 
         safe_dic = {'graph': self.convert_graph_keys_in_str(topo.graph.graph),
                     'loss': topo.loss_val}
@@ -186,6 +194,3 @@ class saver:
 
         file_name += f'{loss:.4f} '
         return file_name
-
-
-

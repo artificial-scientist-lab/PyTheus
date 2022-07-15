@@ -17,12 +17,11 @@ import help_functions as hf
 import sys
 from state import state1
 import saver
+
 # %%
 
 
 sys.setrecursionlimit(1000000000)
-
-
 
 try:
     # target state optimization
@@ -40,8 +39,6 @@ except:
     target_state = None
     sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=confi.K)
 
-
-
 # build starting graph
 edge_list = th.buildAllEdges(dimensions, real=confi.real)
 try:
@@ -55,9 +52,9 @@ start_graph = Graph(edge_list)
 # topological optimization
 sv = saver.saver()
 for i in range(confi.samples):
-    optimizer = topological_opti(start_graph,ent_dic = sys_dict, target_state=target_state)
+    optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state)
     graph_res = optimizer.topologicalOptimization()
-    sv.safe_graph(optimizer)
+    sv.save_graph(optimizer)
 
 graph_res.getState()
 print(f'finished with graph with {len(graph_res.edges)} edges.')

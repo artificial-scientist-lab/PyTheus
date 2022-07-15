@@ -931,25 +931,25 @@ def writeNorm(states_dict, imaginary=False):  # The publishable Norm function
     return ' + '.join(norm_sum)
 
 
-def targetEquation2(states, coefficients=None, avail_states=None, imaginary=False):
+def targetEquation2(ket_list, coefficients=None, state_catalog=None, imaginary=False):
     '''
-    Introducing the coefficients for each ket of the states list, it builds a 
-    non-normalized fidelity function with all the ways the state can be build 
-    according to the dictionary avail_states. If no dictionary is introduced 
-    it builds all possible graphs that generate the desired states.
+    Introducing the coefficients for each ket, it writes a non-normalized fidelity 
+    function with all the ways the state can be build stored in state_catalog. 
+    If no state_catalog is introduced it builds all possible graphs that generate 
+    the desired kets.
     '''
     if coefficients == None:
-        coefficients = [1] * len(states)
+        coefficients = [1] * len(ket_list)
     else:
-        if len(coefficients) != len(states):
+        if len(coefficients) != len(ket_list):
             raise ValueError('The number of coefficients and states should be the same')
     norm2 = abs(np.conjugate(coefficients) @ coefficients)
     if norm2 != 1: norm2 = str(norm2)
-    if avail_states == None:
-        avail_states = {tuple(st): allColorGraphs(st) for st in states}
+    if state_catalog == None:
+        state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     equation_sum = []
-    for coef, st in zip(np.conjugate(coefficients), states):
-        term_sum = [weightProduct2(graph, imaginary) for graph in avail_states[tuple(st)]]
+    for coef, ket in zip(np.conjugate(coefficients), ket_list):
+        term_sum = [weightProduct2(graph, imaginary) for graph in state_catalog[tuple(ket)]]
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')
     equation_sum = '+'.join(equation_sum)

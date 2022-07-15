@@ -69,7 +69,7 @@ class saver:
         self.summary = {item: getattr(confi, item) for item in dir(confi)
                         if not item.startswith("__") and not item.endswith("__")}
         self.best_state = None
-        self.safe_path = self.get_and_create_safe_directory()
+        self.save_path = self.get_and_create_save_directory()
         self.best_opt = None
 
     def get_folder_name(self) -> str:
@@ -82,7 +82,7 @@ class saver:
         else:
             return confi.foldername
 
-    def get_and_create_safe_directory(self):
+    def get_and_create_save_directory(self):
         """
         look if folder ~/data/(2-2-2-2) exists otherwise creates it
         when exists it looks if config files are the same then our
@@ -102,7 +102,7 @@ class saver:
                 if self.check_if_summary_is_same(summary_path):
                     self.foldername = folder_name
                     return pt
-                else:  # adapt folder name to avoid same folder with different summarys
+                else:  # adapt folder name to avoid same folder with different summaries
                     folder_name = self.get_folder_name() + f' ({i})'
                     i += 1
             else:
@@ -159,18 +159,17 @@ class saver:
         """
         we use an object from the class topological_opti to save all
         infos: - the optimized graph
-               - correspoding loss
+               - corresponding loss
                - if confi.safe_hist is True we also safe the loss during
                  each deletion and the corresponding graph
 
         """
 
-        abs_path = self.safe_path / self.get_file_name(topo.graph, topo.loss_val)
+        abs_path = self.save_path / self.get_file_name(topo.graph, topo.loss_val)
         # update best graph
         if self.check_best_opt(topo):
             self.best_opt = topo
-            self.summary['best_graph'] = self.best_opt.graph
-            # TODO: rewrite summary file to include best_graph on this line (then we get best graph even if run is cancelled before it is finished)
+            # TODO: rewrite best_graph to file on this line (then we get best graph even if run is cancelled before it is finished)
 
         safe_dic = {'graph': self.convert_graph_keys_in_str(topo.graph.graph),
                     'loss': topo.loss_val}

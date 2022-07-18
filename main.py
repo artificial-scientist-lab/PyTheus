@@ -45,7 +45,8 @@ except:
 edge_list = th.buildAllEdges(dimensions, real=confi.real)
 try:
     if confi.unicolor:
-        edge_list = hf.makeUnicolor(edge_list, confi.num_data_nodes)
+        num_data_nodes = len(confi.target_state[0])
+        edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
 except:
     pass
 

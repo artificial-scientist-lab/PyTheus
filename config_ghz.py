@@ -27,7 +27,6 @@ foldername = '4-4-8'
 
 target_state = ['0000', '1111', '2222', '3333']
 num_anc = 4
-num_data_nodes = 4
 unicolor = True
 
 edges_tried = 10

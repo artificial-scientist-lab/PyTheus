@@ -2,7 +2,6 @@ import itertools
 import numpy as np
 
 
-
 def flatten_lists(the_lists):
     """
     takes a list as argument return flatten one
@@ -45,7 +44,7 @@ def makeState(statestring: str) -> list:
                  ((0, 2), (1, 2), (2, 2), (3, 2))]
     '''
     terms = statestring.split('+')
-    return [stringToTerm(filter(str.isdigit,term)) for term in terms]
+    return [stringToTerm(filter(str.isdigit, term)) for term in terms]
 
 
 def makeUnicolor(edge_list, num_nodes):
@@ -55,6 +54,21 @@ def makeUnicolor(edge_list, num_nodes):
     return [edge for edge in edge_list if
             (((edge[0] not in range(num_nodes)) or (edge[1] not in range(num_nodes))) or (edge[2] == edge[3]))]
 
+
+def removeConnections(edge_list, connection_list):
+    '''
+    removes all edges that connect certain pairs of vertices.
+
+    example:
+    input: edge_list, [[0,1],[3,5]]
+    output: edge_list without any edges that connect 0-1 or 3-5.
+    '''
+    new_edge_list = edge_list
+    for connection in connection_list:
+        new_edge_list = [edge for edge in new_edge_list if (edge[0] != connection[0] or edge[1] != connection[1])]
+    return new_edge_list
+
+
 def get_all_bi_partions(num_par: int, lenght=None):
     """
     returns all bi-partions as a generator for a given number of particles:
@@ -63,23 +77,25 @@ def get_all_bi_partions(num_par: int, lenght=None):
 
     """
     if lenght is None or lenght == 'all':
-        def check_len(bipar): return True
+        def check_len(bipar):
+            return True
     else:
-        assert (type(lenght) is int and int(num_par/2) >= lenght),\
+        assert (type(lenght) is int and int(num_par / 2) >= lenght), \
             "invalid lenght given(or Typeerror): int(num_par/2) > given lenght"
 
-        def check_len(bipar): return len(bipar) == lenght
+        def check_len(bipar):
+            return len(bipar) == lenght
 
     S = {i for i in range(num_par)}
     doubles = []
-    for ll in range(1, int(len(S)/2)+1):
+    for ll in range(1, int(len(S) / 2) + 1):
         combinations = set(itertools.combinations(S, ll))
         for oneC in combinations:
             if sorted(list(oneC)) not in doubles:
                 bipar = sorted(list(oneC))
                 if check_len(bipar):
-                    yield (bipar, sorted(list(S-set(oneC))))
-            doubles.append(sorted(list(S-set(oneC))))
+                    yield (bipar, sorted(list(S - set(oneC))))
+            doubles.append(sorted(list(S - set(oneC))))
 
 
 def get_all_kets_for_given_dim(dimension: list, type_return=int):
@@ -122,7 +138,7 @@ def get_sysdict(dimensions_of_H: list, bipar_for_opti='all'):
     sysdict['all_states'] = [tuple([(idx, int(ket[idx])) for idx in
                                     range(sysdict['num_particles'])])
                              for ket in sysdict['all_kets_str']]
-    
+
     sysdict['dim_total'] = np.product(dimensions_of_H)
     sysdict['bipar_for_opti'] = list(
         get_all_bi_partions(sysdict['num_particles'], bipar_for_opti))

@@ -11,7 +11,7 @@ os.chdir(file_path)
 from optimizer import topological_opti
 
 from fancy_classes import Graph, State
-import config as confi
+import config_ghz as confi
 import theseus as th
 import help_functions as hf
 import sys
@@ -48,6 +48,12 @@ try:
         edge_list = hf.makeUnicolor(edge_list, confi.num_data_nodes)
 except:
     pass
+
+try:
+    edge_list = hf.removeConnections(edge_list, confi.removed_connections)
+except:
+    pass
+
 print(f'start graph has {len(edge_list)} edges.')
 start_graph = Graph(edge_list)
 

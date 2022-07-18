@@ -11,17 +11,17 @@ os.chdir(file_path)
 from optimizer import topological_opti
 
 from fancy_classes import Graph, State
-import config_ghz as confi
+# import config_concurrence as confi
 import theseus as th
 import help_functions as hf
 import sys
 from state import state1
 import saver
+import json
 
-# %%
-
-cnfg = {item: getattr(confi, item) for item in dir(confi)
-        if not item.startswith("__") and not item.endswith("__")}
+config = sys.argv[1]
+with open(config + ".json") as data:
+    cnfg = json.load(data)
 
 sys.setrecursionlimit(1000000000)
 
@@ -29,7 +29,7 @@ try:
     # target state optimization
     sys_dict = None
     # add ancillas
-    term_list = [term + confi.num_anc * '0' for term in confi.target_state]
+    term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
     target_state = State(term_list)
     target_kets = target_state.kets
     # define local dimensions
@@ -37,21 +37,23 @@ try:
 except:
     # concurrence optimization
     # define local dimensions
-    dimensions = [int(ii) for ii in str(confi.dim)]
+    dimensions = [int(ii) for ii in str(cnfg['dim'])]
+    if len(dimensions) % 2 != 0:
+        dimensions.append(1)
     target_state = None
-    sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=confi.K)
+    sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'])
 
 # build starting graph
-edge_list = th.buildAllEdges(dimensions, real=confi.real)
+edge_list = th.buildAllEdges(dimensions, real=cnfg['real'])
 try:
-    if confi.unicolor:
-        num_data_nodes = len(confi.target_state[0])
+    if cnfg['unicolor']:
+        num_data_nodes = len(cnfg['target_state'][0])
         edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
 except:
     pass
 
 try:
-    edge_list = hf.removeConnections(edge_list, confi.removed_connections)
+    edge_list = hf.removeConnections(edge_list, cnfg['removed_connections'])
 except:
     pass
 
@@ -60,7 +62,7 @@ start_graph = Graph(edge_list)
 
 # topological optimization
 sv = saver.saver(config=cnfg)
-for i in range(confi.samples):
+for i in range(cnfg['samples']):
     optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()
     sv.save_graph(optimizer)

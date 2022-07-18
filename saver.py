@@ -123,8 +123,12 @@ class saver:
                 return obj_a == obj_b
 
         existing_summary = read_json(path_exst_summary)
-        return all([compare(self.config[key], existing_summary[key])
+        try:
+            same = all([compare(self.config[key], existing_summary[key])
                     for key in self.config.keys()])
+        except KeyError:
+            same = False
+        return same
 
     def convert_graph_keys_in_str(self, graph: dict) -> dict:
         """

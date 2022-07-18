@@ -69,6 +69,24 @@ def removeConnections(edge_list, connection_list):
     return new_edge_list
 
 
+def prepEdgeList(edge_list, cnfg):
+    """
+    Restrict starting graph as given by config.
+    """
+    try:
+        if cnfg['unicolor']:
+            num_data_nodes = len(cnfg['target_state'][0])
+            edge_list = makeUnicolor(edge_list, num_data_nodes)
+    except KeyError:
+        pass
+
+    try:
+        edge_list = removeConnections(edge_list, cnfg['removed_connections'])
+    except KeyError:
+        pass
+    return edge_list
+
+
 def get_all_bi_partions(num_par: int, lenght=None):
     """
     returns all bi-partions as a generator for a given number of particles:

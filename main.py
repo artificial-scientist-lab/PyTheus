@@ -25,16 +25,7 @@ with open(config + ".json") as data:
 
 sys.setrecursionlimit(1000000000)
 
-try:
-    # target state optimization
-    sys_dict = None
-    # add ancillas
-    term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
-    target_state = State(term_list)
-    target_kets = target_state.kets
-    # define local dimensions
-    dimensions = th.stateDimensions(target_kets)
-except:
+if cnfg['loss_func'] == 'ent':
     # concurrence optimization
     # define local dimensions
     dimensions = [int(ii) for ii in str(cnfg['dim'])]
@@ -42,20 +33,22 @@ except:
         dimensions.append(1)
     target_state = None
     sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'])
+else:
+    # target state optimization
+    sys_dict = None
+    # add ancillas
+    term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
+    if 'amplitudes' in cnfg:
+        target_state = State(term_list,amplitudes=cnfg['amplitudes'])
+    else:
+        target_state = State(term_list)
+    target_kets = target_state.kets
+    # define local dimensions
+    dimensions = th.stateDimensions(target_kets)
 
 # build starting graph
 edge_list = th.buildAllEdges(dimensions, real=cnfg['real'])
-try:
-    if cnfg['unicolor']:
-        num_data_nodes = len(cnfg['target_state'][0])
-        edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
-except:
-    pass
-
-try:
-    edge_list = hf.removeConnections(edge_list, cnfg['removed_connections'])
-except:
-    pass
+edge_list = hf.prepEdgeList(edge_list, cnfg)
 
 print(f'start graph has {len(edge_list)} edges.')
 start_graph = Graph(edge_list)

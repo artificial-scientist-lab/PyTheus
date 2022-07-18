@@ -15,7 +15,7 @@
 
 # +
 import theseus as th
-import topopt as top
+from old import topopt as top
 import graphplot as gp
 import numpy as np
 import time
@@ -36,6 +36,7 @@ state = top.makeState("00000+10100+10020+10001+01200+01010+01002")
 coeff = [1, 2, 2, 2, np.sqrt(2), np.sqrt(2), np.sqrt(2)]
 state = top.addAncillas(state, pdv[2] - pdv[0])
 real = True  # define if weights should be real or complex numbers
+
 showgraphs = False
 
 print('target state:')

@@ -237,12 +237,12 @@ def txtAppend(file_name, record):
     creates data directory if it does not exist yet.
     '''
     try:
-        os.makedirs(os.path.join(sys.path[0], 'data'))
+        os.makedirs(os.path.join(sys.path[0], '../data'))
     except FileExistsError:
         pass
 
     try:
-        with open(os.path.join(sys.path[0], 'data', file_name), 'a') as f:
+        with open(os.path.join(sys.path[0], '../data', file_name), 'a') as f:
             f.write(str(record))
             f.write('\n')
     except:

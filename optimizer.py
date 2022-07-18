@@ -158,15 +158,15 @@ class topological_opti:
 
         return initial_values, bounds
 
-    def termination_condition(self, reps) -> bool:
+    def termination_condition(self, num_edge) -> bool:
         """
         conditions that stop optimization
 
         """
         if self.config['loss_func'] == 'ent':
-            return len(self.graph) > self.config['min_edge'] and reps < 1
+            return len(self.graph) > self.config['min_edge'] and num_edge < len(self.graph)
         else:
-            return reps < min(len(self.graph), self.config['minimal_cycles'])
+            return num_edge < min(len(self.graph), self.config['edges_tried'])
 
     def optimize_one_edge(self, num_edge: int,
                           num_tries_one_edge: int) -> (Graph, bool):
@@ -216,17 +216,13 @@ class topological_opti:
         does the topological main loop and returns optimized Graph
         """
         num_edge = 0
-        reps = 0
         graph_history = []
-        while self.termination_condition(reps):
-            self.graph, success = self.optimize_one_edge(num_edge, 5)
+        while self.termination_condition(num_edge):
+            self.graph, success = self.optimize_one_edge(num_edge, self.config['tries_per_edge'])
             num_edge += 1
             print(f'deleting edge {num_edge}')
             if success:
                 print(f"deleted: {len(self.graph)}  edges left with loss {self.loss_val:.3f}")
                 num_edge = 0
                 graph_history.append(self.graph)
-            if num_edge == len(self.graph):
-                reps += 1
-                num_edge = 0
         return self.graph

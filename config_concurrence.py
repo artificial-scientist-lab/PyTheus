@@ -17,8 +17,7 @@ K = 2 # lenght of bipar optimize for (K=2 for 2-uniform state or K = 'all' )
 loss_func = 'ent'
 
 ### safe directory ###
-suffix = 'test' # suffix for directory eg. for 2222 name of savedirectory is 2222/suffix
-foldername = 'conc'
+foldername = 'concb'
 
 ### opti infos ###
 num_pre = 2
@@ -36,3 +35,5 @@ ftol = 1e-6
 dimensions = [int(ii) for ii in str(dim)]
 if len(dimensions) % 2 != 0:
     dimensions.append(1)
+
+tries_per_edge = 5

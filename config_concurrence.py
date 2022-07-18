@@ -18,6 +18,7 @@ loss_func = 'ent'
 
 ### safe directory ###
 suffix = 'test' # suffix for directory eg. for 2222 name of savedirectory is 2222/suffix
+foldername = 'conc'
 
 ### opti infos ###
 num_pre = 2

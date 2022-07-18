@@ -6,7 +6,6 @@ Created on Thu Jul 14 17:15:59 2022
 """
 
 from fancy_classes import Graph
-import config as confi
 import numpy as np
 from pathlib import Path
 import json
@@ -65,9 +64,8 @@ def write_json(abspath: Path, dictionary: dict) -> None:
 
 class saver:
 
-    def __init__(self):
-        self.summary = {item: getattr(confi, item) for item in dir(confi)
-                        if not item.startswith("__") and not item.endswith("__")}
+    def __init__(self, config=None):
+        self.config = config
         self.best_state = None
         self.save_path = self.get_and_create_save_directory()
         self.best_opt = None
@@ -77,10 +75,10 @@ class saver:
         return the folder name: dimension of the system or confi
 
         """
-        if confi.foldername is None:
-            return '(' + '-'.join([str(w) for w in confi.dimensions]) + ')'
+        if self.config['foldername'] is None:
+            return '(' + '-'.join([str(w) for w in self.config['dimensions']]) + ')'
         else:
-            return confi.foldername
+            return self.config['foldername']
 
     def get_and_create_save_directory(self):
         """
@@ -107,7 +105,7 @@ class saver:
                     i += 1
             else:
                 self.foldername = folder_name
-                write_json(pt / 'summary.json', self.summary)
+                write_json(pt / 'summary.json', self.config)
                 return pt
 
     def check_if_summary_is_same(self, path_exst_summary: Path) -> bool:
@@ -125,8 +123,8 @@ class saver:
                 return obj_a == obj_b
 
         existing_summary = read_json(path_exst_summary)
-        return all([compare(self.summary[key], existing_summary[key])
-                    for key in self.summary.keys()])
+        return all([compare(self.config[key], existing_summary[key])
+                    for key in self.config.keys()])
 
     def convert_graph_keys_in_str(self, graph: dict) -> dict:
         """

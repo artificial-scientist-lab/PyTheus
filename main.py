@@ -20,6 +20,8 @@ import saver
 
 # %%
 
+cnfg = {item: getattr(confi, item) for item in dir(confi)
+        if not item.startswith("__") and not item.endswith("__")}
 
 sys.setrecursionlimit(1000000000)
 
@@ -50,9 +52,9 @@ print(f'start graph has {len(edge_list)} edges.')
 start_graph = Graph(edge_list)
 
 # topological optimization
-sv = saver.saver()
+sv = saver.saver(config=cnfg)
 for i in range(confi.samples):
-    optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state)
+    optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()
     sv.save_graph(optimizer)
 

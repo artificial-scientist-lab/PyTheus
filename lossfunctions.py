@@ -7,7 +7,6 @@ Created on Tue Jul 12 11:54:12 2022
 
 import theseus as th
 import numpy as np
-import config as confi
 
 
 def state_countrate(state, graph, real=True, coefficients=None):
@@ -44,43 +43,6 @@ def state_fidelity(state, graph, real=True, coefficients=None):
 
 
 
-def compute_entanglement(qstate: np.array, sys_dict: dict)-> float:
-    """
-    calculate for a set of bipartions given in config the mean of
-    trace[ rho_A ], where rho_A is reduced density matrix of given state
-    for the given bipartitions
-
-    Parameters
-    ----------
-    qstate : np.array
-        basis vector of corrosponding state as np.array
-    sys_dict : dict
-        that stores essential_infos (see help_functions)
-
-    Returns
-    -------
-    float
-        return sum_bipar[ trace( rho_bi ** 2)  ]
-
-    """
-    dimi = np.array(sys_dict['dimensions'])
-    try: # for checking if norm is not zero -> if so return 2 cause no ket
-        qstate *= 1/(np.linalg.norm(qstate))
-    except TypeError:
-        return 2
-        
-    def calc_con(mat, par):
-        red = th.ptrace(mat, par, dimi, False)
-        return np.einsum('ij,ji', red, red) # is equivalent to trace( red**2 ) but faster
-
-    loss_vec = [ calc_con(qstate, par[0]) for par in sys_dict['bipar_for_opti'] ]
-    lenght = len(loss_vec)
-    mean = sum( loss_vec )/lenght
-    if confi.var_factor == 0: # no need to compute variance if factor = 0
-        return mean
-    else:
-        var = sum([ (x-mean)**2 for x in loss_vec])/(lenght)
-        return mean + confi.var_factor  * var  
 
 def make_lossString_entanglement(graph, sys_dict: dict, real = True):
     """

@@ -6,21 +6,18 @@ Created on Tue Jul 12 09:07:40 2022
 """
 
 from fancy_classes import Graph
-import config as confi
 from lossfunctions import loss_dic
 import numpy as np
 from scipy import optimize
 
-cnfg = {item: getattr(confi, item) for item in dir(confi)
-        if not item.startswith("__") and not item.endswith("__")}
-
 
 class topological_opti:
 
-    def __init__(self, start_graph: Graph, ent_dic=None, target_state=None):
+    def __init__(self, start_graph: Graph, ent_dic=None, target_state=None, config=None):
 
-        self.real = confi.real
-        if confi.loss_func == 'ent':
+        self.config = config
+        self.real = self.config['real']
+        if self.config['loss_func'] == 'ent':
             self.ent_dic = ent_dic
         else:
             self.target = target_state  # object of State class
@@ -45,17 +42,17 @@ class topological_opti:
 
         """
 
-        if confi.loss_func == 'ent':
-            if abs(result.fun) - abs(self.loss_val) > confi.thresholds[0]:
+        if self.config['loss_func'] == 'ent':
+            if abs(result.fun) - abs(self.loss_val) > self.config['thresholds'][0]:
                 return False
         else:
             # uncomment to see where checks fail
-            # print(result.fun, confi.thresholds[0])
-            if result.fun > confi.thresholds[0]:
+            # print(result.fun, self.config['thresholds'][0])
+            if result.fun > self.config['thresholds'][0]:
                 return False
             # check if all loss functions are under the corresponding threshold
             for ii in range(1, len(lossfunctions)):
-                if lossfunctions[ii](result.x) > confi.thresholds[ii]:
+                if lossfunctions[ii](result.x) > self.config['thresholds'][ii]:
                     return False
         # when no check fails return True  = success
         return True
@@ -66,8 +63,8 @@ class topological_opti:
 
         """
         # get loss function acc. to config
-        lossfunctions = loss_dic[confi.loss_func]
-        if confi.loss_func == 'ent':  # we optimize for entanglement
+        lossfunctions = loss_dic[self.config['loss_func']]
+        if self.config['loss_func'] == 'ent':  # we optimize for entanglement
             return [func(current_graph, self.ent_dic) for func in lossfunctions]
         else:
             return [func(self.target.kets,
@@ -83,18 +80,18 @@ class topological_opti:
             initial_values, bounds = self.prepOptimizer(len(graph))
             best_result = optimize.minimize(losses[0], x0=initial_values,
                                             bounds=bounds,
-                                            method=confi.optimizer,
-                                            options={'ftol': confi.ftol})
+                                            method=self.config['optimizer'],
+                                            options={'ftol': self.config['ftol']})
             self.loss_val = best_result.fun
             valid = self.check(best_result, losses)
 
-        for __ in range(confi.num_pre - 1):
+        for __ in range(self.config['num_pre'] - 1):
             # if stated in config file, do more preoptimizations (esp. useful for concurrence)
             initial_values, bounds = self.prepOptimizer(len(graph))
             result = optimize.minimize(losses[0], x0=initial_values,
                                        bounds=bounds,
-                                       method=confi.optimizer,
-                                       options={'ftol': confi.ftol})
+                                       method=self.config['optimizer'],
+                                       options={'ftol': self.config['ftol']})
 
             if result.fun < best_result.fun:
                 best_result = result
@@ -104,7 +101,7 @@ class topological_opti:
         preopt_graph = Graph(graph.edges, weights=best_result.x)
 
         try:
-            bulk_thr = confi.bulk_thr
+            bulk_thr = self.config['bulk_thr']
         except:
             bulk_thr = 0
         if bulk_thr > 0:
@@ -129,8 +126,8 @@ class topological_opti:
                 losses = self.get_loss_functions(preopt_graph)
                 trunc_result = optimize.minimize(losses[0], x0=initial_values,
                                                  bounds=bounds,
-                                                 method=confi.optimizer,
-                                                 options={'ftol': confi.ftol})
+                                                 method=self.config['optimizer'],
+                                                 options={'ftol': self.config['ftol']})
                 self.loss_val = trunc_result.fun
                 print(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
@@ -166,10 +163,10 @@ class topological_opti:
         conditions that stop optimization
 
         """
-        if confi.loss_func=='ent':
-            return len(self.graph) > confi.min_edge and reps < 1
+        if self.config['loss_func'] == 'ent':
+            return len(self.graph) > self.config['min_edge'] and reps < 1
         else:
-            return reps < min(len(self.graph), confi.minimal_cycles)
+            return reps < min(len(self.graph), self.config['minimal_cycles'])
 
     def optimize_one_edge(self, num_edge: int,
                           num_tries_one_edge: int) -> (Graph, bool):
@@ -194,8 +191,8 @@ class topological_opti:
                                                                 x=x0)
                     result = optimize.minimize(losses[0], x0=initial_values,
                                                bounds=bounds,
-                                               method=confi.optimizer,
-                                               options={'ftol': confi.ftol})
+                                               method=self.config['optimizer'],
+                                               options={'ftol': self.config['ftol']})
                 except KeyError:
                     red_graph[idx_of_edge] = amplitude
                     return red_graph, False  # no success keep current Graph
@@ -203,8 +200,8 @@ class topological_opti:
                 initial_values, bounds = self.prepOptimizer(len(red_graph))
                 result = optimize.minimize(losses[0], x0=initial_values,
                                            bounds=bounds,
-                                           method=confi.optimizer,
-                                           options={'ftol': confi.ftol})
+                                           method=self.config['optimizer'],
+                                           options={'ftol': self.config['ftol']})
             valid = self.check(result, losses)
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is

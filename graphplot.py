@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
+import theseus as th
 
 def drawEdge(edge, verts, ind, mult, scale_max=None, max_thickness=10):
     colors = ['blue', 'red', 'green', 'darkorange', 'purple', 'yellow', 'cyan']
@@ -33,21 +34,12 @@ def drawEdge(edge, verts, ind, mult, scale_max=None, max_thickness=10):
         pass
 
 
-def graphPlot(edge_list, scaled_weights=False, show=True, max_thickness=10, weight_product=False):
-    edge_dict = {}
-    for edge in edge_list:
-        try:
-            edge_dict[edge[:2]].append(edge)
-        except:
-            edge_dict[edge[:2]] = [edge]
+def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10, weight_product=False):
+    edge_dict = th.edgeBleach(graph.edges)
 
-    count = 0
-    for key in edge_dict.keys():
-        count += len(edge_dict[key])
+    num_vertices = len(np.unique(np.array(graph.edges)[:, :2]))
 
-    n = len(np.unique(np.array(edge_list)[:, :2]))
-
-    angles = np.linspace(0, 2 * np.pi * (n - 1) / n, n)
+    angles = np.linspace(0, 2 * np.pi * (num_vertices - 1) / num_vertices, num_vertices)
 
     rad = 0.9
     vertcoords = []
@@ -56,12 +48,12 @@ def graphPlot(edge_list, scaled_weights=False, show=True, max_thickness=10, weig
         y = rad * np.sin(angle)
         vertcoords.append(tuple([x, y]))
 
-    vertnums = list(range(n))
+    vertnums = list(range(num_vertices))
     verts = dict(zip(vertnums, vertcoords))
 
     if scaled_weights:
         try:
-            scale_max = np.max(np.abs(np.array(edge_list)[:, 4]))
+            scale_max = np.max(np.abs(np.array(graph.edges)[:, 4]))
         except:
             scale_max = None
     else:
@@ -71,8 +63,8 @@ def graphPlot(edge_list, scaled_weights=False, show=True, max_thickness=10, weig
 
     for uc_edge in edge_dict.keys():
         mult = len(edge_dict[uc_edge])
-        for ii, edge in enumerate(edge_dict[uc_edge]):
-            drawEdge(edge, verts, ii, mult, scale_max=scale_max, max_thickness=max_thickness)
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            drawEdge(uc_edge + coloring, verts, ii, mult, scale_max=scale_max, max_thickness=max_thickness)
 
     circ = []
     for vert, coords in verts.items():
@@ -86,11 +78,11 @@ def graphPlot(edge_list, scaled_weights=False, show=True, max_thickness=10, weig
     plt.axis('off')
 
     if weight_product:
-        wp = round(np.product(np.array(edge_list)[:, 4]), 2)
+        wp = round(np.product(graph.values()), 2)
         plt.title('weight =' + str(wp), fontsize=30)
 
     if show:
-        plt.draw()
+        plt.show()
         plt.pause(0.01)
     else:
         plt.close(fig)

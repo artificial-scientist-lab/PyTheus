@@ -13,7 +13,7 @@ def flatten_lists(the_lists):
     return result
 
 
-def stateToString(state):
+def stateToString(state, ket=False):
     '''
     for readability, turn state array into string
     '''
@@ -21,7 +21,16 @@ def stateToString(state):
     termstringlist = []
     for term in termlist:
         termstringlist.append(''.join([str(item) for item in term]))
+    if ket:
+        termstringlist = ['|' + term + '>' for term in termstringlist]
     return '+'.join(termstringlist)
+
+
+def readableState(state):
+    readable_dict = {}
+    for key in state.kets:
+        readable_dict[stateToString([key], ket=True)] = state[key]
+    return readable_dict
 
 
 def stringToTerm(termstring):

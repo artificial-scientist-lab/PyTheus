@@ -199,23 +199,24 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             edge = tuple(edge)
         else:
             raise ValueError('Introduce a valid edge.')
-        if edge in self.edges():
+        if edge in self.edges:
             print('The edge is going to be redefined.')
             update = False # there's no need to update the state_catalog
         else: # the edge is included
             self.graph[edge] = True
         if weight == None:
-            self[edge] = defaultValues(1, self.imaginary)
+            self[edge] = defaultValues(1, self.imaginary)[0]
         else:
             self[edge] = weight
         if update:
             subgraph = th.removeNodes(edge[:2], self.edges)
-            new_states = th.findPerfectMatchings(subgraph + [edge])
+            new_states = th.stateCatalog( th.findPerfectMatchings(subgraph + [edge]) )
             for ket, perfect_matchings in new_states.items():
                 try:
                     self.state_catalog[ket] += perfect_matchings
                 except KeyError:
                     self.state_catalog[ket] = perfect_matchings
+                self.state_catalog[ket] = sorted( self.state_catalog[ket] )
         #     if self.norm != DEFAULT_NORM: self.getNorm()
         # if self.state != DEFAULT_STATE: self.getState()
 
@@ -529,7 +530,7 @@ class State():
         else: # the ket is included
             self.state[ket] = True
         if amplitude == None:
-            self[ket] = defaultValues(1, self.imaginary)
+            self[ket] = defaultValues(1, self.imaginary)[0]
         else:
             self[ket] = amplitude
     

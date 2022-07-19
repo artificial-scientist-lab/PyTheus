@@ -246,6 +246,14 @@ def buildAllEdges(dimensions, loops=False, string=False, real=True):
     else:
         return all_edges
 
+    
+def stringEdges(edge_list, imaginary=False):
+    if imaginary == False:
+        return ['w_{}_{}_{}_{}'.format(*edge) for edge in edge_list]
+    else:
+        return (['r_{}_{}_{}_{}'.format(*edge) for edge in edge_list]
+                +['th_{}_{}_{}_{}'.format(*edge) for edge in edge_list])
+
 
 def buildRandomGraph(dimensions, num_edges, loops=False, cover_all=True):
     '''

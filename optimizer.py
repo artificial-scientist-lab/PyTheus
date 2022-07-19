@@ -61,18 +61,40 @@ class topological_opti:
         """
         get a list of all loss functions mentioned in config
 
+        Parameters
+        ----------
+        current_graph
+
+        Returns
+        -------
+        callable_loss
+            list of callable functions
+
         """
         # get loss function acc. to config
         lossfunctions = loss_dic[self.config['loss_func']]
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
-            return [func(current_graph, self.ent_dic) for func in lossfunctions]
+            callable_loss = [func(current_graph, self.ent_dic) for func in lossfunctions]
         else:
-            return [func(self.target.kets,
+            callable_loss = [func(self.target.kets,
                          current_graph,
                          coefficients=self.target.amplitudes,
                          real=self.real) for func in lossfunctions]
+        return callable_loss
 
     def pre_optimize_start_graph(self, graph) -> Graph:
+        """
+        first optimization of complete starting graph
+
+        Parameters
+        ----------
+        graph
+
+        Returns
+        -------
+        preopt_graph
+
+        """
         losses = self.get_loss_functions(graph)
         valid = False
         while not valid:
@@ -136,10 +158,21 @@ class topological_opti:
         return preopt_graph
 
     def prepOptimizer(self, numweights, x=[]):
-        '''
+        """
         returns initial values and bounds for use in optimization.
 
-        '''
+        Parameters
+        ----------
+        numweights
+        x
+
+        Returns
+        -------
+        initial_values
+        bounds
+        """
+
+
 
         if self.real:
             bounds = numweights * [(-1, 1)]
@@ -162,11 +195,20 @@ class topological_opti:
         """
         conditions that stop optimization
 
+        Parameters
+        ----------
+        num_edge
+
+        Returns
+        -------
+        cont: bool
+            if True, topological optimization is continued
         """
         if self.config['loss_func'] == 'ent':
-            return len(self.graph) > self.config['min_edge'] and num_edge < len(self.graph)
+            cont = len(self.graph) > self.config['min_edge'] and num_edge < len(self.graph)
         else:
-            return num_edge < min(len(self.graph), self.config['edges_tried'])
+            cont = num_edge < min(len(self.graph), self.config['edges_tried'])
+        return cont
 
     def optimize_one_edge(self, num_edge: int,
                           num_tries_one_edge: int) -> (Graph, bool):
@@ -174,12 +216,22 @@ class topological_opti:
         delete the num_edge-th smallest edge and optimize num_tries_one_edge times
         and check if corresponding loss function fulfills checks
 
+        Parameters
+        ----------
+        num_edge
+        num_tries_one_edge
+
+        Returns
+        -------
+        new_graph
+           if edge is successfully deleted, reduced graph is returned. else graph is not modified.
+        success
         """
         # copy current Graph and delete num_edge´s smallest weight
         red_graph = self.graph
         idx_of_edge = red_graph.minimum(num_edge)
         amplitude = red_graph[idx_of_edge]
-        red_graph.remove(idx_of_edge,update=False)
+        red_graph.remove(idx_of_edge, update=False)
         red_graph.getStateCatalog()
         for ii in range(num_tries_one_edge):
             if ii == 0:
@@ -215,7 +267,11 @@ class topological_opti:
 
     def topologicalOptimization(self) -> Graph:
         """
-        does the topological main loop and returns optimized Graph
+        does the topological main loop. deletes edges until termination condition is met.
+        Returns
+        -------
+        solution_graph
+            result of optimization
         """
         num_edge = 0
         graph_history = []

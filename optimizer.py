@@ -179,7 +179,8 @@ class topological_opti:
         red_graph = self.graph
         idx_of_edge = red_graph.minimum(num_edge)
         amplitude = red_graph[idx_of_edge]
-        red_graph.remove(idx_of_edge)
+        red_graph.remove(idx_of_edge,update=False)
+        red_graph.getStateCatalog()
         for ii in range(num_tries_one_edge):
             if ii == 0:
                 try:
@@ -195,6 +196,7 @@ class topological_opti:
                                                options={'ftol': self.config['ftol']})
                 except KeyError:
                     red_graph[idx_of_edge] = amplitude
+                    print('edge necessary for producing all kets')
                     return red_graph, False  # no success keep current Graph
             else:
                 initial_values, bounds = self.prepOptimizer(len(red_graph))

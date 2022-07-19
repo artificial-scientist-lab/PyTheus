@@ -9,42 +9,31 @@ import theseus as th
 import numpy as np
 
 
-def state_countrate(state, graph, real=True, coefficients=None):
+def state_countrate(state, graph, coefficients=None, imaginary=False):
     if len(coefficients) == 0:
         coefficients = [1] * len(state)
-    target = th.targetEquation(
-        state, avail_states=graph.state_catalog, coefficients=coefficients, real=real)
-    if real:
-        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
-    else:
-        variables = ["r_{}_{}_{}_{}".format(
-            *edge) for edge in graph.edges] + ["th_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
+    target = th.targetEquation2(ket_list=state, coefficients=coefficients, 
+                                avail_states=graph.state_catalog, imaginary=imaginary)
+    variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(1+", graph.norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
 
-def state_fidelity(state, graph, real=True, coefficients=None):
+def state_fidelity(state, graph, coefficients=None, imaginary=False):
     if len(coefficients) == 0:
         coefficients = [1]*len(state)
     target = th.targetEquation(
-        state, avail_states=graph.state_catalog, coefficients=coefficients, real=real)
-    if real:
-        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
-    else:
-        variables = ["r_{}_{}_{}_{}".format(
-            *edge) for edge in graph.edges]+["th_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
+        state, avail_states=graph.state_catalog, coefficients=coefficients, imaginary=imaginary)
+    variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(0+", graph.norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
 
-
-
-
-def make_lossString_entanglement(graph, sys_dict: dict, real = True):
+def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False):
     """
     get the loss funcitons of a graph for the concuurence:
         C( |Psi> ) = √( 2 * ( 1 - TR_M( <Psi|Psi> ) ) ) 
@@ -70,13 +59,8 @@ def make_lossString_entanglement(graph, sys_dict: dict, real = True):
     cat = graph.state_catalog
     target = th.entanglement_fast(cat, sys_dict)
     #norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
-    if real:
-        variables = ["w_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
-    else:
-        variables = ["r_{}_{}_{}_{}".format(
-            *edge) for edge in graph.edges]+["th_{}_{}_{}_{}".format(*edge) for edge in graph.edges]
+    variables = th.stringEdges(graph.edges, imaginary = imaginary)
         
-    
     lambdaloss = "".join(["", target])
 
     func, lossstring = th.buildLossString(lambdaloss, variables)
@@ -88,13 +72,3 @@ def make_lossString_entanglement(graph, sys_dict: dict, real = True):
 loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [state_fidelity,state_countrate],
             'cr': [state_countrate,state_fidelity]}
-
-
-
-
-
-
-
-
-
-

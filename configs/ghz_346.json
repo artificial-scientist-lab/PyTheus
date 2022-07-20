@@ -7,7 +7,7 @@
   "num_anc": 3,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
-  "real": true,
+  "imaginary": false,
   "safe_hist": true,
   "samples": 10,
   "target_state": [

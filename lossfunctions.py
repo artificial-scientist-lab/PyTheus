@@ -9,11 +9,8 @@ import theseus as th
 import numpy as np
 
 
-def state_countrate(state, graph, coefficients=None, imaginary=False):
-    if len(coefficients) == 0:
-        coefficients = [1] * len(state)
-    target = th.targetEquation(ket_list=state, coefficients=coefficients,
-                                state_catalog=graph.state_catalog, imaginary=imaginary)
+def state_countrate(target_state, graph, imaginary=False):
+    target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(1+", graph.norm, ")"])
@@ -21,11 +18,8 @@ def state_countrate(state, graph, coefficients=None, imaginary=False):
     return func
 
 
-def state_fidelity(state, graph, coefficients=None, imaginary=False):
-    if len(coefficients) == 0:
-        coefficients = [1]*len(state)
-    target = th.targetEquation(
-        state, state_catalog=graph.state_catalog, coefficients=coefficients, imaginary=imaginary)
+def state_fidelity(target_state, graph, imaginary=False):
+    target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(0+", graph.norm, ")"])

@@ -591,5 +591,8 @@ class State():
     def normalize(self):
         self.rescale( constant = 1/self.norm )
         
-    def targetEquation(self, state_catalog = None):
-        return th.targetEquation2(self.ket_list, self.coefficients, state_catalog, self.imaginary)
+    def targetEquation(self, state_catalog = None, imaginary = None):
+        if imaginary is None:
+            return th.targetEquation(self.kets, self.amplitudes, state_catalog, self.imaginary)
+        else:
+            return th.targetEquation(self.kets, self.amplitudes, state_catalog, imaginary)

@@ -76,9 +76,8 @@ class topological_opti:
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
             callable_loss = [func(current_graph, self.ent_dic) for func in lossfunctions]
         else:
-            callable_loss = [func(self.target.kets,
+            callable_loss = [func(self.target,
                          current_graph,
-                         coefficients=self.target.amplitudes,
                          imaginary=self.imaginary) for func in lossfunctions]
         return callable_loss
 

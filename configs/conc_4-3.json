@@ -9,7 +9,7 @@
   "norm_constrain": 0,
   "num_pre": 2,
   "optimizer": "SLSQP",
-  "real": true,
+  "imaginary": false,
   "samples": 10,
   "thresholds": [
     0.0001

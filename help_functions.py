@@ -146,7 +146,7 @@ def get_complement(ls: tuple, whole_list: list):
     return tuple(set([x for x in whole_list]) - set(ls))
 
 
-def get_sysdict(dimensions_of_H: list, bipar_for_opti='all'):
+def get_sysdict(dimensions_of_H: list, bipar_for_opti='all', imaginary = False):
     """
     a dict to store
         - number of particles: sysdict['num_particles']
@@ -155,18 +155,16 @@ def get_sysdict(dimensions_of_H: list, bipar_for_opti='all'):
         - how many solution should be produced: sysdict["samples"]
     """
     sysdict = dict()
-    sysdict['all_bipartitions'] = list(
-        get_all_bi_partions(len(dimensions_of_H)))
     sysdict['dimensions'] = dimensions_of_H
     sysdict['num_ancillas'] = dimensions_of_H.count(1)
     sysdict['num_particles'] = len(dimensions_of_H) - sysdict['num_ancillas']
-    sysdict['all_kets'] = get_all_kets_for_given_dim(dimensions_of_H)
-    sysdict['all_kets_str'] = get_all_kets_for_given_dim(dimensions_of_H, str)
     sysdict['all_states'] = [tuple([(idx, int(ket[idx])) for idx in
                                     range(sysdict['num_particles'])])
-                             for ket in sysdict['all_kets_str']]
+                             for ket in
+                             get_all_kets_for_given_dim(dimensions_of_H, str)]
 
     sysdict['dim_total'] = np.product(dimensions_of_H)
     sysdict['bipar_for_opti'] = list(
         get_all_bi_partions(sysdict['num_particles'], bipar_for_opti))
+    sysdict['imaginary'] = imaginary
     return sysdict

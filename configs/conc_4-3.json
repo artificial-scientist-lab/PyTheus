@@ -5,12 +5,12 @@
   "foldername": "conc",
   "ftol": 1e-06,
   "loss_func": "ent",
-  "min_edge": 20,
+  "min_edge": 8,
   "norm_constrain": 0,
   "num_pre": 2,
   "optimizer": "SLSQP",
   "imaginary": false,
-  "samples": 10,
+  "samples": 1,
   "thresholds": [
     0.0001
   ],

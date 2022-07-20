@@ -459,7 +459,7 @@ def ptrace(u, keep, dims, optimize=False):
     return rho_a.reshape(Nkeep, Nkeep)
 
 
-def compute_entanglement(qstate: np.array, sys_dict: dict) -> float:
+def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor = 0) -> float:
     """
     calculate for a set of bipartions given in config the mean of
     trace[ rho_A ], where rho_A is reduced density matrix of given state
@@ -485,17 +485,17 @@ def compute_entanglement(qstate: np.array, sys_dict: dict) -> float:
         return 2
 
     def calc_con(mat, par):
-        red = th.ptrace(mat, par, dimi, False)
+        red = ptrace(mat, par, dimi, False)
         return np.einsum('ij,ji', red, red)  # is equivalent to trace( red**2 ) but faster
 
     loss_vec = [calc_con(qstate, par[0]) for par in sys_dict['bipar_for_opti']]
     lenght = len(loss_vec)
     mean = sum(loss_vec) / lenght
-    if confi.var_factor == 0:  # no need to compute variance if factor = 0
+    if var_factor == 0:  # no need to compute variance if factor = 0
         return mean
     else:
         var = sum([(x - mean) ** 2 for x in loss_vec]) / (lenght)
-        return mean + confi.var_factor * var
+        return mean + var_factor * var
 
 
 def entanglement_fast(avail_states: dict, sys_dict: dict):

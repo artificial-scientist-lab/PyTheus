@@ -12,12 +12,16 @@ from optimizer import topological_opti
 
 from fancy_classes import Graph, State
 # import config_concurrence as confi
+from state import state1 as sst
 import theseus as th
 import help_functions as hf
 import sys
-from state import state1
 import saver
 import json
+
+
+file_path = os.path.dirname(os.path.abspath(__file__)) + '/configs'
+os.chdir(file_path)
 
 config = sys.argv[1]
 with open(config + ".json") as data:
@@ -32,7 +36,8 @@ if cnfg['loss_func'] == 'ent':
     if len(dimensions) % 2 != 0:
         dimensions.append(1)
     target_state = None
-    sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'])
+    sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'],
+                              imaginary = cnfg['imaginary'])
 else:
     # target state optimization
     sys_dict = None
@@ -63,3 +68,11 @@ for i in range(cnfg['samples']):
 graph_res.getState()
 print(f'finished with graph with {len(graph_res.edges)} edges.')
 print(graph_res.edges)
+result = sst(graph_res.state.state)
+result.info()
+
+
+
+
+
+

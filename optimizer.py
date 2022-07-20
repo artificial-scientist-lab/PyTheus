@@ -16,7 +16,7 @@ class topological_opti:
     def __init__(self, start_graph: Graph, ent_dic=None, target_state=None, config=None):
 
         self.config = config
-        self.real = self.config['real']
+        self.imaginary = self.config['imaginary']
         if self.config['loss_func'] == 'ent':
             self.ent_dic = ent_dic
         else:
@@ -79,7 +79,7 @@ class topological_opti:
             callable_loss = [func(self.target.kets,
                          current_graph,
                          coefficients=self.target.amplitudes,
-                         real=self.real) for func in lossfunctions]
+                         imaginary=self.imaginary) for func in lossfunctions]
         return callable_loss
 
     def pre_optimize_start_graph(self, graph) -> Graph:
@@ -174,7 +174,7 @@ class topological_opti:
 
 
 
-        if self.real:
+        if not self.imaginary:
             bounds = numweights * [(-1, 1)]
             if len(x) == 0:
                 initial_values = 2 * np.random.random(numweights) - 1

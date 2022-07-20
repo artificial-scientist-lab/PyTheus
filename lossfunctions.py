@@ -12,8 +12,8 @@ import numpy as np
 def state_countrate(state, graph, coefficients=None, imaginary=False):
     if len(coefficients) == 0:
         coefficients = [1] * len(state)
-    target = th.targetEquation2(ket_list=state, coefficients=coefficients, 
-                                avail_states=graph.state_catalog, imaginary=imaginary)
+    target = th.targetEquation(ket_list=state, coefficients=coefficients,
+                                state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(1+", graph.norm, ")"])
@@ -25,7 +25,7 @@ def state_fidelity(state, graph, coefficients=None, imaginary=False):
     if len(coefficients) == 0:
         coefficients = [1]*len(state)
     target = th.targetEquation(
-        state, avail_states=graph.state_catalog, coefficients=coefficients, imaginary=imaginary)
+        state, state_catalog=graph.state_catalog, coefficients=coefficients, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(0+", graph.norm, ")"])

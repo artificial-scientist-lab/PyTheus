@@ -47,7 +47,7 @@ else:
     dimensions = th.stateDimensions(target_kets)
 
 # build starting graph
-edge_list = th.buildAllEdges(dimensions, real=cnfg['real'])
+edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
 edge_list = hf.prepEdgeList(edge_list, cnfg)
 
 print(f'start graph has {len(edge_list)} edges.')

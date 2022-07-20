@@ -74,11 +74,10 @@ class topological_opti:
         # get loss function acc. to config
         lossfunctions = loss_dic[self.config['loss_func']]
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
-            callable_loss = [func(current_graph, self.ent_dic) for func in lossfunctions]
+            loss_specs = {'sys_dict': self.ent_dic}
         else:
-            callable_loss = [func(self.target,
-                         current_graph,
-                         imaginary=self.imaginary) for func in lossfunctions]
+            loss_specs = {'target_state': self.target, 'imaginary': self.imaginary}
+        callable_loss = [func(current_graph, **loss_specs) for func in lossfunctions]
         return callable_loss
 
     def pre_optimize_start_graph(self, graph) -> Graph:
@@ -170,8 +169,6 @@ class topological_opti:
         initial_values
         bounds
         """
-
-
 
         if not self.imaginary:
             bounds = numweights * [(-1, 1)]

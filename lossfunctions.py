@@ -9,7 +9,7 @@ import theseus as th
 import numpy as np
 
 
-def state_countrate(target_state, graph, imaginary=False):
+def state_countrate(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()
@@ -18,7 +18,7 @@ def state_countrate(target_state, graph, imaginary=False):
     return func
 
 
-def state_fidelity(target_state, graph, imaginary=False):
+def state_fidelity(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
     graph.getNorm()

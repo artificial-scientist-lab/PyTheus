@@ -229,7 +229,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     
     def getStateCatalog(self):
         if self.full:
-            self.state_catalog = th.allEdgeCovers(self.dimensions, order=0)
+            self.state_catalog = th.allPerfectMatchings(self.dimensions)
         else:
             self.state_catalog = th.stateCatalog(th.findPerfectMatchings(self.edges))
     

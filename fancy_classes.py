@@ -171,19 +171,45 @@ class Graph(): # should this be an overpowered dictionary? NOPE
     # this should be __del__ but then you would have to do: del self.graph[] etc
     def remove(self, edge, update=True):
         del self.graph[edge]
-        remove_ket_list = []
-        for ket, pm_list in self.state_catalog.items():
-            if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
-                self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
-                if update and len(self.state_catalog[ket]) == 0:
-                    remove_ket_list.append(ket)
-        for ket in remove_ket_list:
-            del self.state_catalog[ket]
+        if update:
+            remove_ket_list = []
+            for ket, pm_list in self.state_catalog.items():
+                if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                    self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
+                    if len(self.state_catalog[ket]) == 0:
+                        remove_ket_list.append(ket)
+            for ket in remove_ket_list:
+                del self.state_catalog[ket]
         # if update:
         #    if self.norm != DEFAULT_NORM: self.getNorm()
         #    if self.state != DEFAULT_STATE: self.getState()
     
-    #def purge(self, threshold, update=True):
+    def purge(self, threshold=1e-4, update=True):
+        '''
+        It removes all edges whose weights, in absolute value, are below `threshold`.
+        '''
+        remove_edges = []
+        if self.imaginary == 'polar':
+            for edge, weight in self.graph.items():
+                if abs(weight[0]) < threshold:
+                    remove_edges.append(edge)
+        else:
+            for edge, weight in self.graph.items():
+                if abs(weight) < threshold:
+                    remove_edges.append(edge)
+        for edge in remove_edges:
+            del self.graph[edge]
+        if update:
+            remove_ket_list = []
+            for ket, pm_list in self.state_catalog.items():
+                for edge in remove_edges:
+                    if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                        self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
+            for ket, pm_list in self.state_catalog.items():
+                if len(pm_list) == 0:
+                    remove_ket_list.append(ket)       
+            for ket in remove_ket_list:
+                del self.state_catalog[ket]
 
     # DEFINE GET, SET AND DEL ITEM
         
@@ -371,7 +397,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
 
         return [self.edges[ii] for ii in delind]
             
-    def clamp(self,maximum=1, minimum=None): #, rescale=False):
+    def clamp(self, maximum=1, minimum=None): #, rescale=False):
         if maximum >= 0:
             if minimum == None:
                 minimum = - maximum
@@ -534,6 +560,22 @@ class State():
         else:
             raise ValueError(WRONG_IMAGINARY)
         return self
+    
+    def purge(self, threshold=1e-4):
+        '''
+        It removes all kets whose amplitudes, in absolute value, are below `threshold`.
+        '''
+        remove_kets = []
+        if self.imaginary == 'polar':
+            for ket, amplitude in self.state.items():
+                if abs(amplitude[0]) < threshold:
+                    remove_kets.append(ket)
+        else:
+            for ket, amplitude in self.state.items():
+                if abs(amplitude) < threshold:
+                    remove_kets.append(ket)
+        for ket in remove_kets:
+            del self.state[ket]
     
     @property
     def kets(self):

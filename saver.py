@@ -125,7 +125,7 @@ class saver:
         existing_summary = read_json(path_exst_summary)
         try:
             same = all([compare(self.config[key], existing_summary[key])
-                    for key in self.config.keys()])
+                        for key in self.config.keys()])
         except KeyError:
             same = False
         return same
@@ -190,8 +190,11 @@ class saver:
         takes as input object Graph and generate a file name out of it
 
         """
-
-        file_name = str(len(graph.graph)) + '-'
+        if all(abs(np.array(graph.weights)) > 0.95):
+            clean = 'clean'
+        else:
+            clean = 'rough'
+        file_name = clean + '-' + str(len(graph.graph)) + '-'
         graph.getStateCatalog()
         file_name += str(len(graph.perfect_matchings)) + '-'
 

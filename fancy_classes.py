@@ -1,9 +1,16 @@
 import numpy as np
 import theseus as th
+from copy import deepcopy
 
 # +
 DEFAULT_NORM = 'Not stored yet. You have to run getNorm().'
 DEFAULT_STATE = 'Not stored yet. You have to run getState().'
+WRONG_IMAGINARY = 'The property `imaginary` is NOT defined correctly.'
+
+
+def invalidInput(input_name):
+    return f'Introduce a valid input `{input_name}`.'
+
 
 def defaultValues(length, imaginary):
     if imaginary in [False, 'cartesian']:
@@ -11,9 +18,7 @@ def defaultValues(length, imaginary):
     elif imaginary == 'polar':
         return [(True,False)]*length
     else:
-        raise ValueError('Introduce a valid input `imaginary`: `cartesian` or `polar`.')
-
-
+        raise ValueError(invalidInput('imaginary'))
 # -
 
 # # The Graph class
@@ -69,7 +74,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                 weights = [tuple(ed[-2], ed[-1]) for ed in edges]
                 edges = [ed[:4] for ed in edges]
             else:
-                raise ValueError('Introduce a valid input `edges`.')
+                raise ValueError(invalidInput('edges'))
         elif type(edges) == dict:
             weights = [edges[key] for key in sorted(edges.keys())]
             edges = sorted( edges.keys() )
@@ -78,11 +83,11 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                 if all(len(edge)==4 for edge in edges):
                     pass # seems legit
                 else: 
-                    raise ValueError('Introduce a valid input `edges`.')
+                    raise ValueError(invalidInput('edges'))
             else: 
-                raise ValueError('Introduce a valid input `edges`.')
+                raise ValueError(invalidInput('edges'))
         else:
-            raise ValueError('Introduce a valid input `edges`.')
+            raise ValueError(invalidInput('edges'))
             
         if len(weights) == 0: # The default option True behaves (mostly) as 1
             weights = defaultValues(len(edges), self.imaginary)
@@ -100,7 +105,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                     elif self.imaginary == 'polar':
                         weights = [tuple(val[0], val[1]) for val in weights]
                     else:
-                        raise ValueError('Introduce a valid input `imaginary`.') 
+                        raise ValueError(invalidInput('imaginary')) 
                 else:
                     raise ValueError('Introduce valid weights.')
             else:
@@ -144,9 +149,24 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                     self.imaginary = 'cartesian'
                     print('Weight stored in cartesian notation.')
             else:
-                raise ValueError('Invalid weight.')
+                raise ValueError(invalidInput('weight'))
         else:
-            raise ValueError('Invalid edge.')
+            raise ValueError(invalidInput('edge'))
+    
+    # The method __round__ for the class State is almost the same, could it be reformat?
+    def __round__(self, ndigits=0):
+        if self.imaginary == False:
+            for edge in self.edges:
+                self[edge] = round(self[edge], ndigits)
+        elif self.imaginary == 'cartesian':
+            for edge in self.edges:
+                self[edge] = round(self[edge].real, ndigits) + 1j*round(self[edge].imag, ndigits)
+        elif self.imaginary == 'polar':
+            for edge in self.edges:
+                self[edge] = (round(self[edge][0], ndigits), self[edge][1])
+        else:
+            raise ValueError(WRONG_IMAGINARY)
+        return self
     
     # this should be __del__ but then you would have to do: del self.graph[] etc
     def remove(self, edge, update=True):
@@ -162,6 +182,8 @@ class Graph(): # should this be an overpowered dictionary? NOPE
         # if update:
         #    if self.norm != DEFAULT_NORM: self.getNorm()
         #    if self.state != DEFAULT_STATE: self.getState()
+    
+    #def purge(self, threshold, update=True):
 
     # DEFINE GET, SET AND DEL ITEM
         
@@ -193,12 +215,15 @@ class Graph(): # should this be an overpowered dictionary? NOPE
             raise ValueError('The weights are NOT defined correctly.')
     
     # imaginary could be redefined as one of these properties
+    
+    def copy(self):
+        return deepcopy(self)
 
     def addEdge(self, edge, weight=None, update=True):
         if len(edge)==4 and all(isinstance(val, int) for val in edge):
             edge = tuple(edge)
         else:
-            raise ValueError('Introduce a valid edge.')
+            raise ValueError(invalidInput('edge'))
         if edge in self.edges:
             print('The edge is going to be redefined.')
             update = False # there's no need to update the state_catalog
@@ -265,7 +290,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                 for kk, vv in self.graph.items():
                     self.graph[kk] = abs(vv[0])
             else:
-                raise ValueError('The property `imaginary` is NOT defined correctly.')
+                raise ValueError(WRONG_IMAGINARY)
         else:
             for kk, vv in self.graph.items():
                 self.graph[kk] = True
@@ -384,7 +409,7 @@ class State():
         elif type(kets) in [list, tuple]:
             pass # seems legit
         else:
-            raise ValueError('Introduce a valid input `kets`.')
+            raise ValueError(invalidInput('kets'))
 
         # Verification of appropiate kets            
         kets_shape = np.shape(kets)
@@ -412,7 +437,7 @@ class State():
                     elif self.imaginary == 'polar':
                         amplitudes = [tuple(val[0], val[1]) for val in amplitudes]
                     else:
-                        raise ValueError('Introduce a valid input `imaginary`.') 
+                        raise ValueError(invalidInput('imaginary')) 
                 else:
                     raise ValueError('Introduce valid amplitudes.')
             else:
@@ -446,7 +471,7 @@ class State():
         elif isinstance(ket, (tuple,list)):
             pass # seems legit
         else:
-            raise ValueError('Invalid ket.')
+            raise ValueError(invalidInput('ket'))
 
         if isinstance(amplitude, (int,float,complex)):
             if self.imaginary == 'polar':
@@ -464,7 +489,7 @@ class State():
                 self.imaginary = 'cartesian'
                 print('Amplitude stored in cartesian notation.')
         else:
-            raise ValueError('Invalid amplitude.')
+            raise ValueError(invalidInput('amplitude'))
     
     def __matmul__(self, other):
         '''
@@ -495,6 +520,21 @@ class State():
         # turning into array the second term is redundant, but somehow faster
         return np.conjugate(amplitudes_a) @ np.array(amplitudes_b)
     
+    # The method __round__ for the class State is almost the same, could it be reformat?
+    def __round__(self, ndigits=0):
+        if self.imaginary == False:
+            for ket in self.kets:
+                self[ket] = round(self[ket], ndigits)
+        elif self.imaginary == 'cartesian':
+            for ket in self.kets:
+                self[ket] = round(self[ket].real, ndigits) + 1j*round(self[ket].imag, ndigits)
+        elif self.imaginary == 'polar':
+            for ket in self.kets:
+                self[ket] = (round(self[ket][0], ndigits), self[ket][1])
+        else:
+            raise ValueError(WRONG_IMAGINARY)
+        return self
+    
     @property
     def kets(self):
         return list(self.state.keys())
@@ -517,6 +557,11 @@ class State():
             return True
         else:
             raise ValueError('The amplitudes are NOT defined correctly.')
+    
+    # imaginary could be redefined as one of these properties
+    
+    def copy(self):
+        return deepcopy(self)
 
     def addKet(self, ket, amplitude=None):
         if isinstance(ket, str):

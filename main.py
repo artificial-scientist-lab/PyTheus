@@ -4,6 +4,7 @@ Created on Tue Jul 12 12:24:53 2022
 
 @author: janpe
 """
+
 import os
 
 file_path = os.path.dirname(os.path.abspath(__file__))
@@ -20,10 +21,7 @@ import saver
 import json
 
 
-file_path = os.path.dirname(os.path.abspath(__file__)) + '/configs'
-os.chdir(file_path)
-
-config = sys.argv[1]
+config = sys.argv[1] #conc_4-3 'ghz_346' #
 with open(config + ".json") as data:
     cnfg = json.load(data)
 
@@ -64,11 +62,18 @@ for i in range(cnfg['samples']):
     optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()
     sv.save_graph(optimizer)
-
+#%%
 graph_res.getState()
 print(f'finished with graph with {len(graph_res.edges)} edges.')
-print(graph_res.edges)
-result = sst(graph_res.state.state)
+print(graph_res.state.state)
+
+ancillas = dimensions.count(1)
+if ancillas != 0:
+    end_res = dict()
+    for kets,ampl in graph_res.state.state.items():
+        end_res[kets[:-ancillas]] = ampl
+else: end_res = graph_res.state.state
+result = sst(end_res)
 result.info()
 
 

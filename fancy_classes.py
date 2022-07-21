@@ -371,7 +371,7 @@ class Graph(): # should this be an overpowered dictionary? NOPE
 
         return [self.edges[ii] for ii in delind]
             
-    def clamp(maximum=1, minimum=None): #, rescale=False):
+    def clamp(self,maximum=1, minimum=None): #, rescale=False):
         if maximum >= 0:
             if minimum == None:
                 minimum = - maximum

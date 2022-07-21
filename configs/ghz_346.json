@@ -9,7 +9,7 @@
   "optimizer": "L-BFGS-B",
   "imaginary": false,
   "safe_hist": true,
-  "samples": 10,
+  "samples": 1,
   "target_state": [
     "000",
     "111",

@@ -23,6 +23,7 @@ class topological_opti:
             self.target = target_state  # object of State class
 
         self.graph = self.pre_optimize_start_graph(start_graph)
+        self.loss_vals_secondary = []
 
     def check(self, result: object, lossfunctions: object):
         """
@@ -256,6 +257,9 @@ class topological_opti:
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is
                 self.loss_val = result.fun
+                self.loss_vals_secondary = []
+                for ii in range(1, len(losses)):
+                    self.loss_vals_secondary.append(losses[ii](result.x))
                 return Graph(red_graph.edges, weights=result.x), True
         # all tries failed keep current Graph
         red_graph[idx_of_edge] = amplitude

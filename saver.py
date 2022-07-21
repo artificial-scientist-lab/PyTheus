@@ -174,7 +174,8 @@ class saver:
             # TODO: rewrite best_graph to file on this line (then we get best graph even if run is cancelled before it is finished)
 
         safe_dic = {'graph': self.convert_graph_keys_in_str(topo.graph.graph),
-                    'loss': topo.loss_val}
+                    'loss': topo.loss_val,
+                    'secondary losses': topo.loss_vals_secondary}
 
         try:
             safe_dic['graph_hist'] = [self.convert_graph_keys_in_str(xx.graph)

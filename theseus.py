@@ -17,25 +17,21 @@ import json
 # Helpful functions used in many processes but not by the final user. 
 
 def allPairSplits(lst):
-    """ 
+    '''     
     Generate all sets of unique pairs from a list `lst`.
-    This is equivalent to all _partitions_ of `lst` (considered as an indexed 
-    set) which have 2 elements in each partition.
-    Recall how we compute the total number of such partitions. Starting with 
-    a list [1, 2, 3, 4, 5, 6]
+    This is equivalent to all partitions of `lst` (considered as an indexed set) which have 2 elements
+    in each partition.
     
-    one takes off the first element, and chooses its pair [from any of the 
-    remaining 5]. For example, we might choose our first pair to be (1, 4). 
-    Then, we take off the next element, 2, and choose which element it is 
-    paired to (say, 3). So, there are 5 * 3 * 1 = 15 such partitions.
-    That sounds like a lot of nested loops (i.e. recursion), because 1 could 
-    pick 2, in which case our next element is 3. But, if one abstracts "what 
-    the next element is", and instead just thinks of what index it is in the 
-    remaining list, our choices are static and can be aided by the 
-    itertools.product() function.
+    Recall how we compute the total number of such partitions. Starting with a list [1, 2, 3, 4, 5, 6]
+    one takes off the first element, and chooses its pair [from any of the remaining 5]. For example, 
+    we might choose our first pair to be (1, 4). Then, we take off the next element, 2, and choose 
+    which element it is paired to (say, 3). So, there are 5 * 3 * 1 = 15 such partitions.
+    That sounds like a lot of nested loops (i.e. recursion), because 1 could pick 2, in which case our 
+    next element is 3. But, if one abstracts "what the next element is", and instead just thinks of what 
+    index it is in the remaining list, our choices are static and can be aided by the product function.
     
     From selfgatoatigrado: https://stackoverflow.com/a/13020502
-    """
+    '''
     N = len(lst)
     choice_indices = itertools.product(*[range(k) for k in reversed(range(1, N, 2))])
 
@@ -52,17 +48,17 @@ def targetEdges(nodes, graph):
     '''
     Returns all graph's edges which connect to the input nodes.
     '''
-    return [ed for ed in graph if (ed[0] in nodes) or (ed[1] in nodes)]
+    return [edge for edge in graph if (edge[0] in nodes) or (edge[1] in nodes)]
 
 
 def removeNodes(nodes, graph):
     '''
     Removes all graph's edges which connect to the input nodes.
     '''
-    return [ed for ed in graph if not ((ed[0] in nodes) or (ed[1] in nodes))]
+    return [edge for edge in graph if not ((edge[0] in nodes) or (edge[1] in nodes))]
 
 
-def deadEndEdges(graph):
+def deadEndEdges(graph): # Unused
     '''
     Returns all edges connecting nodes with degree one.
     '''
@@ -70,10 +66,23 @@ def deadEndEdges(graph):
     return targetEdges(unq[counts == 1], graph)
 
 
-def edgeBleach(color_edges):  # this may end up being useless
+def edgeBleach(color_edges):
     '''
-    Takes list of color edges and return dictionary with uncolored ones
-    and all possible colors for each.
+    Given a list of colored edges, returns a dictionary with the available colors (values) for each 
+    of the edges (keys).
+    
+    This function helps to speed up the function `findPerfectMatchings`.
+    
+    Parameters
+    ----------
+    color_edges : list of tuples
+        List of all colored edges: [(node1, node2, color1, color2), ...].
+        
+    Returns
+    -------
+    bleached_edges : dictionary
+        Dictionary with the color combinations available for each edge:
+        {(node1, node2): [(color1, color2), ...], (node1, node3): [(color2, color1), ...], ...}
     '''
     raw_edges = np.unique(np.array(color_edges)[:, :2], axis=0)
     bleached_edges = {tuple(edge): [] for edge in raw_edges}
@@ -84,21 +93,20 @@ def edgeBleach(color_edges):  # this may end up being useless
 
 def allColorGraphs(color_nodes):
     '''
-    Given a list of colored nodes, i.e., an state. It uses AllPairSplits to 
-    generate all graphs that leads to such state.
-    This function is a building block of the function 'allPerfectMatchings'.
+    Given a list of colored nodes, i.e., an state. It uses AllPairSplits to generate all graphs that
+    leads to such state. This function is a building block of the function 'allPerfectMatchings'.
     
     Parameters
     ----------
-    color_nodes : list
+    color_nodes : list of tuples
         List of all colored nodes: [(node,color)...] Some may be repeated.
         
     Returns
     -------
     graph_list : list of tuples
         Nested list with all graphs that produce a given state.
-        Example: given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces:
-             [(0, 1, 0, 1), (0, 1, 1, 1)]]
+        For example, given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces: 
+        [(0, 1, 0, 1), (0, 1, 1, 1)]]
     '''
     color_graph = list(allPairSplits(sorted(list(color_nodes))))
     for graph in color_graph: graph.sort()
@@ -114,24 +122,24 @@ def allColorGraphs(color_nodes):
 # # Informative Functions
 # Return some information about dimensions, edges, graphs...
 
-def nodeDegrees(edge_list, nodes_list=[], rising=True):
+def nodeDegrees(edge_list, nodes_list=[], increasing=True):
     '''
-    Compute the degree of each node of a graph. Returning a list of tuples
-    such that: [(node1, degree1), (node2, degree2) ...]
+    Compute the degree of each node of a graph. Returning a list of tuples such that: 
+    [(node1, degree1), (node2, degree2) ...]
     By default, it sorts the nodes by their degree in increasing order.
     
     Parameters
     ----------
-    edge_list : list
-        List of all available edges.
+    edge_list : list of tuples
+        List of all available edges: [(node1, node2, color1, color2), ...]
     nodes_list : list, optional
-        List of all nodes. By default, the list is obtained from the nodes 
-        that appear in edge_list.
-    rising : boolean, optional
+        List of all nodes. By default, the list is obtained from the nodes that appear in edge_list.
+    increasing : boolean, optional
         If True, the nodes are ordered by degree.
+    
     Returns
     -------
-    links : list
+    links : list of tuples
         List of nodes and their degrees: [(node1, degree1), ...]
     '''
     if len(nodes_list) == 0: nodes_list = np.unique(np.array(edge_list)[:, :2])
@@ -139,19 +147,28 @@ def nodeDegrees(edge_list, nodes_list=[], rising=True):
     for edge in edge_list:
         links[edge[0]] += 1
         links[edge[1]] += 1
-    if rising:
+    if increasing:
         return sorted(links.items(), key=lambda item: item[1])
     else:
         return [(k, v) for k, v in links.items()]
 
-
+    
 def graphDimensions(edge_list):
     '''
-    Estimate the dimensions of a graph from its edges.
+    Estimate the dimensions of a graph based on its edges.
 
-    The output dimensions are in decreasing order: we assume 
-    the dimension of a node N, is equal or larger than the 
-    dimension of a node N+1.
+    The output dimensions are in decreasing order: we assume the dimension of a node N, is equal or
+    larger than the dimension of a node N+1.
+    
+    Parameters
+    ----------
+    edge_list : list of tuples
+        List of all available edges: [(node1, node2, color1, color2), ...]
+    
+    Returns
+    -------
+    dimensions : list
+        List with the dimensions accessible to each node in decreasing order. 
     '''
     color_nodes = set()
     for edge in edge_list:
@@ -170,14 +187,23 @@ def graphDimensions(edge_list):
 
 def stateDimensions(ket_list):
     '''
-    Give the local dimensions necessary for a given state.
+    Given a state, it returns the dimensions accessible to each particle.
+    
+    Parameters
+    ----------
+    ket_list : list of tuples
+        List of kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].
+    
+    Returns
+    -------
+    dimensions : list
+        List with the dimensions accessible to each particle. 
     '''
-    num_particles = len(ket_list[0])
-    dim = [1] * num_particles
+    dimensions = [1] * len(ket_list[0])
     for ket in ket_list:
-        for ii, op in enumerate(ket):
-            dim[ii] = np.maximum(dim[ii], op[1] + 1)
-    return dim
+        for ii, local_dim in enumerate(ket):
+            dimensions[ii] = np.maximum(dimensions[ii], local_dim[1] + 1)
+    return dimensions
 
 
 # # Generators
@@ -185,41 +211,41 @@ def stateDimensions(ket_list):
 
 def stateCatalog(graph_list):
     '''
-    Given a list of colored graphs, returns a dictionary with graphs grouped 
-    by the state they generate. Each of these states is a dictionary key.
+    Given a list of colored graphs, returns a dictionary with graphs grouped by the state they generate.
+    Each of these states is a dictionary key.
     
     Parameters
     ----------
     graph_list : list
         List of graphs.
+    
     Returns
     -------
-    state_dict : dictionary
-        Dictionary with all the states created by each graph as keys. If more 
-        than one graph leads to the same state their are listed together in 
-        the corresponding entrance of the dictionary.
+    state_catalog : dictionary
+        Dictionary with all the kets created by each graph as keys. If more than one graph leads to
+        the same state, they are listed together in the corresponding entrance of the dictionary.
     '''
-    state_dict = {}
+    state_catalog = {}
     for graph in graph_list:
         coloring = []
         for ed in graph: coloring += [(ed[0], ed[2]), (ed[1], ed[3])]
         coloring = tuple(sorted(coloring))
         try:
-            state_dict[coloring] += [graph]
+            state_catalog[coloring] += [graph]
         except KeyError:
-            state_dict[coloring] = [graph]
-    return state_dict
+            state_catalog[coloring] = [graph]
+    return state_catalog
 
 
 def buildAllEdges(dimensions, string=False, imaginary=False):
     '''
-    Given a collection of nodes, each with several possible colors/dimensions, 
-    returns all possible edges of the graph.
+    Given a collection of nodes, each with several possible colors/dimensions, returns all possible
+    edges of the graph.
     
     Parameters
     ----------
-    dimensions : array_like
-        Accesible dimensions (colors) for each of the nodes of the graph.
+    dimensions : list
+        Accesible dimensions/colors for each of the nodes of the graph.
     string : boolean, optional
         If True, it returns a list of strings instead of tuples. 
     imaginary : boolean, str ('cartesian' or 'polar'), optional
@@ -228,7 +254,7 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
     Returns
     -------
     all_edges : list
-        List of all possible edges given the dimensions of the nodes.
+        List of all possible edges given the dimensions of the nodes. 
         If string, it returns a list of strings.
         Else, it returns a list of tuples: (node1, node2, color1, color2).
     '''
@@ -249,6 +275,21 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
 
 
 def stringEdges(edge_list, imaginary=False):
+    '''
+    Given a list of edges written as tuples it returns them in string format.
+    
+    Parameters
+    ----------
+    edge_list : list of tuples
+        List of edges: [(node1, node2, color1, color2), ...]   
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, it returns real weights. Else, the weights are complex and defined by string pairs. 
+        
+    Parameters
+    ----------
+    list of str
+        List of weight' strings.
+    '''
     if imaginary == False:
         return ['w_{}_{}_{}_{}'.format(*edge) for edge in edge_list]
     else:
@@ -258,8 +299,21 @@ def stringEdges(edge_list, imaginary=False):
 
 def buildRandomGraph(dimensions, num_edges, cover_all=True):
     '''
-    Given a set of nodes with different dimensions it build a random graph
-    with a given number of edges that connects all nodes.
+    Given a set of nodes with different dimensions it build a random graph with a given number of edges.
+    
+    Parameters
+    ----------
+    dimensions : list
+        Accesible dimensions/colors for each of the nodes of the graph.
+    num_edges : int
+        Number of edges of the random graph.
+    cover_all : boolean, optional
+        If True, it makes sure the selected edges cover all the nodes of the graph.   
+        
+    Returns
+    -------
+    graph : list of tuples
+        List of randomly chosen edges: [(node1, node2, color1, color2), ...]
     '''
     all_edges = buildAllEdges(dimensions)
     # even when only one dimension is available we put it on the symbols
@@ -281,24 +335,21 @@ def buildRandomGraph(dimensions, num_edges, cover_all=True):
 
 def allPerfectMatchings(dimensions):
     '''
-    Given a collection of nodes with different dimensions/colors available, 
-    it produces all possible states that erase from these and the different 
-    graphs that can produce such states.
-    The graphs nodes can present different degres, the edges may be duplicated
-    (multigraph).
+    Given a collection of nodes with different dimensions/colors available, it produces all possible
+    states that erase from these and the different graphs that can produce such states.
+    The graphs nodes can present different colors/dimensions and be connected by more than one edge.
     
     Parameters
     ----------
-    dimensions : array_like
-        Accesible dimensions (colors) for each of the nodes of the graph.
+    dimensions : list
+        Accesible dimensions/colors for each of the nodes of the graph.
         
     Returns
     -------
     color_dict : dictionary
-        Dictionary of available states. The keys are the different combinations 
-        of colored nodes (creator operators), that is, the state produced. 
-        For each or state, the dictionary stores a list of all possible graphs
-        that produce such state.
+        Dictionary of available states. The keys are the different combinations of colored nodes
+        (creator operators), that is, the state produced. 
+        For each or state, the dictionary stores a list of all possible graphs that produce such state.
         The notation employed for the nodes is: (node, color/dimension).
         The notation employed for the edges is: (node1, node2, color1, color2).
         Node2 cannot be lower than Node1.
@@ -338,7 +389,20 @@ def recursivePerfectMatchings(graph, store, matches=[], edges_left=None):
 
 def findPerfectMatchings(graph):
     '''
-    Returns all possible perfect matchings (if any) given a list of edges.
+    Returns all possible perfect matchings (if any) of a graph.
+    
+    It starts by taking away the color/dimensions of the edges. Once the perfect matchings are build
+    for the uncolored edges, it 'paint' them again with all possible combinations.
+    
+    Parameters
+    ----------
+    graph : list of tuples
+        List of edges: [(node1, node2, color1, color2), ...].
+        
+    Returns
+    -------
+    painted_matchings : list of tuples
+        Lists of all the possible perfect matchings of the input graph.
     '''
     avail_colors = edgeBleach(graph)
     raw_matchings = []
@@ -355,6 +419,22 @@ def findPerfectMatchings(graph):
 # Write the string expressions used in the optimization.
 
 def edgeWeight(edge, imaginary=False):
+    '''
+    It writes the edge's weight as needed for `writeNorm`, `targetEquation`, and others.
+    
+    Parameters
+    ----------
+    edge : tuple
+        Edge in tuple notation: (node1, node2, color1, color2).
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
+        are complex values written in the corresponding notation.
+        
+    Returns
+    -------
+    str
+        Edge's weight written as string for contributions on a particular ket.
+    '''
     if imaginary == False:
         return 'w_{}_{}_{}_{}'.format(*edge)
     elif imaginary == 'cartesian':
@@ -365,16 +445,47 @@ def edgeWeight(edge, imaginary=False):
         raise ValueError('Introduce a valid input `imaginary`.')
 
 
-def weightProduct(graph, imaginary=False):
-    return '*'.join([edgeWeight(edge, imaginary) for edge in graph])
-
-
-def writeNorm(states_dict, imaginary=False):
+def weightProduct(edge_list, imaginary=False):
     '''
-    Build a normalization constant with all the states of a dictionary.
+    It writes the product of edge's weights as needed for `writeNorm`, `targetEquation`, and others.
+    
+    Parameters
+    ----------
+    edge_list : list of tuples
+        List of edges: [(node1, node2, color1, color2), ...].
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
+        are complex values written in the corresponding notation.
+        
+    Returns
+    -------
+    str
+        Product of edge's weights written as string for contributions on a particular ket.
+    '''
+    return '*'.join([edgeWeight(edge, imaginary) for edge in edge_list])
+
+
+def writeNorm(state_catalog, imaginary=False):
+    '''
+    Write a normalization function with all the states of a dictionary.
+    
+    Parameters
+    ----------
+    state_catalog : dictionary
+        Dictionary with all the kets created by each graph as keys. If more than one graph leads to
+        the same state, they are listed together in the corresponding entrance of the dictionary.
+    
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
+        are complex values written in the corresponding notation.
+        
+    Returns
+    -------
+    str
+        Norm string with the contributions of each perfect matching to their corresponding ket.
     '''
     norm_sum = []
-    for key, values in states_dict.items():
+    for key, values in state_catalog.items():
         term_sum = [f'{weightProduct(graph, imaginary)}' for graph in values]
         term_sum = ' + '.join(term_sum)
         if imaginary == False:
@@ -384,24 +495,45 @@ def writeNorm(states_dict, imaginary=False):
     return ' + '.join(norm_sum)
 
 
-def targetEquation(ket_list, coefficients=None, state_catalog=None, imaginary=False):
+def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
     '''
-    Introducing the coefficients for each ket, it writes a non-normalized fidelity 
-    function with all the ways the state can be build stored in state_catalog. 
-    If no state_catalog is introduced it builds all possible graphs that generate 
-    the desired kets.
+    Introducing the amplitudes for each ket, it writes a non-normalized fidelity function with all 
+    the ways the state can be build stored in state_catalog.
+    
+    If no state_catalog is introduced it builds all possible graphs that generate the desired kets.
+    
+    Parameters
+    ----------
+    ket_list : list of tuples
+        List of kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].
+        
+    amplitudes : list, optional
+        List of the amplitudes we aim for each ket. If None, all will be the same.
+        
+    state_catalog : dictionary, optional
+        Dictionary with all the kets created by each graph as keys. If more than one graph leads to
+        the same state, they are listed together in the corresponding entrance of the dictionary.
+    
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
+        are complex values written in the corresponding notation.
+        
+    Returns
+    -------
+    str
+        Non-normalized fidelity string with all the contributing weights.
     '''
-    if coefficients == None:
-        coefficients = [1] * len(ket_list)
+    if amplitudes == None:
+        amplitudes = [1] * len(ket_list)
     else:
-        if len(coefficients) != len(ket_list):
-            raise ValueError('The number of coefficients and states should be the same')
-    norm2 = abs(np.conjugate(coefficients) @ coefficients)
+        if len(amplitudes) != len(ket_list):
+            raise ValueError('The number of amplitudes and states should be the same')
+    norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
     if norm2 != 1: norm2 = str(norm2)
     if state_catalog == None:
         state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     equation_sum = []
-    for coef, ket in zip(np.conjugate(coefficients), ket_list):
+    for coef, ket in zip(np.conjugate(amplitudes), ket_list):
         term_sum = [weightProduct(graph, imaginary) for graph in state_catalog[tuple(ket)]]
         term_sum = '+'.join(term_sum)
         equation_sum.append(f'({coef})*({term_sum})')
@@ -427,20 +559,18 @@ def ptrace(u, keep, dims, optimize=False):
 
     ρ_a = Tr_b(|u><u|)
 
-    from: https://scicomp.stackexchange.com/questions/30052/calculate-partial-trace-of-an-outer-product-in-python?rq=1
+    From slek120: https://scicomp.stackexchange.com/a/30057
+    
     Parameters
     ----------
     u : array
         Vector to use for outer product
     keep : array
-        An array of indices of the spaces to keep after
-        being traced. For instance, if the space is
-        A x B x C x D and we want to trace out B and D,
-        keep = [0,2]
+        An array of indices of the spaces to keep after being traced. For instance, if the space is
+        A x B x C x D and we want to trace out B and D, keep = [0,2]
     dims : array
-        An array of the dimensions of each space.
-        For instance, if the space is A x B x C x D,
-        dims = [dim_A, dim_B, dim_C, dim_D]
+        An array of the dimensions of each space. 
+        For instance, if the space is A x B x C x D, dims = [dim_A, dim_B, dim_C, dim_D]
 
     Returns
     -------
@@ -461,9 +591,8 @@ def ptrace(u, keep, dims, optimize=False):
 
 def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor = 0) -> float:
     """
-    calculate for a set of bipartions given in config the mean of
-    trace[ rho_A ], where rho_A is reduced density matrix of given state
-    for the given bipartitions
+    calculate for a set of bipartions given in config the mean of trace[ rho_A ], where rho_A is 
+    reduced density matrix of given state for the given bipartitions
 
     Parameters
     ----------
@@ -500,20 +629,19 @@ def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor = 0) -> fl
 
 def entanglement_fast(avail_states: dict, sys_dict: dict):
     """
-    compute the entanglement according to compute_entanglement()
-    of the state given by the graph according to given avail_states
+    compute the entanglement according to compute_entanglement() of the state given by the graph
+    according to given avail_states
 
     Parameters
     ----------
     sys_dict : dict
-        that stores essential infos of quantuum system
-        (see helpfunctions.get_sysdict).
+        that stores essential infos of quantum system (see helpfunctions.get_sysdict).
     avail_states : dict
         storing graphs(value) for each state(key)
 
     Returns
     -------
-    Str
+    str
         returns entanglement of graph only in terms of graphs weights.
 
     """

@@ -5,25 +5,30 @@ Created on Tue Jul 12 12:24:53 2022
 @author: janpe
 """
 
-import os
+import sys
+import json
+import os 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-file_path = os.path.dirname(os.path.abspath(__file__))
-os.chdir(file_path)
 from optimizer import topological_opti
-
 from fancy_classes import Graph, State
-# import config_concurrence as confi
 from state import state1 as sst
 import theseus as th
 import help_functions as hf
-import sys
 import saver
-import json
 
+try:
+    config = sys.argv[1]
+except IndexError: # for IDE start
+    config = 'conc_4-3' #sys.argv[1] #conc_4-3 'ghz_346' #
 
-config = 'configs/conc_4-3'#sys.argv[1] #conc_4-3 'ghz_346' #
-with open(config + ".json") as data:
-    cnfg = json.load(data)
+if ('/' in config or '\\' in config ):
+    with open(config + ".json") as data:
+        cnfg = json.load(data)    
+else:
+    with open('configs/' + config + ".json") as data:
+        cnfg = json.load(data) 
+    
 
 sys.setrecursionlimit(1000000000)
 
@@ -57,7 +62,7 @@ print(f'start graph has {len(edge_list)} edges.')
 start_graph = Graph(edge_list)
 
 # topological optimization
-sv = saver.saver(config=cnfg)
+sv = saver.saver(config=cnfg,name_config_file=config, dim = dimensions )
 for i in range(cnfg['samples']):
     optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()

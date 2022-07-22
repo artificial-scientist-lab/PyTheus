@@ -21,7 +21,7 @@ import saver
 import json
 
 
-config = sys.argv[1] #conc_4-3 'ghz_346' #
+config = 'configs/conc_4-3'#sys.argv[1] #conc_4-3 'ghz_346' #
 with open(config + ".json") as data:
     cnfg = json.load(data)
 

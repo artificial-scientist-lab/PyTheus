@@ -64,22 +64,30 @@ def write_json(abspath: Path, dictionary: dict) -> None:
 
 class saver:
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, name_config_file = '', dim = []):
+        
+        self.name_config_file = name_config_file
         self.config = config
+        self.config['dimensions'] = dim
         self.best_state = None
         self.save_path = self.get_and_create_save_directory()
         self.best_opt = None
+        
 
     def get_folder_name(self) -> str:
         """
         return the folder name: dimension of the system or confi
 
         """
-        if self.config['foldername'] is None:
-            return '(' + '-'.join([str(w) for w in self.config['dimensions']]) + ')'
-        else:
-            return self.config['foldername']
-
+ 
+        folder_seps = ['/','\\']
+        idx = max( [self.name_config_file.rfind(ss) for ss in folder_seps])
+        try:
+            return self.name_config_file[idx+1:] + '/' + self.config['foldername']
+        except KeyError:
+            return self.name_config_file[idx+1:] + '/try'  
+        
+        
     def get_and_create_save_directory(self):
         """
         look if folder ~/data/(2-2-2-2) exists otherwise creates it
@@ -125,7 +133,7 @@ class saver:
         existing_summary = read_json(path_exst_summary)
         try:
             same = all([compare(self.config[key], existing_summary[key])
-                        for key in self.config.keys()])
+                        for key in self.config.keys() if key != 'samples'] )
         except KeyError:
             same = False
         return same
@@ -156,7 +164,34 @@ class saver:
         # is 'better' in some cases than fidelity 0.999 and 23 edges
         # TODO: implement the choice of which criteria is used
         return self.best_opt is None or topo.loss_val < self.best_opt.loss_val
+    
+    def get_dictonary_storing_in_json(self,topo_obj):
+        """
+        converts the topologival optimizer object to a dict 
 
+        Parameters
+        ----------
+        topo_obj : Object of topological_opti
+
+        Returns
+        -------
+        safe_dic : dict
+
+        """
+        
+        
+        safe_dic = {'graph': self.convert_graph_keys_in_str(topo_obj.graph.graph),
+                    'loss': topo_obj.loss_val,
+                    'history': topo_obj.history}
+
+        try:
+            safe_dic['graph_hist'] = [self.convert_graph_keys_in_str(xx.graph)
+                                      for xx in topo_obj.graph_hist]
+            safe_dic['loss_hist'] = topo_obj.loss_hist
+        except AttributeError:
+            pass
+        return safe_dic
+    
     def save_graph(self, topo: object) -> None:
         """
         we use an object from the class topological_opti to save all
@@ -171,18 +206,12 @@ class saver:
         # update best graph
         if self.check_best_opt(topo):
             self.best_opt = topo
+            safe_dic_best = self.get_dictonary_storing_in_json(topo)
+            write_json(self.save_path / 'best' , safe_dic_best)
             # TODO: rewrite best_graph to file on this line (then we get best graph even if run is cancelled before it is finished)
+            
+        safe_dic = self.get_dictonary_storing_in_json(topo)
 
-        safe_dic = {'graph': self.convert_graph_keys_in_str(topo.graph.graph),
-                    'loss': topo.loss_val,
-                    'history': topo.history}
-
-        try:
-            safe_dic['graph_hist'] = [self.convert_graph_keys_in_str(xx.graph)
-                                      for xx in topo.graph_hist]
-            safe_dic['loss_hist'] = topo.loss_hist
-        except AttributeError:
-            pass
         write_json(abs_path, safe_dic)
 
     def get_file_name(self, graph: Graph, loss: float) -> str:

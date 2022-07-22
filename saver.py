@@ -175,7 +175,7 @@ class saver:
 
         safe_dic = {'graph': self.convert_graph_keys_in_str(topo.graph.graph),
                     'loss': topo.loss_val,
-                    'secondary losses': topo.loss_vals_secondary}
+                    'history': topo.history}
 
         try:
             safe_dic['graph_hist'] = [self.convert_graph_keys_in_str(xx.graph)
@@ -197,6 +197,6 @@ class saver:
         file_name = clean + '-' + str(len(graph.graph)) + '-'
         graph.getStateCatalog()
         file_name += str(len(graph.perfect_matchings)) + '-'
-
-        file_name += f'{loss:.4f} '
-        return file_name
+        for lo in loss:
+            file_name += f'{lo:.4f}_'
+        return file_name[:-1] # delet last _

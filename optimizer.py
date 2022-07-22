@@ -14,7 +14,7 @@ from scipy import optimize
 class topological_opti:
 
     def __init__(self, start_graph: Graph, ent_dic=None, target_state=None,
-                 config=None, safe_history = True):
+                 config=None, safe_history=True):
 
         self.config = config
         self.imaginary = self.config['imaginary']
@@ -26,7 +26,7 @@ class topological_opti:
         self.graph = self.pre_optimize_start_graph(start_graph)
         self.save_hist = safe_history
         self.history = []
-        
+
     def check(self, result: object, lossfunctions: object):
         """
         check if all loss functions fulfills conditions for success.
@@ -82,9 +82,8 @@ class topological_opti:
             loss_specs = {'target_state': self.target, 'imaginary': self.imaginary}
         callable_loss = [func(current_graph, **loss_specs) for func in lossfunctions]
         return callable_loss
-    
-    
-    def update_losses(self,result,losses):
+
+    def update_losses(self, result, losses):
         """
         updates the losses for next steps
 
@@ -104,7 +103,7 @@ class topological_opti:
         for ii in range(1, len(losses)):
             loss_values.append(losses[ii](result.x))
         return loss_values
-    
+
     def pre_optimize_start_graph(self, graph) -> Graph:
         """
         first optimization of complete starting graph
@@ -120,6 +119,7 @@ class topological_opti:
         """
         losses = self.get_loss_functions(graph)
         valid = False
+        counter = 0
         while not valid:
             # find one preoptimization that is valid
             initial_values, bounds = self.prepOptimizer(len(graph))
@@ -127,8 +127,11 @@ class topological_opti:
                                             bounds=bounds,
                                             method=self.config['optimizer'],
                                             options={'ftol': self.config['ftol']})
-            self.loss_val = self.update_losses(best_result,losses)
+            self.loss_val = self.update_losses(best_result, losses)
             valid = self.check(best_result, losses)
+            counter += 1
+            if counter % 10 == 0:
+                print('10 invalid preopts')
 
         for __ in range(self.config['num_pre'] - 1):
             # if stated in config file, do more preoptimizations (esp. useful for concurrence)
@@ -140,7 +143,7 @@ class topological_opti:
 
             if result.fun < best_result.fun:
                 best_result = result
-        self.loss_val = self.update_losses(best_result,losses)
+        self.loss_val = self.update_losses(best_result, losses)
         print(f'best result from pre-opt: {abs(best_result.fun)}')
 
         preopt_graph = Graph(graph.edges, weights=best_result.x)
@@ -173,7 +176,7 @@ class topological_opti:
                                                  bounds=bounds,
                                                  method=self.config['optimizer'],
                                                  options={'ftol': self.config['ftol']})
-                self.loss_val = self.update_losses(trunc_result,losses)
+                self.loss_val = self.update_losses(trunc_result, losses)
                 print(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
             preopt_graph = Graph(preopt_graph.edges, weights=trunc_result.x)
@@ -281,17 +284,16 @@ class topological_opti:
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is
                 self.loss_val = self.update_losses(result, losses)
-                    
+
                 if self.save_hist:
-                    self.history.append( self.loss_val )
-                    
-                    
+                    self.history.append(self.loss_val)
+
                 return Graph(red_graph.edges, weights=result.x), True
         # all tries failed keep current Graph
         red_graph[idx_of_edge] = amplitude
         return red_graph, False
 
-    def topologicalOptimization(self, save_hist = True) -> Graph:
+    def topologicalOptimization(self, save_hist=True) -> Graph:
         """
         does the topological main loop. deletes edges until termination condition is met.
         Returns

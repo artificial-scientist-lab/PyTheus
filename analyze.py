@@ -32,4 +32,8 @@ graph.getState()
 readable_state = hf.readableState(graph.state)
 print(json.dumps(readable_state, indent=4))
 print(graph)
+graph.getStateCatalog()
+for key in graph.state_catalog:
+    print(key)
+    print(graph.state_catalog[key])
 gp.graphPlot(graph, scaled_weights=True, show=True, max_thickness=10)

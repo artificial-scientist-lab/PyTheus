@@ -1,13 +1,13 @@
 {
   "bulk_thr": 0.01,
-  "edges_tried": 20,
-  "foldername": "3-5-8",
-  "ftol": 1e-05,
+  "edges_tried": 30,
+  "foldername": "ghz_358",
+  "ftol": 1e-06,
   "loss_func": "cr",
   "num_anc": 5,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
-  "real": true,
+  "imaginary": false,
   "safe_hist": true,
   "samples": 10,
   "target_state": [
@@ -18,7 +18,7 @@
     "444"
   ],
   "thresholds": [
-    0.2,
+    0.3,
     0.1
   ],
   "tries_per_edge": 5,

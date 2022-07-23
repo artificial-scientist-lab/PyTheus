@@ -24,7 +24,8 @@ def read_json(abspath: Path) -> dict:
     return dictonary
 
 
-def write_json(abspath: Path, dictionary: dict) -> None:
+def write_json(abspath: Path, dictionary: dict,
+               overwrite_existing_file = False) -> None:
     """
     getting an Path object and a dictonary then write the dictionary
     in a json file for the given path
@@ -51,11 +52,12 @@ def write_json(abspath: Path, dictionary: dict) -> None:
     if not abspath_save.endswith('.json'):
         abspath_save += '.json'
     # check if same state exists
-    counter = 0
-    while Path(abspath_save).exists():
-        abspath_save = str(abspath) + f'({counter})' + '.json'
-        counter += 1
-
+    if overwrite_existing_file is False:
+        counter = 0
+        while Path(abspath_save).exists():
+            abspath_save = str(abspath) + f'({counter})' + '.json'
+            counter += 1
+        
     abspath = Path(abspath_save)
     with abspath.open("w+", encoding="UTF-8") as file:
         file.write(json_object)
@@ -207,7 +209,9 @@ class saver:
         if self.check_best_opt(topo):
             self.best_opt = topo
             safe_dic_best = self.get_dictonary_storing_in_json(topo)
-            write_json(self.save_path / 'best' , safe_dic_best)
+            print('new best state saved to best.json')
+            write_json(self.save_path / 'best' , safe_dic_best, 
+                       overwrite_existing_file = True)
             # TODO: rewrite best_graph to file on this line (then we get best graph even if run is cancelled before it is finished)
             
         safe_dic = self.get_dictonary_storing_in_json(topo)

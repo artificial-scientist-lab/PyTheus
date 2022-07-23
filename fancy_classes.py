@@ -77,7 +77,8 @@ class Graph(): # should this be an overpowered dictionary? NOPE
                 raise ValueError(invalidInput('edges'))
         elif type(edges) == dict:
             weights = [edges[key] for key in sorted(edges.keys())]
-            edges = sorted( edges.keys() )
+            edges = [ kk if isinstance(kk, tuple) else eval(kk) for kk in edges.keys()]
+
             # Verification of appropiate edges
             if all(isinstance(edge, tuple) for edge in edges):
                 if all(len(edge)==4 for edge in edges):

@@ -6,6 +6,7 @@ Created on Tue Jul 12 09:07:40 2022
 """
 
 from fancy_classes import Graph
+from saver import saver
 from lossfunctions import loss_dic
 import numpy as np
 from scipy import optimize
@@ -13,7 +14,7 @@ from scipy import optimize
 
 class topological_opti:
 
-    def __init__(self, start_graph: Graph, ent_dic=None, target_state=None,
+    def __init__(self, start_graph: Graph, saver: saver, ent_dic=None, target_state=None,
                  config=None, safe_history=True):
 
         self.config = config
@@ -24,6 +25,7 @@ class topological_opti:
             self.target = target_state  # object of State class
 
         self.graph = self.pre_optimize_start_graph(start_graph)
+        self.saver = saver
         self.save_hist = safe_history
         self.history = []
 
@@ -284,7 +286,8 @@ class topological_opti:
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is
                 self.loss_val = self.update_losses(result, losses)
-
+                if all(abs(np.array(self.graph.weights)) > 0.95): #if clean solution is encountered before optimization finishes, save that too
+                    self.saver.save_graph(self)
                 if self.save_hist:
                     self.history.append(self.loss_val)
 

@@ -50,6 +50,7 @@ else:
         target_state = State(term_list,amplitudes=cnfg['amplitudes'])
     else:
         target_state = State(term_list)
+    print(hf.readableState(target_state))
     target_kets = target_state.kets
     # define local dimensions
     dimensions = th.stateDimensions(target_kets)
@@ -64,7 +65,7 @@ start_graph = Graph(edge_list)
 # topological optimization
 sv = saver.saver(config=cnfg,name_config_file=config, dim = dimensions )
 for i in range(cnfg['samples']):
-    optimizer = topological_opti(start_graph, ent_dic=sys_dict, target_state=target_state, config=cnfg)
+    optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()
     sv.save_graph(optimizer)
 #%%

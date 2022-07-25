@@ -413,8 +413,42 @@ class state1():
                                for ket in kets for x in ket)]
                 flipped_dic[flipped_ket] = val
             self.dic = flipped_dic
+            
+    def add_new_lines(self,string:str, nth = 4)->str:
+        """
+        add new line to a string after nth '+' find in the string
 
-    def state_string(self, dec=2, filter_zeros=False):
+        Parameters
+        ----------
+        string : str
+            string input
+        nth : int
+            after nth= 4 (default) pluses add a new line /n
+        Returns
+        -------
+        str
+            string input with new lines
+
+        """
+
+        counts = 0
+        new_string = ''
+        for ss in string:
+            if ss == '+' or ss == '-':
+                counts += 1
+            if counts == nth:
+                new_string += ss + '\n'
+                counts = 0
+            else:
+                new_string += ss
+        return new_string
+            
+    def state_string(self, dec=2, filter_zeros=False, with_color = True):
+        if with_color:
+            st_col = lambda strg, col: colored(strg,col)
+        else: 
+            st_col = lambda strg, col: strg
+            
         ampls = [np.round(amp/self.norm, dec) for amp in self.dic.values()]
         most = np.round(
             abs(max(set([polar(aa)[0] for aa in ampls]), key=ampls.count)), dec)
@@ -432,8 +466,8 @@ class state1():
                 else:
                     col = 'white'
                 if abs(ampl) != 0 or not filter_zeros:
-                    strs_plus.append(colored(f' + {num_in_str(ampl)}', col))
-                    strs_plus.append(colored(f'|{ket}>', col))
+                    strs_plus.append(st_col(f' + {num_in_str(ampl)}', col))
+                    strs_plus.append(st_col(f'|{ket}>', col))
                     cet_counts += 1
             else:
                 ampl = np.round(1/most * ampl, dec)
@@ -443,17 +477,17 @@ class state1():
                     col = 'white'
                 if abs(ampl) != 0 or not filter_zeros:
                     strs_min.append(
-                        colored(f' + {num_in_str(ampl,change_sign=True)}', col))
-                    strs_min.append(colored(f'|{ket}>', col))
+                        st_col(f' + {num_in_str(ampl,change_sign=True)}', col))
+                    strs_min.append(st_col(f'|{ket}>', col))
                     cet_counts += 1
 
-        strs_plus.append(colored(' - (', 'white'))
+        strs_plus.append(st_col(' - (', 'white'))
         strs_plus += strs_min
-        strs_plus.append(colored(') ', 'white'))
+        strs_plus.append(st_col(') ', 'white'))
         if filter_zeros:
             strs_plus.append(
                 f'\n -- filtered {len(self.dic)-cet_counts} kets with amplitudes zero')
-        return ("".join(strs_plus)).replace('- ()', '').replace('(+', '(')
+        return self.add_new_lines( ("".join(strs_plus)).replace('- ()', '').replace('(+', '(') )
 
     def calc_k_uniform(self) -> (int,np.array):
         try: 
@@ -476,11 +510,18 @@ class state1():
                 k += 1
         return k, k_levels
 
-    def info(self, filter_zeros=False, ret=False, dec=3):
+    def info(self, filter_zeros=False, ret=False, dec=3,
+             with_color = True):
+        if with_color:
+            st_col = lambda strg, col: colored(strg,col)
+        else: 
+            st_col = lambda strg, col: strg
+            
         self.ent()
         k, k_level = self.calc_k_uniform()
         info_str = "-----------------info-----------------\n"
-        info_str += self.state_string(dec, filter_zeros=filter_zeros)
+        info_str += self.state_string(dec, filter_zeros=filter_zeros,
+                                      with_color=with_color)
         info_str += '\n'
         info_str += "--------------------------------------\n"
         info_str += f'normalized by: 1/{round(self.norm,dec)}\n'
@@ -495,7 +536,7 @@ class state1():
                 col = 'green'
             else:
                 col = 'red'
-            info_str += colored(
+            info_str += st_col(
                 f'k={ix + 1}: mean = {klev[0]:.3f} ({klev[1]}) \n', col)
         if ret:
             return info_str

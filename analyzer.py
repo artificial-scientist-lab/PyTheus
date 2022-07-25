@@ -5,12 +5,12 @@ Created on Thu Jul 21 17:19:47 2022
 @author: janpe
 """
 
-from fancy_classes import State
+from fancy_classes import State, Graph
 from pathlib import Path
 import json
 import matplotlib.pyplot as plt
-
-
+import numpy as np
+from state import state1 as sst
 def convert_graph_keys_in_tuple(graph: dict) -> dict:
     """
     here we can convert our Graph dict in a dict that has strings as keys
@@ -99,25 +99,64 @@ class analyser():
         ax.grid()
         plt.show()
         
-    def turn_graph_in_state(self,graph):
+    def turn_graph_in_state(self,graph_dict: dict, thresholds_amplitudes = np.inf):
+        graph = Graph(graph_dict) 
         ancillas = self.summary['dimensions'].count(1)
         graph.getState()
+        # eliminate ancillas for reulting state
         if ancillas != 0:
-            end_res = dict()
+            state_dic = dict()
             for kets,ampl in graph.state.state.items():
-                end_res[kets[:-ancillas]] = ampl
-        else: end_res = graph.state.state
-        ## TODO: ...
-
-
+                state_dic[kets[:-ancillas]] = ampl
+            state = State(state_dic)
+        else: state = graph.state.state
+        try:
+            result = sst(state.state)
+        except AttributeError:
+            result = sst(state)
+        return result.info(ret = True, with_color=False)
+    
+    def get_x_state(self, idx_files = 'all'):
+        if idx_files == 'all':
+            idx_files = [ ii for ii in range(len(self.files))]
+        if isinstance(idx_files, int):
+            idx_files = [idx_files]
+        
+        fig, axs = plt.subplots(len(idx_files), 2)
+        fig.set_size_inches(10, 8)
+        for idx,xth_file in enumerate(idx_files):
+            st_dic = self.files[xth_file]
+            string_info = self.turn_graph_in_state(st_dic['graph'])
+            
+            loss_history = st_dic['history']
+            min_edge = len(st_dic['graph'])
+            edges = [ii for ii in range(
+                min_edge, min_edge+len(loss_history))]
+            edges.reverse()
+            for ii in range(len(loss_history[0])):
+                loss = [ll[ii] for ll in loss_history]
+                axs[idx][0].plot(edges, loss, label=ii, alpha=0.4, lw=3)
+                axs[idx][0].plot(edges, loss, alpha=0.6, lw=0.7, color="black")
+            axs[idx][0].set_xlabel("Amount of edges left")
+            axs[idx][0].set_ylabel("Loss function")
+            axs[idx][0].invert_xaxis()
+            axs[idx][0].grid()
+            axs[idx][1].text(0,0,string_info)
+            axs[idx][1].axis('off')
+        plt.tight_layout()
 path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
-path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/aklt_3/AKLT_3'
+#path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/aklt_3/AKLT_3'
+#path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (1)'
 a = analyser(path)
-a.plot_losses(1)
+a.plot_losses(0)
+a.get_x_state([ii for ii in range(5)])
 
-# %%
-# graph = sol['graph']
-# dic = convert_graph_keys_in_tuple(graph)
-# graph = Graph(dic)
-# graph.getState()
-# readable_state = hf.readableState(graph.state)
+
+
+
+
+
+
+
+
+

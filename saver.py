@@ -37,6 +37,10 @@ def write_json(abspath: Path, dictionary: dict,
         def default(self, obj):
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
+            if isinstance(obj, np.int32):
+                return int(obj)
+            if isinstance(obj, np.int64):
+                return int(obj)
             return json.JSONEncoder.default(self, obj)
 
     if not isinstance(abspath, Path):

@@ -106,7 +106,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                     if self.imaginary == 'cartesian':
                         weights = [val[0] + 1j * val[1] for val in weights]
                     elif self.imaginary == 'polar':
-                        weights = [tuple(val[0], val[1]) for val in weights]
+                        weights = [tuple(val) for val in weights]
                     else:
                         raise ValueError(invalidInput('imaginary'))
                 else:
@@ -310,7 +310,22 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         self.state = State(kets, amplitudes, self.imaginary)
 
         # This could also be defined as __abs__, but what do you give back? The dictionary?
+    def __abs__(self):
+        return_weights = len(self.graph) * [0]
+        if self.is_weighted:
+            if self.imaginary in [False, 'cartesian']:
+                for idx, vv in enumerate(self.graph.values()):
+                    return_weights[idx] = abs(vv)
+            elif self.imaginary == 'polar':
+                for idx, vv in enumerate(self.graph.values()):
+                    return_weights[idx] = abs(vv[0])
+            else:
+                raise ValueError(WRONG_IMAGINARY)
+            return return_weights
+        else:
+               ValueError('emtpy weights')     
 
+    
     def absolute(self):
         if self.is_weighted:
             if self.imaginary in [False, 'cartesian']:
@@ -384,9 +399,11 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             n_th_smallest = args[0]  # takes nth given
         else:
             n_th_smallest = slice(*args)
-        # idx = np.argsort(abs(np.array(list(self.graph.values()))))
-        idx = np.argsort(abs(np.array(self.weights)))
-
+        
+        if self.imaginary in [False,'cartesian']:
+            idx = np.argsort(abs(np.array(self.weights)))
+        elif self.imaginary == 'polar':
+            idx = np.argsort(abs(np.array([rr[0] for rr in self.weights])))
         # now check if input is valid
         try:
             delind = idx[n_th_smallest]

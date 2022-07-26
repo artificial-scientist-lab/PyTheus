@@ -17,6 +17,7 @@ import theseus as th
 import help_functions as hf
 import saver
 
+
 try:
     config = sys.argv[1]
 except IndexError: # for IDE start

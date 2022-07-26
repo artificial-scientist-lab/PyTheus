@@ -4,7 +4,7 @@
     "foldername": "srv_632",
     "ftol": 1e-06,
     "loss_func": "cr",
-    "num_anc": 3,
+    "num_anc": 1,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "imaginary": false,
@@ -16,8 +16,9 @@
         "101",
         "210",
         "311",
-        "420",
-        "521"
+        "422",
+        "520",
+        "621"
     ],
     "thresholds": [
         0.3,

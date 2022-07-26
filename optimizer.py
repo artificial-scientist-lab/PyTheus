@@ -62,6 +62,52 @@ class topological_opti:
         # when no check fails return True  = success
         return True
 
+    def weights_to_valid_input(self, weights: list) -> list:
+        """
+        need to change weights from scip optimizer to proper input 
+        if one optimize with complexe values
+
+        Parameters
+        ----------
+        weights : list
+            list of weights
+
+        Raises
+        ------
+        ValueError
+            if imaginary is not defined correctly in congig file
+
+        Returns
+        -------
+        list
+            ordered list according to imaginary
+
+        """
+        if self.imaginary ==  'cartesian':
+
+            if len(weights) % 2 == 0:
+                ll2 = int(len(weights)/2)
+            else:
+                raise ValueError(
+                    'odd number of weights for complex optimization')
+
+            return [complex(real, imag) for real, imag in
+                    zip(weights[:ll2], weights[ll2:])]
+
+        elif self.imaginary == 'polar':
+
+            if len(weights) % 2 == 0:
+                ll2 = int(len(weights)/2)
+            else:
+                raise ValueError(
+                    'odd number of weights for complex optimization')
+            return [(radius, phase) for radius, phase in
+                    zip(weights[:ll2], weights[ll2:])]
+        elif self.imaginary is False:
+            return weights
+        else:
+            raise ValueError('imaginary: only: polar,cartesian,false')
+
     def get_loss_functions(self, current_graph: Graph):
         """
         get a list of all loss functions mentioned in config
@@ -79,10 +125,13 @@ class topological_opti:
         # get loss function acc. to config
         lossfunctions = loss_dic[self.config['loss_func']]
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
-            loss_specs = {'sys_dict': self.ent_dic}
+            loss_specs = {'sys_dict': self.ent_dic,
+                          'imaginary': self.imaginary}
         else:
-            loss_specs = {'target_state': self.target, 'imaginary': self.imaginary}
-        callable_loss = [func(current_graph, **loss_specs) for func in lossfunctions]
+            loss_specs = {'target_state': self.target,
+                          'imaginary': self.imaginary}
+        callable_loss = [func(current_graph, **loss_specs)
+                         for func in lossfunctions]
         return callable_loss
 
     def update_losses(self, result, losses):
@@ -148,7 +197,10 @@ class topological_opti:
         self.loss_val = self.update_losses(best_result, losses)
         print(f'best result from pre-opt: {abs(best_result.fun)}')
 
-        preopt_graph = Graph(graph.edges, weights=best_result.x)
+        preopt_graph = Graph(graph.edges,
+                             weights=self.weights_to_valid_input(
+                                 best_result.x),
+                             imaginary=self.imaginary)
 
         try:
             bulk_thr = self.config['bulk_thr']
@@ -163,6 +215,8 @@ class topological_opti:
                 # delete smallest edges one by one
                 idx_of_edge = preopt_graph.minimum()
                 amplitude = preopt_graph[idx_of_edge]
+                if self.imaginary == 'polar':
+                    amplitude = amplitude[0]
                 if abs(amplitude) < bulk_thr:
                     preopt_graph.remove(idx_of_edge)
                     num_deleted += 1
@@ -181,7 +235,10 @@ class topological_opti:
                 self.loss_val = self.update_losses(trunc_result, losses)
                 print(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
-            preopt_graph = Graph(preopt_graph.edges, weights=trunc_result.x)
+            preopt_graph = Graph(preopt_graph.edges,
+                                 weights=self.weights_to_valid_input(
+                                     trunc_result.x),
+                                 imaginary=self.imaginary)
 
         return preopt_graph
 
@@ -231,7 +288,8 @@ class topological_opti:
             if True, topological optimization is continued
         """
         if self.config['loss_func'] == 'ent':
-            cont = len(self.graph) > self.config['min_edge'] and num_edge < len(self.graph)
+            cont = len(self.graph) > self.config['min_edge'] and num_edge < len(
+                self.graph)
         else:
             cont = num_edge < min(len(self.graph), self.config['edges_tried'])
         return cont
@@ -254,6 +312,7 @@ class topological_opti:
         success
         """
         # copy current Graph and delete num_edge´s smallest weight
+
         red_graph = self.graph
         idx_of_edge = red_graph.minimum(num_edge)
         amplitude = red_graph[idx_of_edge]
@@ -286,12 +345,15 @@ class topological_opti:
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is
                 self.loss_val = self.update_losses(result, losses)
-                if all(abs(np.array(self.graph.weights)) > 0.95): #if clean solution is encountered before optimization finishes, save that too
+                # if clean solution is encountered before optimization finishes, save that too
+                if all(np.array(abs(self.graph)) > 0.95):
                     self.saver.save_graph(self)
                 if self.save_hist:
                     self.history.append(self.loss_val)
 
-                return Graph(red_graph.edges, weights=result.x), True
+                return Graph(red_graph.edges,
+                             weights=self.weights_to_valid_input(result.x),
+                             imaginary=self.imaginary), True
         # all tries failed keep current Graph
         red_graph[idx_of_edge] = amplitude
         return red_graph, False
@@ -307,11 +369,13 @@ class topological_opti:
         num_edge = 0
         graph_history = []
         while self.termination_condition(num_edge):
-            self.graph, success = self.optimize_one_edge(num_edge, self.config['tries_per_edge'])
+            self.graph, success = self.optimize_one_edge(
+                num_edge, self.config['tries_per_edge'])
             num_edge += 1
             print(f'deleting edge {num_edge}')
             if success:
-                print(f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
+                print(
+                    f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
                 num_edge = 0
                 graph_history.append(self.graph)
 

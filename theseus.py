@@ -528,6 +528,8 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     else:
         if len(amplitudes) != len(ket_list):
             raise ValueError('The number of amplitudes and states should be the same')
+    if imaginary == 'polar':
+        amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
     if norm2 != 1: norm2 = str(norm2)
     if state_catalog == None:
@@ -666,6 +668,17 @@ def entanglement_fast(avail_states: dict, sys_dict: dict):
             state_vector[idx] = f'{(term_sum)}'
         except KeyError:
             pass
-
-    return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
+        
+    if sys_dict['imaginary'] is False:
+        return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
            + f' {sys_dict} )'
+    else:
+        return f'abs(compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
+           + f' {sys_dict} ))'
+           
+           
+           
+           
+           
+           
+           

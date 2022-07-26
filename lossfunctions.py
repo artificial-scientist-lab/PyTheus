@@ -6,7 +6,7 @@ Created on Tue Jul 12 11:54:12 2022
 """
 
 import theseus as th
-import numpy as np
+
 
 
 def state_countrate(graph, target_state, imaginary=False):
@@ -56,7 +56,6 @@ def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False):
     variables = th.stringEdges(graph.edges, imaginary = imaginary)
         
     lambdaloss = "".join(["", target])
-
     func, lossstring = th.buildLossString(lambdaloss, variables)
 
     return func

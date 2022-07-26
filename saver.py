@@ -227,7 +227,7 @@ class saver:
         takes as input object Graph and generate a file name out of it
 
         """
-        if all(abs(np.array(graph.weights)) > 0.95):
+        if all(np.array(abs(graph)) > 0.95):
             clean = 'clean'
         else:
             clean = 'rough'

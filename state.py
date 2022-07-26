@@ -361,7 +361,7 @@ class state1():
             self.dic = temp_dic
             self.dim = self.dim[:-num_ancillas]
 
-    def state_vec(self, normalized = False):
+    def state_vec(self, normalized = False)->dict:
         if any(isinstance(ampl, complex) for ampl in self.dic.values()):
             state_vec = np.zeros(np.product(self.dim), dtype=np.complex64)
         else:

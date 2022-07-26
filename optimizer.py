@@ -83,7 +83,7 @@ class topological_opti:
             ordered list according to imaginary
 
         """
-        if self.imaginary in [False, 'cartesian']:
+        if self.imaginary ==  'cartesian':
 
             if len(weights) % 2 == 0:
                 ll2 = int(len(weights)/2)

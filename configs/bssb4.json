@@ -1,0 +1,35 @@
+{
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "bssb4",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": "polar",
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+    "0110",
+    "1011",
+    "0010",
+    "1111",
+    "0101",
+    "1000"
+  ],
+  "amplitudes": [
+    [1,0],
+    [1,0],
+    [1,1.5707963267948966],
+    [1,1.5707963267948966],
+    [1.4142135623730951,0.7853981633974483],
+    [1.4142135623730951,0.7853981633974483]
+  ],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

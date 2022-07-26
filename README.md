@@ -11,7 +11,8 @@ Theseus, a highly-efficient inverse-design algorithm for quantum optical experim
 * 3 particle, 4 dimension ✅✅
 * 3 particle, 5 dimension ✅✅
 * 3 particle, 6 dimension ✅🤔
-* 4 particle, 3 dimension (HALO)
+* 4 particle, 4 dimension ("fake") ✅✅
+* 4 particle, 4 dimension (HALO)
 * 5 particle, 4 dimension ✅🤔
 * 6 particle, 3 dimension (HALO)
 

@@ -666,6 +666,17 @@ def entanglement_fast(avail_states: dict, sys_dict: dict):
             state_vector[idx] = f'{(term_sum)}'
         except KeyError:
             pass
-
-    return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
+        
+    if sys_dict['imaginary'] is False:
+        return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
            + f' {sys_dict} )'
+    else:
+        return f'abs(compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
+           + f' {sys_dict} ))'
+           
+           
+           
+           
+           
+           
+           

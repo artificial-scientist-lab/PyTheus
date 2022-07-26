@@ -289,7 +289,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
 
     # the employed norm function is simplified (only pm) and uses the new imaginary notation
     def getNorm(self):
-        self.norm = th.writeNorm(self.state_catalog, self.imaginary)
+        self.norm = th.writeNorm(self.state_catalog, imaginary=self.imaginary)
 
     def getState(self):
         kets = list(self.state_catalog.keys())
@@ -481,7 +481,7 @@ class State():
                     if self.imaginary == 'cartesian':
                         amplitudes = [val[0] + 1j * val[1] for val in amplitudes]
                     elif self.imaginary == 'polar':
-                        amplitudes = [tuple(val[0], val[1]) for val in amplitudes]
+                        amplitudes = [tuple([val[0], val[1]]) for val in amplitudes]
                     else:
                         raise ValueError(invalidInput('imaginary'))
                 else:

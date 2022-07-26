@@ -215,6 +215,8 @@ class topological_opti:
                 # delete smallest edges one by one
                 idx_of_edge = preopt_graph.minimum()
                 amplitude = preopt_graph[idx_of_edge]
+                if self.imaginary == 'polar':
+                    amplitude = amplitude[0]
                 if abs(amplitude) < bulk_thr:
                     preopt_graph.remove(idx_of_edge)
                     num_deleted += 1

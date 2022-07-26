@@ -528,6 +528,8 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     else:
         if len(amplitudes) != len(ket_list):
             raise ValueError('The number of amplitudes and states should be the same')
+    if imaginary == 'polar':
+        amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
     if norm2 != 1: norm2 = str(norm2)
     if state_catalog == None:

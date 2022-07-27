@@ -1,7 +1,6 @@
 {
   "K": 2,
   "dim": 2222,
-  "foldername": "conc",
   "ftol": 1e-06,
   "loss_func": "ent",
   "min_edge": 8,

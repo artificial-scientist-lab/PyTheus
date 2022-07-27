@@ -1,7 +1,6 @@
 {
   "bulk_thr": 0.01,
-  "edges_tried": 20,
-  "foldername": "3-4-6",
+  "edges_tried": 12,
   "ftol": 1e-06,
   "loss_func": "cr",
   "num_anc": 3,
@@ -9,7 +8,7 @@
   "optimizer": "L-BFGS-B",
   "imaginary": false,
   "safe_hist": true,
-  "samples": 1,
+  "samples": 10,
   "target_state": [
     "000",
     "111",

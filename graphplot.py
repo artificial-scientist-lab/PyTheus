@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
 import theseus as th
+from cmath import polar 
 
-def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10):
+
+def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
+             show_val = False):
     colors = ['blue', 'red', 'green', 'darkorange', 'purple', 'yellow', 'cyan']
     col1 = colors[int(edge[2])]
     col2 = colors[int(edge[3])]
@@ -24,8 +27,21 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10):
     else:
         lw = np.max([abs(max_thickness * edge[4]) / scale_max, 0.5])
 
-    ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw)
-    ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw)
+    try:
+        transparency = 0.2 + abs(edge[4]) * 0.8
+        transparency =  min(transparency,1)
+    except IndexError:
+        transparency = 1
+    ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw,alpha=transparency)
+    ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw,alpha=transparency)
+    if show_val:
+        if transparency > 0.5 and col1 == "blue" :
+            font_col = 'white'
+        else: font_col = 'black'
+            
+        ax.text(np.mean([0.9*vert1[0], hp[0]]), np.mean([0.9*vert1[1], hp[1]]),f"{edge[4]:.4f}",
+                 bbox={'facecolor':col1 ,'alpha':transparency,'edgecolor':col2,'pad':1},c =font_col,
+                 ha='center', va='center',rotation=0,fontweight ='heavy')
     try:
         if edge[4] < 0:
             ax.plot(hp[0], hp[1], marker="d", markersize=25, markeredgewidth="6", markeredgecolor="black",
@@ -35,7 +51,8 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10):
 
 
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
-              weight_product=False, ax_fig = None):
+              weight_product=False, ax_fig = (), add_title= '',
+              show_value_for_each_edge= False):
     edge_dict = th.edgeBleach(graph.edges)
 
     num_vertices = len(np.unique(np.array(graph.edges)[:, :2]))
@@ -68,7 +85,9 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     for uc_edge in edge_dict.keys():
         mult = len(edge_dict[uc_edge])
         for ii, coloring in enumerate(edge_dict[uc_edge]):
-            drawEdge(uc_edge + coloring, verts, ii, mult,ax, scale_max=scale_max, max_thickness=max_thickness)
+            drawEdge(uc_edge + coloring, verts, ii, mult,ax,
+                     scale_max=scale_max, max_thickness=max_thickness,
+                     show_val = show_value_for_each_edge)
 
     circ = []
     for vert, coords in verts.items():
@@ -82,12 +101,17 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     ax.axis('off')
 
     if weight_product:
-        wp = round(np.product(graph.values()), 2)
-        plt.title('weight =' + str(wp), fontsize=30)
+        total_weight = np.product(graph.weights)
+        if isinstance(total_weight, complex):
+            wp = r"$ {0} \cdot e^{{  {1} i   }} $".format(
+                *np.round(polar(total_weight),3))
+        else: 
+            wp = str(np.round(total_weight,3))
+        plt.title('weight =' + wp + str(add_title), fontsize=30)
 
     if show:
         plt.show()
         plt.pause(0.01)
     else:
         plt.close(fig)
-    return (fig,ax)
+    return fig

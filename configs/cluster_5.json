@@ -4,7 +4,7 @@
     "foldername": "cluster_5",
     "ftol": 1e-05,
     "loss_func": "cr",
-    "num_anc": 1,
+    "num_anc": 3,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "imaginary": false,

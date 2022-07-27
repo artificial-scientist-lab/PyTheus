@@ -1,9 +1,9 @@
 {
     "bulk_thr": 0.01,
     "edges_tried": 10,
-    "foldername": "spinone_3",
+    "foldername": "fake_spinone_3",
     "ftol": 1e-05,
-    "loss_func": "cr",
+    "loss_func": "fid",
     "num_anc": 3,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
@@ -29,8 +29,8 @@
         0.15
     ],
     "thresholds": [
-        0.2,
-        0.1
+        0.1,
+        1
     ],
     "tries_per_edge": 5,
     "unicolor": false

@@ -1,15 +1,14 @@
 {
-    "bulk_thr": 0.01,
+    "bulk_thr": 0,
     "edges_tried": 30,
     "foldername": "cnot_33",
-    "ftol": 1e-05,
+    "ftol": 1e-08,
     "loss_func": "cr",
     "num_anc": 2,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "removed_connections": [[0,1]],
     "imaginary": false,
-    "real": true,
     "safe_hist": true,
     "samples": 10000,
     "target_state": [
@@ -27,6 +26,6 @@
         0.3,
         0.1
     ],
-    "tries_per_edge": 5,
+    "tries_per_edge": 10,
     "unicolor": false
 }

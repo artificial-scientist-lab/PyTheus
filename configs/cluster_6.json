@@ -1,10 +1,10 @@
 {
-    "bulk_thr": 0.01,
-    "edges_tried": 10,
+    "bulk_thr": 0,
+    "edges_tried": 30,
     "foldername": "cluster_6",
     "ftol": 1e-05,
     "loss_func": "cr",
-    "num_anc": 0,
+    "num_anc": 4,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "imaginary": false,
@@ -16,6 +16,6 @@
         0.2,
         0.1
     ],
-    "tries_per_edge": 5,
+    "tries_per_edge": 10,
     "unicolor": false
 }

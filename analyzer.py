@@ -10,11 +10,11 @@ from pathlib import Path
 import json
 import matplotlib.pyplot as plt
 import numpy as np
-from state import state1 as sst
-import matplotlib.gridspec as gridspec
 import graphplot as gp
 import help_functions as hf
 from scipy.linalg import logm
+from pathlib import Path
+import os
 from theseus import ptrace
 plt.rc('text', usetex=True)
 plt.rc('text.latex',
@@ -290,12 +290,12 @@ class state_analyzer():
             print(f'{bipar} :')
             print(self.get_reduced_density(bipar[0], True))
 
-    def string_wrapper(self, string: str, max_chars_per_line=100) -> str:
+    def string_wrapper(self, string: str, max_chars_per_line=80) -> str:
         new_string = '$'
         counts = 0
         for ss in string:
             if counts >= max_chars_per_line and ss == '+':
-                new_string += ss + '$' + '\n' + '$' 
+                new_string += ss + '$' + '\n' + '$'
                 counts = 0
             else:
                 new_string += ss
@@ -306,7 +306,7 @@ class state_analyzer():
 
     def state_string(self, dec=2, filter_zeros=False, with_color=False):
         if with_color:
-            def st_col(strg, col): return colored(strg, col)
+            def st_col(strg, col): return r'\color{0}'.format(col) + strg
         else:
             def st_col(strg, col): return strg
 
@@ -342,7 +342,7 @@ class state_analyzer():
                         st_col(f' + {num_in_str(ampl,change_sign=True)} \cdot', col))
                     strs_min.append(st_col(r'\ket{{{0}}}'.format(ket), col))
                     cet_counts += 1
-
+        strs_plus[0] = strs_plus[0].replace('+','')
         strs_plus.append(st_col(' - (', 'black'))
         strs_plus += strs_min
         strs_plus.append(st_col(') ', 'black'))
@@ -350,7 +350,9 @@ class state_analyzer():
         string_end = "".join(strs_plus).replace('- ()', '').replace('(+', '(')
         string_end = self.string_wrapper(string_end[1:])
         #string_end = r'\textbf{' + string_end + r' }'
+        
         return string_end
+  
 
     def calc_k_uniform(self) -> (int, np.array):
         try:
@@ -373,9 +375,42 @@ class state_analyzer():
                 k += 1
         return k, k_levels
 
-    def info_string(self, filter_zeros=False, ret=False, dec=3,
-                    with_color=True):
-        info_string = self.state_string(filter_zeros=filter_zeros)
+    def info_string(self, *args, **kwargs):
+        options = {
+            'filter_zeros': False,
+            'dec': 3,
+            'with_color': False}
+        if options['with_color']:
+            def st_col(strg, col): return r'\color{0}'.format(col) + strg
+        else:
+            def st_col(strg, col): return strg
+            
+        if len(args) == 0:
+            args = ['norm']
+        options.update(kwargs)
+        self.ent()
+        info_string = ''
+        if any(x in args for x in ['k', 'K', 'k-uniform']):
+ 
+            k, k_level = self.calc_k_uniform()
+            info_string += f'\nk-uniform: {k}'
+            for ix, klev in enumerate(zip(k_level, self.max.len)):
+                if np.isclose(klev[0], 1, rtol=self.pre):
+                    col = 'green'
+                else:
+                    col = 'red'
+                info_string += st_col(
+                    f'\nk={ix + 1}: mean = {klev[0]:.3f} ({klev[1]})', col)
+                
+        if any(x in args for x in ['concurrence', 'ent']):
+            info_string += f'\ntotal concurrence: {round(self.c,options["dec"])}'
+            info_string += '\nconcurrence vector: \n'
+            for kk, mask in enumerate(self.k_mask):
+                info_string += f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
+                
+        if any(x in args for x in ['n', 'norm']):
+            info_string += f'\n normalized by: 1/{round(self.norm,options["dec"])}'
+        
 
         return info_string
 
@@ -386,7 +421,7 @@ class analyser():
         self.folder = Path(folder)
         self.check_folder_name()
         self.get_all_states_in_folder_and_summary_file()
-        self.dim = self.summary['dimensions'] 
+        self.dim = self.summary['dimensions']
         self.imaginary = self.summary['imaginary']
 
     def check_folder_name(self):
@@ -474,35 +509,178 @@ class analyser():
         plt.show()
 
     def turn_dic_in_graph_state(self, graph_dict: dict, thresholds_amplitudes=np.inf):
-        print(graph_dict)
-        graph = Graph(graph_dict, dimensions=self.dim, imaginary=self.imaginary)
+        graph = Graph(graph_dict, dimensions=self.dim,
+                      imaginary=self.imaginary)
         if self.imaginary is not False:
             graph.toCartesian()
         graph.getState()
-        print(graph)
-        return graph ,state_analyzer(graph.state)
 
-    def info_statex(self, idx=0):
+        return graph, state_analyzer(graph.state)
+
+    
+    def all_perfect_matchings_to_pdf(self,state_sys: dict, other_weights=[],
+                                     given_ket_only="", show=True, row_len=True) -> None:
         
+        pt = Path(__file__).resolve().parents[0]  # main directory
+        pt = pt / 'data' / 'state_pdfs' / 'tmp'  # move data directory
+        pt.mkdir(parents=True, exist_ok=True)
+        savepath = str(pt)
+        for f in os.listdir(savepath):
+            os.remove(os.path.join(savepath, f))
+        
+        graph,__ = self.turn_dic_in_graph_state(state_sys['graph'])
+        
+        graph.getStateCatalog()
+        
+        cat = graph.state_catalog
+        if len(given_ket_only) != 0:
+            if type(given_ket_only) == str:
+                given_ket_only = [given_ket_only]
+            for ket_i in given_ket_only:
+                try:
+                    th_state = hf.stringToTerm(ket_i)
+                    cat = {th_state: cat[th_state]}
+                except KeyError:
+                    raise ValueError(
+                        "The given Ket must be wrong, Graph does not have it")
+        if row_len:
+            row_len = max( [ len(pm_graphs) for  pm_graphs  in cat.values()])
+            
+            
+        for kk, vv in cat.items():
+            ket_string = "".join([str(int(k[1])) for k in kk])
+            total_weight = 0
+
+            for ii, cover in enumerate(vv):
+                weights_for_cover = [graph[edge] for edge in cover]
+                total_weight += np.prod(weights_for_cover)
+                if ii == len(vv) - 1:
+                    if isinstance(total_weight, complex):
+                        add_title = r'$\ket{{ {0} }} $'.format(ket_string) + \
+                            '\n' + r"Total = $ {0} \cdot e^{{  {1} i   }} $".format(*np.round(polar(total_weight),3))
+                    else:
+                        add_title = r'$\ket{{ {0} }} $'.format(ket_string) + \
+                            '\n' + r"Total = {0} ".format(np.round(total_weight,3) )
+                else:
+                    add_title = r'$\ket{{ {0} }} $'.format(ket_string)
+                
+                figgy = gp.graphPlot(Graph(cover,weights=weights_for_cover),
+                                     show=True, weight_product=True,
+                                     add_title=add_title, show_value_for_each_edge=False)
+                plt.savefig(os.path.join(savepath, ket_string + '(' + str(ii) +
+                                         ')' + ".jpeg"),
+                            bbox_inches='tight', dpi=100)
+                plt.close(figgy)
+            if len(vv) % row_len == 0:
+                missing = 0
+            else:
+                missing = row_len - len(vv) % row_len
+    
+            for ii in range(missing):
+                figgy, ax = plt.subplots(figsize=(10, 10))
+                plt.axis('off')
+                plt.savefig(os.path.join(savepath, ket_string + '99999999999('
+                                         + str(ii) + ')' + 'add' + ".jpeg"),
+                            bbox_inches='tight', dpi=100)
+                plt.close(figgy)
+        self.convert_img_to_pdf( savepath, row_len)
+            
+            
+    def convert_img_to_pdf(self,savepath, row_len, show = False):
+        from PIL import Image
+    
+        images = [
+            Image.open(os.path.join(savepath, f))
+            for f in os.listdir(savepath)
+        ]
+    
+        def pil_grid(images, max_horiz=np.iinfo(int).max):
+            def get_grid(func):
+                n_images = len(images)
+                n_horiz = func(n_images, max_horiz)
+                h_sizes, v_sizes = [0] * n_horiz, [0] * (n_images // n_horiz)
+    
+                for i, im in enumerate(images):
+                    h, v = i % n_horiz, i // n_horiz
+                    h_sizes[h] = max(h_sizes[h], im.size[0])
+                    v_sizes[v] = max(v_sizes[v], im.size[1])
+                h_sizes, v_sizes = np.cumsum(
+                    [0] + h_sizes), np.cumsum([0] + v_sizes)
+                im_grid = Image.new(
+                    'RGB', (h_sizes[-1], v_sizes[-1]), color='white')
+                for i, im in enumerate(images):
+                    im_grid.paste(
+                        im, (h_sizes[i % n_horiz], v_sizes[i // n_horiz]))
+                return im_grid
+            try:
+                return get_grid(min)
+            except IndexError:
+                return get_grid(max)
+        pt = Path(__file__).resolve().parents[0]  # main directory
+        pt = pt / 'data' / 'state_pdfs' 
+        name = [str(xx) for xx in self.dim ]
+        name.extend('.pdf')
+        pt = pt / 'State_Data'  
+
+        pt.mkdir(parents=True, exist_ok=True)
+        filepath = pt / "".join(name)
+        print(filepath)
+        with filepath.open("w", encoding ="utf-8") as f:
+            pass 
+
+        whole_image = pil_grid(images, row_len)
+        whole_image.save(str(filepath))
+        plt.figure()
+        if show:
+            plt.imshow(whole_image.convert('RGB'))
+            plt.axis('off')
+            
+    def pm_statex(self,idx):
+        self.all_perfect_matchings_to_pdf(self.files[idx])
+                                
+                                
+    def info_statex(self, idx=0, infos = [], filter_zeros= False):
+
+        
+
         ### plot setup ###
-        gs = gridspec.GridSpec(2, 2)
-        fig = plt.figure(str(idx))
-        graph_ax = plt.subplot(gs[:, 0])
-        state_ax = plt.subplot(gs[0, 1])
-        loss_ax = plt.subplot(gs[1, 1])
         
-        graph,state = self.turn_dic_in_graph_state(self.files[idx]['graph'])
+        fig = plt.figure(str(idx))
+        graph_ax = fig.add_subplot(1, 2, 1)
+        state_ax = fig.add_subplot(2, 2, 2) 
+        loss_ax = fig.add_subplot(2, 2, 4)
+       
+        
+        graph, state = self.turn_dic_in_graph_state(self.files[idx]['graph'])
         ### Graph ###
 
         gp.graphPlot(graph, ax_fig=(fig, graph_ax))
-
-        ### state ###
+        try:
+            self.summary['target_state'] = 1
+        except:
+            pass
+            
+        ### state + infos ###
+        st_string = state.state_string(filter_zeros=filter_zeros)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        fs =  22 - st_string.count('\n')
+        text = state_ax.annotate(st_string,
+                    xy=(0.5, 1.2), xycoords=("data", 'axes fraction'),
+                    xytext=(0, -20), textcoords='offset points',
+                    ha="center", va="top",fontsize = fs,
+                    bbox=props, wrap = True)
+       
+        props = dict(boxstyle='round', facecolor='grey', alpha=0.2)
+        state_ax.annotate(state.info_string(*infos,filter_zeros=filter_zeros),
+                  xy=(0.5, 0.), xycoords=text,
+                  xytext=(0, -20), textcoords='offset points',
+                  ha="center", va="top",fontsize = int(0.8*fs),
+                  bbox=props,wrap = True) 
+  
         st_dic = self.files[idx]
-        string_info = state.state_string()
-        print(string_info)
-        state_ax.text(0, 1, string_info, fontsize=20)
+
         state_ax.axis('off')
-        
+
         ### loss ###
         loss_history = st_dic['history']
         min_edge = len(st_dic['graph'])
@@ -521,72 +699,53 @@ class analyser():
         loss_ax.grid()
         figManager = plt.get_current_fig_manager()
         figManager.window.showMaximized()
+        #plt.tight_layout()
         plt.show()
 
 
-
-path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
+#path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
 #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/aklt_3/AKLT_3'
-path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/try'
+#path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/try'
+path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (2)'
 a = analyser(path)
-#a.plot_losses()
-a.info_statex(0)
+# a.plot_losses()
+a.info_statex(0,['norm','ent','k'], filter_zeros=True)
+
+a.pm_statex(0)
+
+
 #a.get_x_state([ii for ii in range(3)])
 
+# def get_x_state(self, idx_files='all'):
+#     if idx_files == 'all':
+#         idx_files = [ii for ii in range(len(self.files))]
+#     if isinstance(idx_files, int):
+#         idx_files = [idx_files]
 
+#     fig, axs = plt.subplots(len(idx_files), 2, sharex='col')
+#     fig.set_size_inches(15, 8)
+#     for idx, xth_file in enumerate(idx_files):
+#         st_dic = self.files[xth_file]
+#         string_info = self.turn_graph_in_state(st_dic['graph'])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def get_x_state(self, idx_files='all'):
-    #     if idx_files == 'all':
-    #         idx_files = [ii for ii in range(len(self.files))]
-    #     if isinstance(idx_files, int):
-    #         idx_files = [idx_files]
-
-    #     fig, axs = plt.subplots(len(idx_files), 2, sharex='col')
-    #     fig.set_size_inches(15, 8)
-    #     for idx, xth_file in enumerate(idx_files):
-    #         st_dic = self.files[xth_file]
-    #         string_info = self.turn_graph_in_state(st_dic['graph'])
-
-    #         loss_history = st_dic['history']
-    #         min_edge = len(st_dic['graph'])
-    #         edges = [ii for ii in range(
-    #             min_edge, min_edge+len(loss_history))]
-    #         edges.reverse()
-    #         for ii in range(len(loss_history[0])):
-    #             loss = [ll[ii] for ll in loss_history]
-    #             axs[idx][0].plot(edges, loss, label=ii, alpha=0.4, lw=3)
-    #             axs[idx][0].plot(edges, loss, alpha=0.6, lw=0.7, color="black")
-    #         if idx == int(len(idx_files)/2):
-    #             axs[idx][0].set_ylabel("Loss functions")
-    #         if idx == len(idx_files) - 1:
-    #             axs[idx][0].set_xlabel("Amount of edges left")
-    #         axs[idx][0].invert_xaxis()
-    #         axs[idx][0].grid()
-    #         axs[idx][1].text(0, 0, string_info)
-    #         axs[idx][1].axis('off')
-    #     axs[0][0].get_shared_x_axes().join(axs[0][0], *axs[0, :])
-    #     figManager = plt.get_current_fig_manager()
-    #     figManager.window.showMaximized()
-    #     plt.show()
+#         loss_history = st_dic['history']
+#         min_edge = len(st_dic['graph'])
+#         edges = [ii for ii in range(
+#             min_edge, min_edge+len(loss_history))]
+#         edges.reverse()
+#         for ii in range(len(loss_history[0])):
+#             loss = [ll[ii] for ll in loss_history]
+#             axs[idx][0].plot(edges, loss, label=ii, alpha=0.4, lw=3)
+#             axs[idx][0].plot(edges, loss, alpha=0.6, lw=0.7, color="black")
+#         if idx == int(len(idx_files)/2):
+#             axs[idx][0].set_ylabel("Loss functions")
+#         if idx == len(idx_files) - 1:
+#             axs[idx][0].set_xlabel("Amount of edges left")
+#         axs[idx][0].invert_xaxis()
+#         axs[idx][0].grid()
+#         axs[idx][1].text(0, 0, string_info)
+#         axs[idx][1].axis('off')
+#     axs[0][0].get_shared_x_axes().join(axs[0][0], *axs[0, :])
+#     figManager = plt.get_current_fig_manager()
+#     figManager.window.showMaximized()
+#     plt.show()

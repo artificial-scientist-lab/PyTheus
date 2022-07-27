@@ -69,6 +69,8 @@ for i in range(cnfg['samples']):
     optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
     graph_res = optimizer.topologicalOptimization()
     sv.save_graph(optimizer)
+    
+    
 #%%
 graph_res.getState()
 print(f'finished with graph with {len(graph_res.edges)} edges.')

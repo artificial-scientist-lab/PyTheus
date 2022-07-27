@@ -1,6 +1,6 @@
 {
   "bulk_thr": 0.01,
-  "edges_tried": 12,
+  "edges_tried": 20,
   "ftol": 1e-06,
   "loss_func": "cr",
   "num_anc": 3,

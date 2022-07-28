@@ -45,7 +45,58 @@ def convert_file_path_to_dic(abs_file_path: Path) -> dict:
     return dictionary
 
 
-def num_in_str(num, dec=2, change_sign=False):
+
+def string_wrapper(string: str, max_chars_per_line=80) -> str:
+    """
+    wraps a string to a given line lenght 
+
+    Parameters
+    ----------
+    string : str
+        string has to be wrapped.
+    max_chars_per_line : TYPE, optional
+        max nums of char in one line. The default is 80.
+
+    Returns
+    -------
+    str
+        wrapped string
+
+    """
+    new_string = '$'
+    counts = 0
+    for ss in string:
+        if counts >= max_chars_per_line and ss == '+':
+            new_string += ss + '$' + '\n' + '$'
+            counts = 0
+        else:
+            new_string += ss
+            counts += 1
+
+    new_string += '$'
+    return new_string
+
+
+def num_in_str(num, dec=2, change_sign=False)->str:
+    """
+    make sure to convert a number in a proper Latex string
+    output depending if it is complexe or not
+
+    Parameters
+    ----------
+    num : TYPE
+        number to convert
+    dec : TYPE, optional
+        dec for rounding. The default is 2.
+    change_sign : TYPE, optional
+        needed in state analyzer, changes sign of num The default is False.
+
+    Returns
+    -------
+    Str
+        returns num in Latex string format
+
+    """
     if np.round(num.imag, dec) != 0:
         polar_num = polar(num)
         if not change_sign:
@@ -72,8 +123,28 @@ entanglement_functions = {
 
 
 class entanglement_measure():
+    
 
     def __init__(self, dimensions: list, measure_kind='con'):
+        """
+        a class to calculate a maximal values for a given measure kind
+        of entanglment:
+            - all reduced density being maximal mixed 
+            - best values for a given bipartion
+            - the sum of best values for a given k-bipartion
+            - all maximal values
+        Parameters
+        ----------
+        dimensions : list
+            Ddimension list of system
+        measure_kind : func, optional
+            measure function according to dict above . The default is 'con'.
+
+        Returns
+        -------
+        None.
+
+        """
         if dimensions.count(1) == 0:
             self.dims = dimensions
         else:
@@ -240,8 +311,16 @@ class state_analyzer():
         self.max = entanglement_measure(self.dim)
 
     def check_ancillas(self):
-        # check if given dic has more particles than dim (means we have ancilla)
-        # (e.g dim = [2,2,1]) -> reduce to dim=[2,2] because 1 <-> ancilla
+        """
+        check if given dic has more particles than dim (means we have ancilla)
+        (e.g dim = [2,2,1]) -> reduce to dim=[2,2] because 1 <-> ancilla
+
+        Returns
+        -------
+        None.
+
+        """
+
         num_ancillas = self.dim.count(1)
         if num_ancillas != 0:
             temp_dic = dict()
@@ -251,7 +330,27 @@ class state_analyzer():
             self.dic = temp_dic
             self.dim = self.dim[:-num_ancillas]
 
-    def state_vec(self, normalized=False) -> dict:
+    def state_vec(self, normalized=False) -> np.array:
+        """
+        calculate the lineare algebra vector for the given state.
+        e.g. |00> + |10> --> [ [1],[0],[1],[0] ] 
+
+        Parameters
+        ----------
+        normalized : bool, optional
+            if state vec should be normalized. The default is False.
+
+        Raises
+        ------
+        TypeError
+            when state vec is zero vector
+
+        Returns
+        -------
+        np.array
+            state vector
+
+        """
         if any(isinstance(ampl, complex) for ampl in self.dic.values()):
             state_vec = np.zeros(np.product(self.dim), dtype=np.complex64)
         else:
@@ -270,6 +369,16 @@ class state_analyzer():
             return state_vec
 
     def ent(self):
+        """
+        calculate total sum over all bipartions for given ent function 
+        in self.func
+
+        Returns
+        -------
+        float
+            sum of ent measure for all bipartions.
+
+        """
         qstate = self.state_vec(normalized=True)
 
         def calc_ent(mat, par):
@@ -281,7 +390,22 @@ class state_analyzer():
         self.con_vec_norm = 1/(self.max.max_values(full_vec=True))*self.con_vec
         return self.c
 
-    def get_reduced_density(self, bipar, normalized=False):
+    def get_reduced_density(self, bipar, normalized=False)-> np.array:
+        """
+
+        Parameters
+        ----------
+        bipar : list/tuple
+            of given bipartion, e.g [0,1] for split AB|CD
+        normalized : TYPE, optional
+            if normalizing state vector The default is False.
+
+        Returns
+        -------
+        np.array
+            reduced density matrix.
+
+        """
         return ptrace(self.state_vec(normalized), bipar, self.dim)
 
     def print_red_densitys(self, k):
@@ -290,21 +414,27 @@ class state_analyzer():
             print(f'{bipar} :')
             print(self.get_reduced_density(bipar[0], True))
 
-    def string_wrapper(self, string: str, max_chars_per_line=80) -> str:
-        new_string = '$'
-        counts = 0
-        for ss in string:
-            if counts >= max_chars_per_line and ss == '+':
-                new_string += ss + '$' + '\n' + '$'
-                counts = 0
-            else:
-                new_string += ss
-                counts += 1
-
-        new_string += '$'
-        return new_string
 
     def state_string(self, dec=2, filter_zeros=False, with_color=False):
+        """
+        get a string of the state in Latex format
+
+        Parameters
+        ----------
+        dec : int, optional
+            for decimal roundings of amplitudes. The default is 2.
+        filter_zeros : bool, optional
+            if one displays the kets with amplitude = 0 after rounding.
+            The default is False.
+        with_color : bool, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        string_end : str
+            Latex string of state
+
+        """
         if with_color:
             def st_col(strg, col): return r'\color{0}'.format(col) + strg
         else:
@@ -348,13 +478,28 @@ class state_analyzer():
         strs_plus.append(st_col(') ', 'black'))
 
         string_end = "".join(strs_plus).replace('- ()', '').replace('(+', '(')
-        string_end = self.string_wrapper(string_end[1:])
-        #string_end = r'\textbf{' + string_end + r' }'
-        
+        string_end = string_wrapper(string_end[1:])
+
         return string_end
   
 
     def calc_k_uniform(self) -> (int, np.array):
+        """
+        get k uniform of state and normalized vector for each k-bipartion
+        where 1 means  maximal mixed and 0 seperable for that bipartion
+        e.g. :
+            return is ( 1 , [ [1,1,1,1], [0,1,1] ] ) means state is 1-uniform
+            and for all bipartions with cardinality 2 also maximal entangeld
+            except for the first split AB|CD (= 0) it is separable
+
+        Returns
+        -------
+        string_end : (int, np.array)
+            num of k-uniform for given state and 
+            normalized array for all bipartions
+        
+        """
+        
         try:
             self.con_vec_norm
         except AttributeError:
@@ -376,6 +521,22 @@ class state_analyzer():
         return k, k_levels
 
     def info_string(self, *args, **kwargs):
+        """
+        returns a string with all infos specified in args and kwargs
+
+        Parameters
+        ----------
+        *args : TYPE
+            DESCRIPTION.
+        **kwargs : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        info_string : str
+            info string
+
+        """
         options = {
             'filter_zeros': False,
             'dec': 3,
@@ -509,18 +670,60 @@ class analyser():
         plt.show()
 
     def turn_dic_in_graph_state(self, graph_dict: dict, thresholds_amplitudes=np.inf):
+        """
+        returns a GRaph object and a state_analyzer object for given state
+
+        Parameters
+        ----------
+        graph_dict : dict
+            dict from json file.
+        thresholds_amplitudes : TYPE, optional
+            DESCRIPTION. The default is np.inf.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
             graph.toCartesian()
         graph.getState()
 
-        return graph, state_analyzer(graph.state)
+        return graph, state_analyzer(graph.state,dim=self.dim)
 
     
     def all_perfect_matchings_to_pdf(self,state_sys: dict, other_weights=[],
                                      given_ket_only="", show=True, row_len=True) -> None:
+        """
         
+
+        Parameters
+        ----------
+        state_sys : dict
+            DESCRIPTION.
+        other_weights : TYPE, optional
+            DESCRIPTION. The default is [].
+        given_ket_only : TYPE, optional
+            DESCRIPTION. The default is "".
+        show : TYPE, optional
+            DESCRIPTION. The default is True.
+        row_len : TYPE, optional
+            DESCRIPTION. The default is True.
+
+        Raises
+        ------
+        ValueError
+            DESCRIPTION.
+
+        Returns
+        -------
+        None
+            DESCRIPTION.
+
+        """
         pt = Path(__file__).resolve().parents[0]  # main directory
         pt = pt / 'data' / 'state_pdfs' / 'tmp'  # move data directory
         pt.mkdir(parents=True, exist_ok=True)
@@ -703,10 +906,10 @@ class analyser():
         plt.show()
 
 
-#path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
+path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
 #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/aklt_3/AKLT_3'
 #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/try'
-path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (2)'
+
 a = analyser(path)
 # a.plot_losses()
 a.info_statex(0,['norm','ent','k'], filter_zeros=True)

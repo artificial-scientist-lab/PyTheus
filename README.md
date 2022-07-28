@@ -24,7 +24,7 @@ for instance `configs/ghz_346.json`. To run this case, type
 python -m theseuslab configs/ghz_346
 ```
 
-## Setting up development environment
+## Development
 
 ### Clone repository
 
@@ -63,9 +63,34 @@ Any changes in the code will now automatically be reflected
 in your local package installation.
 
 
-## Running Tests
+## Tests
 
-TODO
+### Run test suite
+
+```
+python -m unittest discover tests
+```
+
+### Test coverage
+
+Install `coverage`, if you have not yet done so:
+
+```
+pip install coverage
+```
+
+Then run coverage scan:
+
+```
+coverage run --source=theseuslab -m unittest discover tests 
+```
+
+After that, create the coverage report:
+
+```
+coverage report -m
+```
+
 
 ## The Rest
 

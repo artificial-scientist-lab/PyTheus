@@ -10,7 +10,6 @@ import os.path
 import sys
 from pathlib import Path
 
-import click
 import pkg_resources
 
 import theseuslab
@@ -20,22 +19,6 @@ import theseuslab.theseus as th
 from theseuslab.fancy_classes import Graph, State
 from theseuslab.optimizer import topological_opti
 from theseuslab.state import state1 as sst
-
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.argument('filename')
-@click.option('--example', is_flag=True, default=False, help='Load input file from examples directory.')
-def run(filename, example):
-    try:
-        run_main(filename, example)
-    except IOError as e:
-        click.echo('ERROR:' + str(e))
-        sys.exit(1)
 
 
 def run_main(filename, example):

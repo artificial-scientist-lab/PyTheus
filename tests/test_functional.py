@@ -5,10 +5,14 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from theseuslab.main import run
+from theseuslab.cli import run
 
 
 class FunctionalTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print('Running functional tests. This may take a while.')
 
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()

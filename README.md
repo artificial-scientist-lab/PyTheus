@@ -1,6 +1,74 @@
 # Theseus
 Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments
 
+## Installation
+
+Using pip:
+
+```
+pip install theseuslab
+```
+
+Alternatively, from sources (after cloning the repository):
+
+```
+python setup.py install
+```
+
+## Running Theseus
+
+Example input files are contained in the `configs` directory,
+for instance `configs/ghz_346.json`. To run this case, type
+
+```
+python -m theseuslab configs/ghz_346
+```
+
+## Setting up development environment
+
+### Clone repository
+
+```
+git clone https://github.com/artificial-scientist-lab/Theseus.git
+```
+
+### Create virtual environment
+
+From the project root directory, submit
+
+```
+python -m venv venv
+```
+
+This will create a subfolder with your virtual environment.
+
+To activate, type
+
+```
+. venv/bin/activate
+```
+
+Note the leading point!
+
+### Local development installation
+
+Submit
+
+```
+python setup.py develop
+```
+
+from the project root directory (where `setup.py` is located).
+Any changes in the code will now automatically be reflected
+in your local package installation.
+
+
+## Running Tests
+
+TODO
+
+## The Rest
+
 ✅✅ ... found and saved in configs
 
 ✅🤔 ... exists but config not ready

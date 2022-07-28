@@ -5,9 +5,9 @@ Created on Tue Jul 12 09:07:40 2022
 @author: janpe
 """
 
-from fancy_classes import Graph
-from saver import saver
-from lossfunctions import loss_dic
+from .fancy_classes import Graph
+from .saver import saver
+from .lossfunctions import loss_dic
 import numpy as np
 from scipy import optimize
 

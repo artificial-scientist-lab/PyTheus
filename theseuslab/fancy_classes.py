@@ -1,5 +1,5 @@
 import numpy as np
-import theseus as th
+import theseuslab.theseus as th
 from copy import deepcopy
 
 # +

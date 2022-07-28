@@ -5,7 +5,7 @@ Created on Thu Jul 14 17:15:59 2022
 @author: janpe
 """
 
-from fancy_classes import Graph
+from .fancy_classes import Graph
 import numpy as np
 from pathlib import Path
 import json
@@ -106,8 +106,7 @@ class saver:
 
         i = 0
         while True:  # iterate as long as one could find a proper safe folder
-            pt = Path(__file__).resolve().parents[0]  # main directory
-            pt = pt / 'data' / folder_name  # move data directory
+            pt = Path.cwd() / 'output' / folder_name  # move data directory
             pt.mkdir(parents=True, exist_ok=True)
             summary_path = pt / 'summary.json'
             if summary_path.exists():

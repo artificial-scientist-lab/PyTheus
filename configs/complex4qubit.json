@@ -1,23 +1,26 @@
 {
   "bulk_thr": 0.01,
-  "edges_tried": 20,
-  "foldername": "ghz_346",
+  "edges_tried": 10,
+  "foldername": "complex4qubit",
   "ftol": 1e-06,
   "loss_func": "cr",
-  "num_anc": 3,
+  "num_anc": 0,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
-  "imaginary": false,
+  "imaginary": "polar",
   "safe_hist": true,
-  "samples": 1,
+  "samples": 100,
   "target_state": [
-    "000",
-    "111",
-    "222",
-    "333"
+    "0011",
+    "0100",
+    "0111",
+    "1000",
+    "1100",
+    "1101",
+    "1110"
   ],
   "thresholds": [
-    0.25,
+    0.2,
     0.1
   ],
   "tries_per_edge": 5,

@@ -1,0 +1,38 @@
+{
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "peres",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 3,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "120",
+        "210",
+        "001",
+        "111",
+        "221",
+        "012",
+        "102",
+        "112",
+        "222",
+        "023",
+        "203",
+        "213",
+        "123"
+    ],
+    "amplitudes": [
+        0.7071067811865475, 0.7071067811865475,0.5773502691896258,0.5773502691896258,-0.5773502691896258,1,1,1,1,1,-1,1,-1
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

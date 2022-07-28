@@ -33,5 +33,5 @@
         0.1
     ],
     "tries_per_edge": 5,
-    "unicolor": false
+    "unicolor": false,
 }

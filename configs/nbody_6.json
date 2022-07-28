@@ -4,7 +4,7 @@
     "foldername": "nbody_6",
     "ftol": 1e-05,
     "loss_func": "cr",
-    "num_anc": 2,
+    "num_anc": 0,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "imaginary": false,

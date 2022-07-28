@@ -578,13 +578,14 @@ class state_analyzer():
 
 class analyser():
 
-    def __init__(self, folder):
+    def __init__(self, folder, only_pm = False):
         self.folder = Path(folder)
         self.check_folder_name()
         self.get_all_states_in_folder_and_summary_file()
         self.dim = self.summary['dimensions']
         self.imaginary = self.summary['imaginary']
-
+        self.only_pm = only_pm
+        
     def check_folder_name(self):
         if len(list(Path(self.folder).rglob('*.json'))) == 0:
             raise ValueError(
@@ -676,7 +677,7 @@ class analyser():
         Parameters
         ----------
         graph_dict : dict
-            dict from json file.
+            dict representing a graph.
         thresholds_amplitudes : TYPE, optional
             DESCRIPTION. The default is np.inf.
 
@@ -686,6 +687,9 @@ class analyser():
             DESCRIPTION.
 
         """
+        if self.only_pm:
+            for ket,ampl in graph_dict.items():
+                graph_dict[ket] = 1 if ampl > 0 else -1
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
@@ -748,10 +752,11 @@ class analyser():
                         "The given Ket must be wrong, Graph does not have it")
         if row_len:
             row_len = max( [ len(pm_graphs) for  pm_graphs  in cat.values()])
-            
-            
+        
+        num_kets = len(self.dim) - self.dim.count(1) # eliminate ancillas
+        
         for kk, vv in cat.items():
-            ket_string = "".join([str(int(k[1])) for k in kk])
+            ket_string = "".join([str(int(k[1])) for k in kk[:num_kets]])
             total_weight = 0
 
             for ii, cover in enumerate(vv):
@@ -906,14 +911,13 @@ class analyser():
         plt.show()
 
 
-path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try'
+path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (0)'
 #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/aklt_3/AKLT_3'
 #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/try'
 
-a = analyser(path)
+a = analyser(path,True)
 # a.plot_losses()
 a.info_statex(0,['norm','ent','k'], filter_zeros=True)
-
 a.pm_statex(0)
 
 

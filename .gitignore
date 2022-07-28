@@ -129,4 +129,5 @@ dmypy.json
 
 _version_save.py
 .idea
-data/output/
+data
+output

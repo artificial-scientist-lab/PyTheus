@@ -17,12 +17,24 @@ python setup.py install
 
 ## Running Theseus
 
-Example input files are contained in the `configs` directory,
-for instance `configs/ghz_346.json`. To run this case, type
+To list the included examples, type
 
 ```
-python -m theseuslab configs/ghz_346
+theseus list
 ```
+
+To run one of the included examples, type e.g.
+
+```
+theseus run ghz_346
+```
+
+To run your own input file, type
+
+```
+theseus run PATH_TO_YOUR_INPUT_FILE
+```
+
 
 ## Development
 

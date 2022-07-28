@@ -5,27 +5,50 @@ Created on Tue Jul 12 12:24:53 2022
 @author: janpe
 """
 
-import sys
 import json
+import os.path
+import sys
+from pathlib import Path
 
-from theseuslab.optimizer import topological_opti
-from theseuslab.fancy_classes import Graph, State
-from theseuslab.state import state1 as sst
-import theseuslab.theseus as th
+import click
+import pkg_resources
+
+import theseuslab
 import theseuslab.help_functions as hf
 import theseuslab.saver as saver
+import theseuslab.theseus as th
+from theseuslab.fancy_classes import Graph, State
+from theseuslab.optimizer import topological_opti
+from theseuslab.state import state1 as sst
 
 
-def run_main():
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.argument('filename')
+@click.option('--example', is_flag=True, default=False, help='Load input file from examples directory.')
+def run(filename, example):
     try:
-        config = sys.argv[1]
-    except IndexError:
-        print("No input file given.")
-        sys.exit()
+        run_main(filename, example)
+    except IOError as e:
+        click.echo('ERROR:' + str(e))
+        sys.exit(1)
 
-    if not config.endswith(".json"):
-        config += ".json"
-    with open(config) as input_file:
+
+def run_main(filename, example):
+    if not filename.endswith('.json'):
+        filename += '.json'
+    if example:
+        examples_dir = pkg_resources.resource_filename(theseuslab.__name__, "configs")
+        filename = Path(examples_dir) / filename
+
+    if not os.path.exists(filename) or os.path.isdir(filename):
+        raise IOError(f'File does not exist: {filename}')
+
+    with open(filename) as input_file:
         cnfg = json.load(input_file)
 
     sys.setrecursionlimit(1000000000)
@@ -61,7 +84,7 @@ def run_main():
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
 
     # topological optimization
-    sv = saver.saver(config=cnfg, name_config_file=config, dim=dimensions)
+    sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
     for i in range(cnfg['samples']):
         optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
         graph_res = optimizer.topologicalOptimization()
@@ -80,7 +103,3 @@ def run_main():
         end_res = graph_res.state.state
     result = sst(end_res)
     result.info()
-
-
-if __name__ == '__main__':
-    run_main()

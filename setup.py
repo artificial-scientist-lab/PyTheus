@@ -24,7 +24,8 @@ setup(
     description=description,
     long_description=open('README.md').read() if exists('README.md') else '',
     long_description_content_type="text/markdown",
-    install_requires=['sphinx', 'numpy', 'scipy', 'matplotlib', 'termcolor'
+    install_requires=[
+        'sphinx', 'numpy', 'scipy', 'matplotlib', 'termcolor', 'Click'
                       ],
     python_requires=">=3.6",
     classifiers=['Operating System :: OS Independent',
@@ -34,7 +35,7 @@ setup(
     py_modules=[name],
     entry_points={
         'console_scripts': [
-            'theseus = theseuslab.main:run_main',
+            'theseus = theseuslab.main:cli',
         ],
     }
 )

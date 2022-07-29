@@ -1,6 +1,111 @@
 # Theseus
 Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments
 
+## Installation
+
+Using pip:
+
+```
+pip install theseuslab
+```
+
+Alternatively, from sources (after cloning the repository):
+
+```
+python setup.py install
+```
+
+## Running Theseus
+
+To list the included examples, type
+
+```
+theseus list
+```
+
+To run one of the included examples, type e.g.
+
+```
+theseus run ghz_346
+```
+
+To run your own input file, type
+
+```
+theseus run PATH_TO_YOUR_INPUT_FILE
+```
+
+
+## Development
+
+### Clone repository
+
+```
+git clone https://github.com/artificial-scientist-lab/Theseus.git
+```
+
+### Create virtual environment
+
+From the project root directory, submit
+
+```
+python -m venv venv
+```
+
+This will create a subfolder with your virtual environment.
+
+To activate, type
+
+```
+. venv/bin/activate
+```
+
+Note the leading point!
+
+### Local development installation
+
+Submit
+
+```
+python setup.py develop
+```
+
+from the project root directory (where `setup.py` is located).
+Any changes in the code will now automatically be reflected
+in your local package installation.
+
+
+## Tests
+
+### Run test suite
+
+```
+python -m unittest discover tests
+```
+
+### Test coverage
+
+Install `coverage`, if you have not yet done so:
+
+```
+pip install coverage
+```
+
+Then run coverage scan:
+
+```
+coverage run --source=theseus -m unittest discover tests 
+```
+
+After that, create the coverage report:
+
+```
+coverage report -m
+```
+
+
+## The Rest
+
 ✅✅ ... found and saved in configs
 
 ✅🤔 ... exists but config not ready
@@ -10,10 +115,10 @@ Theseus, a highly-efficient inverse-design algorithm for quantum optical experim
 ### GHZ
 * 3 particle, 4 dimension ✅✅
 * 3 particle, 5 dimension ✅✅
-* 3 particle, 6 dimension ✅🤔
+* 3 particle, 6 dimension ✅✅
 * 4 particle, 4 dimension ("fake") ✅✅
 * 4 particle, 4 dimension (HALO)
-* 5 particle, 4 dimension ✅🤔
+* 5 particle, 4 dimension ✅✅
 * 6 particle, 3 dimension (HALO)
 
 ### Quantum Info

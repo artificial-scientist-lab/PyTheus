@@ -4,8 +4,9 @@ Created on Thu Jul 14 17:15:59 2022
 
 @author: janpe
 """
+import os.path
 
-from fancy_classes import Graph
+from .fancy_classes import Graph
 import numpy as np
 from pathlib import Path
 import json
@@ -71,29 +72,24 @@ def write_json(abspath: Path, dictionary: dict,
 class saver:
 
     def __init__(self, config=None, name_config_file = '', dim = []):
-        
-        self.name_config_file = name_config_file
+
+        self.name_config_file = Path(name_config_file).name
         self.config = config
         self.config['dimensions'] = dim
         self.best_state = None
         self.save_path = self.get_and_create_save_directory()
         self.best_opt = None
-        
 
     def get_folder_name(self) -> str:
         """
         return the folder name: dimension of the system or confi
 
         """
- 
-        folder_seps = ['/','\\']
-        idx = max( [self.name_config_file.rfind(ss) for ss in folder_seps])
-        try:
-            return self.name_config_file[idx+1:] + '/' + self.config['foldername']
-        except KeyError:
-            return self.name_config_file[idx+1:] + '/try'  
-        
-        
+        folder = self.name_config_file
+        if self.name_config_file.endswith('.json'):
+            folder = self.name_config_file[:-5]
+        return Path(folder) / self.config.get('foldername', 'try')
+
     def get_and_create_save_directory(self):
         """
         look if folder ~/data/(2-2-2-2) exists otherwise creates it
@@ -106,8 +102,7 @@ class saver:
 
         i = 0
         while True:  # iterate as long as one could find a proper safe folder
-            pt = Path(__file__).resolve().parents[0]  # main directory
-            pt = pt / 'data' / folder_name  # move data directory
+            pt = Path.cwd() / 'output' / folder_name  # move data directory
             pt.mkdir(parents=True, exist_ok=True)
             summary_path = pt / 'summary.json'
             if summary_path.exists():

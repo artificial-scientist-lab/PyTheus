@@ -5,7 +5,7 @@ Created on Tue Jul 12 11:54:12 2022
 @author: janpe
 """
 
-import theseus as th
+import theseus.theseus as th
 
 
 

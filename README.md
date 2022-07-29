@@ -26,7 +26,7 @@ theseus list
 To run one of the included examples, type e.g.
 
 ```
-theseus run ghz_346
+theseus run --example ghz_346
 ```
 
 To run your own input file, type

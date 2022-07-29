@@ -21,6 +21,16 @@ from theseus.optimizer import topological_opti
 
 
 def run_main(filename, example):
+    """Run the Theseus algorithm on a given input file.
+
+    Parameters
+    ----------
+    filename: str
+        case name or input file path
+    example: bool
+        flag indicating whether to run included example case or external file.
+
+    """
     if not filename.endswith('.json'):
         filename += '.json'
     if example:

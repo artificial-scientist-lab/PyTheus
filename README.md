@@ -94,7 +94,7 @@ pip install coverage
 Then run coverage scan:
 
 ```
-coverage run --source=theseuslab -m unittest discover tests 
+coverage run --source=theseus -m unittest discover tests 
 ```
 
 After that, create the coverage report:

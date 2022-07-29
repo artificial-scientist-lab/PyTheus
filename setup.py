@@ -9,13 +9,14 @@ from setuptools import setup, find_packages
 author = 'artificial-scientist-lab'
 email = ''  # TODO: insert email
 description = 'Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments'
-name = 'theseuslab'
+dist_name = 'theseuslab'
+package_name = 'theseus'
 year = '2022'
 url = 'https://github.com/artificial-scientist-lab/Theseus'  # TODO: insert public repo URL
 
 
 def get_version():
-    content = open(Path(name) / '__init__.py').readlines()
+    content = open(Path(package_name) / '__init__.py').readlines()
     for line in content:
         match = re.match('^ *__version__ *= *[\'"]([^\'"]+)', line)
         if match:
@@ -24,13 +25,13 @@ def get_version():
 
 
 setup(
-    name=name,
+    name=dist_name,
     author=author,
     author_email=email,
     url=url,
     version=get_version(),
     packages=find_packages(),
-    package_dir={name: name},
+    package_dir={dist_name: package_name},
     include_package_data=True,
     license='MIT',
     description=description,
@@ -44,10 +45,10 @@ setup(
                  'Programming Language :: Python :: 3',
                  ],
     platforms=['ALL'],
-    py_modules=[name],
+    py_modules=[package_name],
     entry_points={
         'console_scripts': [
-            'theseus = theseuslab.cli:cli',
+            'theseus = theseus.cli:cli',
         ],
     }
 )

@@ -12,20 +12,20 @@ from pathlib import Path
 
 import pkg_resources
 
-import theseuslab
-import theseuslab.help_functions as hf
-import theseuslab.saver as saver
-import theseuslab.theseus as th
-from theseuslab.fancy_classes import Graph, State
-from theseuslab.optimizer import topological_opti
-from theseuslab.state import state1 as sst
+import theseus
+import theseus.help_functions as hf
+import theseus.saver as saver
+import theseus.theseus as th
+from theseus.fancy_classes import Graph, State
+from theseus.optimizer import topological_opti
+from theseus.state import state1 as sst
 
 
 def run_main(filename, example):
     if not filename.endswith('.json'):
         filename += '.json'
     if example:
-        examples_dir = pkg_resources.resource_filename(theseuslab.__name__, "configs")
+        examples_dir = pkg_resources.resource_filename(theseus.__name__, "configs")
         filename = Path(examples_dir) / filename
 
     if not os.path.exists(filename) or os.path.isdir(filename):

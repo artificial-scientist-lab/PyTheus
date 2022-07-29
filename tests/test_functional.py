@@ -5,7 +5,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from theseuslab.cli import run
+from theseus.cli import run
 
 
 class FunctionalTests(unittest.TestCase):

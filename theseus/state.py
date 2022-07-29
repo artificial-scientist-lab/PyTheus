@@ -1,7 +1,7 @@
 from cmath import polar
 import numpy as np
-import theseuslab.theseus as th
-import theseuslab.help_functions as hf
+import theseus.theseus as th
+import theseus.help_functions as hf
 from termcolor import colored
 from scipy.linalg import logm
 import re

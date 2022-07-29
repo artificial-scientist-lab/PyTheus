@@ -4,8 +4,8 @@ import sys
 import click
 import pkg_resources
 
-import theseuslab
-from theseuslab.main import run_main
+import theseus
+from theseus.main import run_main
 
 
 @click.group()
@@ -28,7 +28,7 @@ def run(filename, example):
 @cli.command()
 def list():
     """List all included examples."""
-    configs_dir = pkg_resources.resource_filename(theseuslab.__name__, 'configs')
+    configs_dir = pkg_resources.resource_filename(theseus.__name__, 'configs')
     files = sorted(os.listdir(configs_dir))
     for file in files:
         click.echo(file.replace('.json', ''))

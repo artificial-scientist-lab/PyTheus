@@ -18,7 +18,6 @@ import theseus.saver as saver
 import theseus.theseus as th
 from theseus.fancy_classes import Graph, State
 from theseus.optimizer import topological_opti
-from theseus.state import state1 as sst
 
 
 def run_main(filename, example):
@@ -84,5 +83,3 @@ def run_main(filename, example):
             end_res[kets[:-ancillas]] = ampl
     else:
         end_res = graph_res.state.state
-    result = sst(end_res)
-    result.info()

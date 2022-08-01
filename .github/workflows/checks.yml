@@ -2,7 +2,7 @@ name: Checks
 
 on:
   push:
-    branches: [ infrastructure ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -30,4 +30,4 @@ jobs:
         pip freeze
     - name: Run test suite
       run: |
-        python -m unittest discover -s tests/fast
+        python -m unittest discover

@@ -1,6 +1,6 @@
 import unittest
 
-from config import EDGES
+from .config import EDGES
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog
 
 

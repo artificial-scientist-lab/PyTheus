@@ -79,8 +79,16 @@ in your local package installation.
 
 ### Run test suite
 
+#### Running all tests
+
 ```
 python -m unittest discover tests
+```
+
+#### Running only the fast tests
+
+```
+python -m unittest discover -s tests/fast
 ```
 
 ### Test coverage

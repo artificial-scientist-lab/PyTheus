@@ -30,18 +30,13 @@ def run_main(filename, example):
     example: bool
         flag indicating whether to run included example case or external file.
 
+
+    Raises
+    ------
+    IOError
+        if filename is not valid.
     """
-    if not filename.endswith('.json'):
-        filename += '.json'
-    if example:
-        examples_dir = pkg_resources.resource_filename(theseus.__name__, "configs")
-        filename = Path(examples_dir) / filename
-
-    if not os.path.exists(filename) or os.path.isdir(filename):
-        raise IOError(f'File does not exist: {filename}')
-
-    with open(filename) as input_file:
-        cnfg = json.load(input_file)
+    cnfg, filename = read_config(example, filename)
 
     sys.setrecursionlimit(1000000000)
 
@@ -93,3 +88,16 @@ def run_main(filename, example):
             end_res[kets[:-ancillas]] = ampl
     else:
         end_res = graph_res.state.state
+
+
+def read_config(is_example, filename):
+    if not filename.endswith('.json'):
+        filename += '.json'
+    if is_example:
+        examples_dir = pkg_resources.resource_filename(theseus.__name__, "configs")
+        filename = Path(examples_dir) / filename
+    if not os.path.exists(filename) or os.path.isdir(filename):
+        raise IOError(f'File does not exist: {filename}')
+    with open(filename) as input_file:
+        cnfg = json.load(input_file)
+    return cnfg, filename

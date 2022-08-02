@@ -67,3 +67,9 @@ class FunctionalTests(unittest.TestCase):
         result = runner.invoke(run, ['i_dont_exist.json'])
         assert result.exit_code == 1
         assert 'ERROR' in result.output
+
+    def test_bell_state(self):
+        input_file = Path(__file__).parent / 'fixtures' / 'bell'
+        runner = CliRunner()
+        result = runner.invoke(run, [str(input_file)])
+        assert 'finished with graph with 2 edges' in result.output

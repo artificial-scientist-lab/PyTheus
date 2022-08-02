@@ -1,6 +1,6 @@
 import unittest
 
-from tests.fast.config import EDGES
+from tests.fast.config import GHZ_346
 from theseus.fancy_classes import Graph, defaultValues
 
 class TestFancyClassesModule(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestFancyClassesModule(unittest.TestCase):
 class TestGraph(unittest.TestCase):
 
     def test_init_graph_edges_given_not_imaginary_rest_default(self):
-        graph = Graph(EDGES, imaginary=False)
+        graph = Graph(GHZ_346['edges'], imaginary=False)
 
         expected_graph_attribute = {(0, 1, 0, 0): True, (0, 1, 0, 1): True, (0, 1, 0, 2): True, (0, 1, 0, 3): True,
                                     (0, 1, 1, 0): True, (0, 1, 1, 1): True, (0, 1, 1, 2): True, (0, 1, 1, 3): True,

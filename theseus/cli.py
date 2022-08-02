@@ -6,7 +6,7 @@ import pkg_resources
 
 import theseus
 from theseus.main import run_main
-from theseus.analyzer import analyser
+from theseus.analyzer import analyser,convert_input_path
 
 @click.group()
 def cli():
@@ -29,9 +29,10 @@ def run(filename, example):
 def analyze(directory):
     """Run an input file."""
     try:
-        #data_dir = pkg_resources.resource_filename(theseus.__name__, 'data',directory)
-        a = analyser(directory)
-        index = input(f'which state? (int from 0 - {len(a.files)} ) \n')
+        output_dir = pkg_resources.resource_filename(theseus.__name__, 'output')
+        directory = convert_input_path(directory,output_dir)
+        a = analyser(directory,output_dir)
+        index = input(f'which state? (int from 0 - {len(a.files)-1} ) \n')
         a.info_statex(int(index))
     except IOError as e:
         click.echo('ERROR:' + str(e))

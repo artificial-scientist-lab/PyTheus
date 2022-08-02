@@ -66,3 +66,10 @@ class FunctionalTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(run, [str(input_file)])
         assert 'finished with graph with 2 edges' in result.output
+
+    def test_lossfunc_ent(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'conc_4-3'])
+        assert result.exit_code == 0
+        assert os.path.exists('output/conc_4-3/try/best.json')
+        assert os.path.exists('output/conc_4-3/try/summary.json')

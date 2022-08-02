@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
-import theseus as th
+import theseus.theseus as th
 from cmath import polar 
+
 
 
 def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
@@ -34,11 +35,13 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
         transparency = 1
     ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw,alpha=transparency)
     ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw,alpha=transparency)
+
     if show_val:
+        
         if transparency > 0.5 and col1 == "blue" :
             font_col = 'white'
         else: font_col = 'black'
-            
+
         ax.text(np.mean([0.9*vert1[0], hp[0]]), np.mean([0.9*vert1[1], hp[1]]),f"{edge[4]:.4f}",
                  bbox={'facecolor':col1 ,'alpha':transparency,'edgecolor':col2,'pad':1},c =font_col,
                  ha='center', va='center',rotation=0,fontweight ='heavy')
@@ -52,7 +55,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
 
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig = (), add_title= '',
-              show_value_for_each_edge= False):
+              show_value_for_each_edge= False, fontsize= 30):
     edge_dict = th.edgeBleach(graph.edges)
 
     num_vertices = len(np.unique(np.array(graph.edges)[:, :2]))
@@ -92,7 +95,8 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     circ = []
     for vert, coords in verts.items():
         circ.append(plt.Circle(coords, 0.1, alpha=0.5))
-        ax.text(coords[0], coords[1], str(vert), zorder=11, ha='center', va='center', size=30)
+        ax.text(coords[0], coords[1], str(vert), zorder=11,
+                ha='center', va='center', size=fontsize)
     circ = collections.PatchCollection(circ, zorder=10)
     ax.add_collection(circ)
 
@@ -107,11 +111,14 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
                 *np.round(polar(total_weight),3))
         else: 
             wp = str(np.round(total_weight,3))
-        plt.title('weight =' + wp + str(add_title), fontsize=30)
-
+        ax.set_title( wp + str(add_title), fontsize=fontsize)
+        
+    if add_title != '' and weight_product is False :
+        ax.set_title( str(add_title), fontsize=fontsize)
+    
     if show:
         plt.show()
         plt.pause(0.01)
     else:
-        plt.close(fig)
+        pass
     return fig

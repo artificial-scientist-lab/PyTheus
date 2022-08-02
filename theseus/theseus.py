@@ -4,13 +4,9 @@
 @author: cruizgo, soerenarlt, janpe
 """
 import itertools
-from math import factorial
-from collections import Counter
 import random
 import numpy as np
-import scipy.optimize as optimize
-import matplotlib.pyplot as plt
-import json
+
 
 
 # # Auxiliary Functions

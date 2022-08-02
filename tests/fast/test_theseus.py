@@ -19,6 +19,13 @@ class TestTheseusModule(unittest.TestCase):
         all_edges = buildAllEdges(dimensions, string=False, imaginary=False)
         self.assertEqual(87, len(all_edges))
 
+    def test_buildAllEdges_bell_state(self):
+        dimensions = [2, 2]
+        all_edges = buildAllEdges(dimensions, string=False, imaginary=False)
+        self.assertEqual([
+            (0, 1, 0, 0), (0, 1, 0, 1),
+            (0, 1, 1, 0), (0, 1, 1, 1)], all_edges)
+
     def test_graphDimensions(self):
         dimensions = graphDimensions(GHZ_346['edges'])
         expected = [4, 4, 4, 1, 1, 1]

@@ -40,6 +40,45 @@ def run_main(filename, example):
 
     sys.setrecursionlimit(1000000000)
 
+    dimensions, sys_dict, target_state = get_dimensions_and_target_state(cnfg)
+
+    start_graph = build_starting_graph(cnfg, dimensions)
+
+    graph_res = optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
+
+    graph_res.getState()
+    print(f'finished with graph with {len(graph_res.edges)} edges.')
+    print(graph_res.state.state)
+
+    ancillas = dimensions.count(1)
+    if ancillas != 0:
+        end_res = dict()
+        for kets, ampl in graph_res.state.state.items():
+            end_res[kets[:-ancillas]] = ampl
+    else:
+        end_res = graph_res.state.state
+
+
+def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state):
+    # topological optimization
+    sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
+    for i in range(cnfg['samples']):
+        optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
+        graph_res = optimizer.topologicalOptimization()
+        sv.save_graph(optimizer)
+    return graph_res
+
+
+def build_starting_graph(cnfg, dimensions):
+    # build starting graph
+    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
+    print(f'start graph has {len(edge_list)} edges.')
+    start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
+    return start_graph
+
+
+def get_dimensions_and_target_state(cnfg):
     if cnfg['loss_func'] == 'ent':
         # concurrence optimization
         # define local dimensions
@@ -62,32 +101,7 @@ def run_main(filename, example):
         target_kets = target_state.kets
         # define local dimensions
         dimensions = th.stateDimensions(target_kets)
-
-    # build starting graph
-    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
-    edge_list = hf.prepEdgeList(edge_list, cnfg)
-
-    print(f'start graph has {len(edge_list)} edges.')
-    start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
-
-    # topological optimization
-    sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
-    for i in range(cnfg['samples']):
-        optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
-        graph_res = optimizer.topologicalOptimization()
-        sv.save_graph(optimizer)
-
-    graph_res.getState()
-    print(f'finished with graph with {len(graph_res.edges)} edges.')
-    print(graph_res.state.state)
-
-    ancillas = dimensions.count(1)
-    if ancillas != 0:
-        end_res = dict()
-        for kets, ampl in graph_res.state.state.items():
-            end_res[kets[:-ancillas]] = ampl
-    else:
-        end_res = graph_res.state.state
+    return dimensions, sys_dict, target_state
 
 
 def read_config(is_example, filename):

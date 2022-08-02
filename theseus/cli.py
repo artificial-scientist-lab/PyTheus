@@ -1,3 +1,18 @@
+""" Module: cli.py
+
+Theseus uses the Click library as a command line interface. Definition of click commands
+and error handling should be contained in the cli.py module.
+
+Conversely, to avoid tight coupling of code, all "business" logic, i.e. actions that shall be
+performed when submitting a command, should be part of other modules, but NOT of cli.py.
+
+In case of errors of any sort, the other modules should raise exceptions that cli.py
+may handle as desired.
+
+This decoupling makes sure that Theseus can not only be used as a command line application
+but can also be imported as a package in normal Python code.
+"""
+
 import os
 import sys
 
@@ -7,6 +22,7 @@ import pkg_resources
 import theseus
 from theseus.main import run_main
 from theseus.analyzer import analyser,convert_input_path
+
 
 @click.group()
 def cli():
@@ -24,15 +40,14 @@ def run(filename, example):
         click.echo('ERROR:' + str(e))
         sys.exit(1)
 
+
 @cli.command()
 @click.argument('directory')
 def analyze(directory):
     """Run an input file."""
     try:
-        output_dir = pkg_resources.resource_filename(theseus.__name__, 'output')
-        directory = convert_input_path(directory,output_dir)
-        a = analyser(directory,output_dir)
-        index = input(f'which state? (int from 0 - {len(a.files)-1} ) \n')
+        a = analyser(directory)
+        index = click.prompt(f'which state? (int from 0 - {len(a.files)}', type=int)
         a.info_statex(int(index))
     except IOError as e:
         click.echo('ERROR:' + str(e))

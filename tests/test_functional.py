@@ -29,13 +29,6 @@ class FunctionalTests(unittest.TestCase):
         assert os.path.exists('output/ghz_346/ghz_346/best.json')
         assert os.path.exists('output/ghz_346/ghz_346/summary.json')
 
-        # The following assertions did not work because each time I run the
-        # test, it yields a different result, sometimes 14 edges, sometimes 17, etc.
-        # Is that supposed to be so?
-
-        #assert 'finished with graph with 14 edges.' in result.output
-        #assert 'k = 1 : [0.988, 0.985, 0.979]' in result.output
-
     def test_input_without_json_ending_from_example_dir(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'ghz_346'])
@@ -67,3 +60,16 @@ class FunctionalTests(unittest.TestCase):
         result = runner.invoke(run, ['i_dont_exist.json'])
         assert result.exit_code == 1
         assert 'ERROR' in result.output
+
+    def test_bell_state(self):
+        input_file = Path(__file__).parent / 'fixtures' / 'bell'
+        runner = CliRunner()
+        result = runner.invoke(run, [str(input_file)])
+        assert 'finished with graph with 2 edges' in result.output
+
+    def test_lossfunc_ent(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'conc_4-3'])
+        assert result.exit_code == 0
+        assert os.path.exists('output/conc_4-3/try/best.json')
+        assert os.path.exists('output/conc_4-3/try/summary.json')

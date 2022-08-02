@@ -35,6 +35,19 @@ To run your own input file, type
 theseus run PATH_TO_YOUR_INPUT_FILE
 ```
 
+To get help, add the `--help` option to any command. For instance
+
+```
+> theseus run --help
+
+Usage: theseus run [OPTIONS] FILENAME
+
+  Run an input file.
+
+Options:
+  --example  Load input file from examples directory.
+  --help     Show this message and exit.
+```
 
 ## Development
 

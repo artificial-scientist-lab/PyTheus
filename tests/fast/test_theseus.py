@@ -1,6 +1,6 @@
 import unittest
 
-from .config import EDGES
+from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog
 
 
@@ -19,19 +19,26 @@ class TestTheseusModule(unittest.TestCase):
         all_edges = buildAllEdges(dimensions, string=False, imaginary=False)
         self.assertEqual(87, len(all_edges))
 
+    def test_buildAllEdges_bell_state(self):
+        dimensions = [2, 2]
+        all_edges = buildAllEdges(dimensions, string=False, imaginary=False)
+        self.assertEqual([
+            (0, 1, 0, 0), (0, 1, 0, 1),
+            (0, 1, 1, 0), (0, 1, 1, 1)], all_edges)
+
     def test_graphDimensions(self):
-        dimensions = graphDimensions(EDGES)
+        dimensions = graphDimensions(GHZ_346['edges'])
         expected = [4, 4, 4, 1, 1, 1]
         self.assertEqual(expected, dimensions)
 
     def test_findPerfectMatchings(self):
-        actual = findPerfectMatchings(EDGES)
+        actual = findPerfectMatchings(GHZ_346['edges'])
         self.assertEqual(((0, 1, 0, 0), (2, 3, 0, 0), (4, 5, 0, 0)), actual[0])
         self.assertEqual(((0, 1, 0, 2), (2, 3, 0, 0), (4, 5, 0, 0)), actual[8])
         self.assertEqual(960, len(actual))
 
     def test_stateCatalog(self):
-        graph_list = findPerfectMatchings(EDGES)
+        graph_list = findPerfectMatchings(GHZ_346['edges'])
         actual = stateCatalog(graph_list)
         self.assertEqual(64, len(actual))
         key = ((0, 0), (1, 0), (2, 3), (3, 0), (4, 0), (5, 0))

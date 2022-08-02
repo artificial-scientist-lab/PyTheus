@@ -15,7 +15,7 @@ import numpy as np
 import theseus.graphplot as gp
 import theseus.help_functions as hf
 from scipy.linalg import logm
-#from pathlib import Path
+from pathlib import Path
 from theseus.theseus  import ptrace
 
 plt.rc('text', usetex=True)
@@ -580,7 +580,9 @@ class state_analyzer():
 class analyser():
 
     def __init__(self, folder, only_pm=False):
-        self.folder = Path(folder)
+        if isinstance(folder, str):
+            self.folder = Path(folder)
+        else: self.folder = folder
         self.check_folder_name()
         self.get_all_states_in_folder_and_summary_file()
         self.dim = self.summary['dimensions']
@@ -928,6 +930,34 @@ class analyser():
         plt.tight_layout()
         plt.show()
         return state
+
+
+
+def convert_input_path(path: str, output_dir ):
+    path = Path(path) 
+    #first check if given path is an absolut path and if exists then return
+    if path.is_absolute() and any(  pp.suffix == '.json' for pp in path.iterdir()  ):
+        if path.exists():
+            return path
+        else: raise ValueError('Given absolute Path does not exist')
+    else: 
+        folder_list = [xx for xx in path.iterdir() if xx.is_dir()]
+        for idx,ff in enumerate(folder_list):
+            aa = convert_file_path_to_dic(ff / 'summary.json')
+            print('\n' + ff.name + f'  ({idx=})' + '\n')
+            for key,val in aa.items():
+                print(f'  - {key} : {val}')
+                last_key = key
+            print(len(f'  - {last_key} : {aa[last_key]}' )*'-')
+        
+        folder_idx = int( input(f'Choose one folder index ( 0 - {idx} )') )
+        return folder_list[folder_idx]
+    
+
+
+
+
+
 
 if __name__ == '__main__': 
     #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (3)'

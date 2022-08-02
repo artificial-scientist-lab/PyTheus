@@ -48,7 +48,7 @@ def analyze(directory):
     try:
         # data_dir = pkg_resources.resource_filename(theseus.__name__, 'data',directory)
         a = analyser(directory)
-        index = input(f'which state? (int from 0 - {len(a.files)} ) \n')
+        index = click.prompt(f'which state? (int from 0 - {len(a.files)}', type=int)
         a.info_statex(int(index))
     except IOError as e:
         click.echo('ERROR:' + str(e))

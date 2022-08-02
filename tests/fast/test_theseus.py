@@ -1,6 +1,10 @@
 import unittest
 
-from .config import EDGES
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+
+from config import EDGES
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog
 
 

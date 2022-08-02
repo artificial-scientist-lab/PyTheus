@@ -1,8 +1,11 @@
 import unittest
 
-from .config import EDGES
-from theseus.fancy_classes import Graph, defaultValues
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
+from config import EDGES
+from theseus.fancy_classes import Graph, defaultValues
 
 class TestFancyClassesModule(unittest.TestCase):
 

@@ -8,7 +8,6 @@ import random
 import numpy as np
 
 
-
 # # Auxiliary Functions
 # Helpful functions used in many processes but not by the final user. 
 
@@ -54,7 +53,7 @@ def removeNodes(nodes, graph):
     return [edge for edge in graph if not ((edge[0] in nodes) or (edge[1] in nodes))]
 
 
-def deadEndEdges(graph): # Unused
+def deadEndEdges(graph):  # Unused
     '''
     Returns all edges connecting nodes with degree one.
     '''
@@ -148,7 +147,7 @@ def nodeDegrees(edge_list, nodes_list=[], increasing=True):
     else:
         return [(k, v) for k, v in links.items()]
 
-    
+
 def graphDimensions(edge_list):
     '''
     Estimate the dimensions of a graph based on its edges.
@@ -290,7 +289,7 @@ def stringEdges(edge_list, imaginary=False):
         return ['w_{}_{}_{}_{}'.format(*edge) for edge in edge_list]
     else:
         return (['r_{}_{}_{}_{}'.format(*edge) for edge in edge_list]
-                +['th_{}_{}_{}_{}'.format(*edge) for edge in edge_list])
+                + ['th_{}_{}_{}_{}'.format(*edge) for edge in edge_list])
 
 
 def buildRandomGraph(dimensions, num_edges, cover_all=True):
@@ -409,6 +408,109 @@ def findPerfectMatchings(graph):
             color_match = [edge + color for edge, color in zip(match, coloring)]
             painted_matchings.append(tuple(color_match))
     return painted_matchings
+
+
+def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[], order=1, loops=False):
+    '''
+    Pseudorecursive function that append all possible edge covers of a
+    graph in a given list 'store'.
+    It does the heavy lifting of findEdgeCovers.
+
+    Parameters
+    ----------
+    graph : list
+        List of all available edges.
+    store : list
+        List to store the edge covers.
+    matches : list, optional
+        List of edges to build a perfect matching. If it fulfils all
+        requirements it will end up in store
+    edges_left : int, optional
+        Total number of edges of each edge cover. If None, this is computed
+        as the minimum edges required to cover all nodes plus the order.
+    nodes_left : list, optional
+        List of all nodes to be covered. By default, the list is obtained
+        from the nodes covered in graph but it can be set to target
+        specific nodes.
+    order : int, optional
+        Orders above the minimum required to cover all nodes. If 0, the
+        output are only perfect machings, with all nodes having degree 1.
+    loops : boolean, optional
+        Allow edges to connect twice the same node. These cannot appear for
+        perfect matchings.
+
+    Returns
+    -------
+    None, but now the input list 'store' contains all possible edge covers.
+    '''
+    if len(nodes_left) == 0: nodes_left = np.unique(np.array(graph)[:, :2])
+    if edges_left == None: edges_left = order + len(nodes_left) / 2
+    case = 2 * edges_left - len(nodes_left)
+    if case > 1:
+        for edge in graph:
+            recursiveEdgeCover(graph, store, matches + [edge], edges_left - 1,
+                               [node for node in nodes_left if node not in edge[:2]], loops=loops)
+    elif case == 1:
+        for edge in targetEdges(nodes_left, graph):
+            if edges_left > 1:
+                new_nodes_left = [node for node in nodes_left if node not in edge[:2]]
+                recursiveEdgeCover(targetEdges(new_nodes_left, graph), store,
+                                   matches + [edge], edges_left - 1, new_nodes_left, loops=loops)
+            if edges_left == 1 and not (sorted(matches + [edge]) in store):
+                store.append(sorted(matches + [edge]))
+    elif case == 0:  # We are in the perfect matching situation
+        subgraph = [ed for ed in graph if (ed[0] in nodes_left) & (ed[1] in nodes_left)]
+        if loops: subgraph = [edge for edge in subgraph if edge[0] != edge[1]]
+        perfect_matchings = []
+        recursivePerfectMatchings(subgraph, perfect_matchings, edges_left=edges_left)
+        for pm in perfect_matchings:
+            if not (sorted(matches + pm) in store):
+                store.append(sorted(matches + pm))
+    else:
+        pass
+
+
+# for large orders we could compute a first pack of edges at once using itertools
+
+
+def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
+    '''
+    Given a list of edges, returns all possible edge covers, up to a certain
+    order or using a certain number of edges.
+
+    Parameters
+    ----------
+    graph : list
+        List of all available edges.
+    edges_left : int, optional
+        Total number of edges of each edge cover. If None, this is computed
+        as the minimum edges required to cover all nodes plus the order.
+    nodes_left : list, optional
+        List of all nodes to be covered. By default, the list is obtained
+        from the nodes covered in graph but it can be set to target
+        specific nodes.
+    order : int, optional
+        Orders above the minimum required to cover all nodes. If 0, the
+        output are only perfect machings, with all nodes having degree 1.
+    loops : boolean, optional
+        Allow edges to connect twice the same node. These cannot appear for
+        perfect matchings.
+
+    Returns
+    -------
+    covers : list
+        List of graphs with all nodes having, at least, degree 1.
+    '''
+    avail_colors = edgeBleach(graph)
+    raw_covers = []
+    recursiveEdgeCover(list(avail_colors.keys()), raw_covers, edges_left=edges_left,
+                       nodes_left=nodes_left, order=order, loops=loops)
+    painted_covers = []
+    for cover in raw_covers:
+        for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
+            color_cover = [edge + color for edge, color in zip(cover, coloring)]
+            painted_covers.append(sorted(color_cover))
+    return [[tuple(ed) for ed in graph] for graph in np.unique(painted_covers, axis=0)]
 
 
 # # String Expressions
@@ -587,7 +689,7 @@ def ptrace(u, keep, dims, optimize=False):
     return rho_a.reshape(Nkeep, Nkeep)
 
 
-def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor = 0) -> float:
+def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor=0) -> float:
     """
     calculate for a set of bipartions given in config the mean of trace[ rho_A ], where rho_A is 
     reduced density matrix of given state for the given bipartitions
@@ -664,17 +766,10 @@ def entanglement_fast(avail_states: dict, sys_dict: dict):
             state_vector[idx] = f'{(term_sum)}'
         except KeyError:
             pass
-        
+
     if sys_dict['imaginary'] is False:
         return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
-           + f' {sys_dict} )'
+               + f' {sys_dict} )'
     else:
         return f'abs(compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
-           + f' {sys_dict} ))'
-           
-           
-           
-           
-           
-           
-           
+               + f' {sys_dict} ))'

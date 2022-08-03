@@ -92,9 +92,9 @@ class saver:
 
     def get_and_create_save_directory(self):
         """
-        look if folder ~/data/(2-2-2-2) exists otherwise creates it
+        look if folder ~/output/(2-2-2-2) exists otherwise creates it
         when exists it looks if config files are the same then our
-        safe directory is ~/data/(2-2-2-2) otherwise: we chose
+        safe directory is ~/output/(2-2-2-2) otherwise: we chose
         ~/data/(2-2-2-2)(x) for a x where the summary files are matching
         or a new directory
         """
@@ -107,13 +107,13 @@ class saver:
             summary_path = pt / 'summary.json'
             if summary_path.exists():
                 if self.check_if_summary_is_same(summary_path):
-                    self.foldername = folder_name
+                    self.foldername = Path(folder_name)
                     return pt
                 else:  # adapt folder name to avoid same folder with different summaries
-                    folder_name = self.get_folder_name() + f' ({i})'
+                    folder_name = str(self.get_folder_name()) + f' ({i})'
                     i += 1
             else:
-                self.foldername = folder_name
+                self.foldername = Path(folder_name)
                 write_json(pt / 'summary.json', self.config)
                 return pt
 

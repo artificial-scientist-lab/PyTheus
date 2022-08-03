@@ -708,10 +708,10 @@ def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor=0) -> floa
 
     """
     dimi = np.array(sys_dict['dimensions'])
-    try:  # for checking if norm is not zero -> if so return 2 cause no ket
+    try:  # for checking if norm is not zero -> if so return 1 cause no ket
         qstate *= 1 / (np.linalg.norm(qstate))
     except TypeError:
-        return 2
+        return 1
 
     def calc_con(mat, par):
         red = ptrace(mat, par, dimi, False)
@@ -754,7 +754,7 @@ def entanglement_fast(avail_states: dict, sys_dict: dict):
             try:
                 extsting_graph = temp_dic[key[:-num_anc]]
                 extsting_graph.append(val[0])
-                temp_dic[key[:-num_anc]] = extsting_graph
+                temp_dic[key[:-num_anc]] = extsting_graph 
             except KeyError:
                 temp_dic[key[:-num_anc]] = val
         avail_states = temp_dic

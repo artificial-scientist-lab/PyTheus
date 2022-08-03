@@ -290,7 +290,7 @@ class state_dic_class(dict):
 class state_analyzer():
 
     def __init__(self, state: State,  weights=[], dim=[], precision=1e-3,
-                 measure_kind='con'):
+                 measure_kind='dense'):
         self.dic = state_dic_class(state.state)
         self.norm = state.norm
         self.pre = precision
@@ -308,7 +308,7 @@ class state_analyzer():
         self.num_par = len(self.dim)   # number particles
         self.func = entanglement_functions[measure_kind]
         self.allbipar = list(hf.get_all_bi_partions(self.num_par))
-        self.max = entanglement_measure(self.dim)
+        self.max = entanglement_measure(self.dim,measure_kind=measure_kind)
 
     def check_ancillas(self):
         """
@@ -386,8 +386,17 @@ class state_analyzer():
             return self.func(red)
         self.con_vec = np.array([calc_ent(qstate, par[0]) for par in
                                  self.allbipar])
+ 
         self.c = sum(self.con_vec)
-        self.con_vec_norm = 1/(self.max.max_values(full_vec=True))*self.con_vec
+        
+        def normalizer(x,min_val):
+            # little function to make sure that we normalize values
+            # x = min_val -> 1 and x = 1 -> 0
+            alpha = 1/(min_val-1)
+            return alpha * x - alpha
+        self.con_vec_norm = np.array([normalizer(calc,best) for calc,best in zip(self.con_vec,
+                                                            self.max.max_values(full_vec=True))])
+ 
         return self.c
 
     def get_reduced_density(self, bipar, normalized=False) -> np.array:
@@ -892,7 +901,7 @@ class analyser():
         ### state + infos ###
         st_string = state.state_string(filter_zeros=filter_zeros)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fs = 21 - st_string.count('\n')
+        fs = max(21 - st_string.count('\n') , 10)
 
         text = state_ax.annotate(st_string,
                                  xy=(0.5, 1.05), xycoords=("data", 'axes fraction'),
@@ -1031,4 +1040,12 @@ def get_analyse(which_directory,all_weights_plus_minus_one =False,
     if create_perfect_machting_pdf:
         a.all_perfect_matchings_from_idx_file_to_pdf(index)
 
-
+if __name__  == '__main__':
+    print(entanglement_measure(6*[2],'dense').max_values(full_vec = True) )
+    
+    pass
+    
+    
+    
+    
+    

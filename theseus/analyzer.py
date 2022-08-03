@@ -664,6 +664,7 @@ class analyser():
             axe.set_xlabel("Amount of edges left")
             axe.set_ylabel(self.loss_func_names[num_loss])
             axe.invert_xaxis()
+            axe.legend()
             axe.grid()
         fig, axs = plt.subplots(len(self.best['loss']), 1)
         try:
@@ -673,7 +674,7 @@ class analyser():
             plotter(axs, 0)
 
         plt.tight_layout()
-        plt.show()
+        plt.show(block=False)
 
     def turn_dic_in_graph_state(self, graph_dict: dict, thresholds_amplitudes=np.inf):
         """
@@ -703,7 +704,7 @@ class analyser():
 
         return graph, state_analyzer(graph.state, dim=self.dim)
 
-    def all_perfect_matchings_to_pdf(self, state_sys: dict, other_weights=[],
+    def all_perfect_matchings_from_idx_file_to_pdf(self,nth_file = 0, other_weights=[],
                                      given_ket_only="", show=True, row_len=True,
                                      dpi=100) -> None:
         """
@@ -733,8 +734,10 @@ class analyser():
             DESCRIPTION.
 
         """
-        pt = Path(__file__).resolve().parents[0]  # main directory
-        pt = pt / 'data' / 'state_pdfs' / 'tmp'  # move data directory
+        
+        state_sys = self.files[nth_file]
+        pt = self.folder 
+        pt = pt /  'state_pdfs' / 'tmp'  # move data directory
         pt.mkdir(parents=True, exist_ok=True)
         savepath = str(pt)
         for f in os.listdir(savepath):
@@ -800,7 +803,7 @@ class analyser():
                 title = r'$ {0} \cdot \ket{{ {1} }} $'.format(
                     np.round(total_weight, 3),ket_string) 
             props = dict(boxstyle='round', facecolor='lightgrey')
-            figgy.suptitle(title,y=1.01,fontsize=35,bbox=props)
+            figgy.suptitle(title,y=0.99,fontsize=35,bbox=props)
             figgy.patch.set_facecolor(colors[idx])
            # plt.title(title,y=1.01,fontsize=35)
             for ii in range(len(ax)):
@@ -812,10 +815,10 @@ class analyser():
                           facecolor=figgy.get_facecolor(), edgecolor='none')
             plt.close(figgy)
   
-        self.convert_img_to_pdf(savepath, 1)
+        self.convert_img_to_pdf(savepath, 1, self.files[nth_file]['file_name'] )
         plt.ion()
 
-    def convert_img_to_pdf(self, savepath, row_len, show=False):
+    def convert_img_to_pdf(self, savepath, row_len, file_name= 'pm_pdf' ,show=False):
         from PIL import Image
 
         images = [
@@ -845,11 +848,14 @@ class analyser():
                 return get_grid(min)
             except IndexError:
                 return get_grid(max)
-        pt = Path(__file__).resolve().parents[0]  # main directory
-        pt = pt / 'data' / 'state_pdfs'
-        name = [str(xx) for xx in self.dim]
-        name.extend('.pdf')
-        pt = pt / 'State_Data'
+        pt = self.folder
+        pt = pt / 'state_pdfs'
+        name = str(file_name)
+        if self.only_pm:
+            name = 'all_w_1__' + name
+        if not name.endswith('.pdf'):
+            name += '.pdf'
+
 
         pt.mkdir(parents=True, exist_ok=True)
         filepath = pt / "".join(name)
@@ -862,8 +868,6 @@ class analyser():
             plt.imshow(whole_image.convert('RGB'))
             plt.axis('off')
 
-    def pm_statex(self, idx):
-        self.all_perfect_matchings_to_pdf(self.files[idx])
 
     def info_statex(self, idx=0, infos=[], filter_zeros=False, figsize=(14, 8)):
 
@@ -891,7 +895,7 @@ class analyser():
         fs = 21 - st_string.count('\n')
 
         text = state_ax.annotate(st_string,
-                                 xy=(0.5, 1.2), xycoords=("data", 'axes fraction'),
+                                 xy=(0.5, 1.05), xycoords=("data", 'axes fraction'),
                                  xytext=(0, -20), textcoords='offset points',
                                  ha="center", va="top", fontsize=fs,
                                  bbox=props, wrap=True)
@@ -932,42 +936,99 @@ class analyser():
         return state
 
 
+def input_with_check_ints(question: str, restriciton = []):
+    counter = 0
+    while counter < 3:
+        try:
+            user_input = int( input(question) )
+            if len(restriciton) != 0 :
+                if restriciton[0] <= user_input and user_input <= restriciton[1]:
+                    return user_input
+                else:
+                    raise ValueError()
+            else:
+                return user_input
+        except:
+            counter += 1
+            print(f'inproper input!: try again ({3-counter} trys left)')
+            
+    import sys
+    sys.exit()
+        
 
-def convert_input_path(path: str, output_dir ):
+def check_which_summary_file(path):
+    folder_list = [xx for xx in path.iterdir() if xx.is_dir()]
+    #when only one folder exists we take this folder oc
+    if len(folder_list) == 1:
+        return folder_list[0]
+    for idx,ff in enumerate(folder_list):
+        aa = convert_file_path_to_dic(ff / 'summary.json')
+        print('\n' + ff.name + f'  ({idx=})' + '\n')
+        for key,val in aa.items():
+            print(f'  - {key} : {val}')
+            last_key = key
+        print(len(f'  - {last_key} : {aa[last_key]}' )*'-')
+    
+    folder_idx = input_with_check_ints(f'Choose one folder index ( 0 - {idx} ):',
+                                  restriciton = [0,idx]
+                                  )
+    return folder_list[folder_idx]
+
+def walk(path): 
+    for p in Path(path).iterdir(): 
+        if p.is_dir(): 
+            yield p
+            yield from walk(p)
+            continue
+        
+
+def convert_input_path(path: str):
+    
+    #first check if no path given then we have to choose system we want to analyze
+    current_dir = os.getcwd()
+    if not str(current_dir).endswith('output'):
+        output_dir =  Path(current_dir) / 'output'
+    else:
+        output_dir = Path(current_dir) 
+        
+    
+    if path is None or len(path) == 0:
+        folder_list = list(output_dir.iterdir())
+        for idx,folder in enumerate( folder_list ):
+            
+            print(f'( {idx} ) : {folder}'.replace(str(output_dir),''))
+        idx_folder = input_with_check_ints(f'Choose one folder to analyse ( index: 0 - {idx} )\n',
+                                      restriciton = [0,idx] )
+        path = Path(output_dir) / str( folder_list[idx_folder] )
+    
     path = Path(path) 
     #first check if given path is an absolut path and if exists then return
+    for folder in walk(output_dir) :
+       if str(path) in str(folder):
+               path = folder
+               break
+
+       
     if path.is_absolute() and any(  pp.suffix == '.json' for pp in path.iterdir()  ):
         if path.exists():
             return path
         else: raise ValueError('Given absolute Path does not exist')
-    else: 
-        folder_list = [xx for xx in path.iterdir() if xx.is_dir()]
-        for idx,ff in enumerate(folder_list):
-            aa = convert_file_path_to_dic(ff / 'summary.json')
-            print('\n' + ff.name + f'  ({idx=})' + '\n')
-            for key,val in aa.items():
-                print(f'  - {key} : {val}')
-                last_key = key
-            print(len(f'  - {last_key} : {aa[last_key]}' )*'-')
         
-        folder_idx = int( input(f'Choose one folder index ( 0 - {idx} )') )
-        return folder_list[folder_idx]
+    #second one check if name corresponds to one of the folder in output
     
+    else:
+        return check_which_summary_file(path)
 
 
-
-
-
-
-if __name__ == '__main__': 
-    #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/conc_4-3/try (3)'
-    path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/ghz_346'
-    #path = r'C:/Users/janpe/Google Drive/6.Semester/Bachlorarbeit/Code/public_git/Theseus/data/ghz_346/try'
+def get_analyse(which_directory,all_weights_plus_minus_one =False,
+                which_infos=['norm'],create_perfect_machting_pdf=False):
     
-    
-    # entanglement_measure([6,6,6,6],'dense').info()
-    
-    a = analyser(path, only_pm=False)
-    
-    # a.plot_losses()
-    st = a.pm_statex(0)
+    path = convert_input_path(which_directory)
+    a = analyser(path, only_pm=all_weights_plus_minus_one)
+    a.plot_losses()
+    index = input_with_check_ints(f'which state? (int from 0 - {len(a.files)-1} ): ',[0,len(a.files)-1])
+    a.info_statex(index, infos=which_infos)
+    if create_perfect_machting_pdf:
+        a.all_perfect_matchings_from_idx_file_to_pdf(index)
+
+

@@ -21,7 +21,7 @@ import pkg_resources
 
 import theseus
 from theseus.main import run_main
-from theseus.analyzer import analyser,convert_input_path
+from theseus.analyzer import get_analyse
 
 
 @click.group()
@@ -42,13 +42,26 @@ def run(filename, example):
 
 
 @cli.command()
-@click.argument('directory')
-def analyze(directory):
-    """Run an input file."""
+@click.option('-d', '--which-directory',default = None,
+              help='choose folder to analyze')
+@click.option('-one', '--all-weights-plus-minus-one', is_flag=True, 
+              show_default=True,
+              help='map all weights to plus minus one')
+@click.option('-pm', '--create-perfect-machting-pdf', is_flag=True,
+              show_default=True,
+              help='bool if create pdf with all pms')
+@click.option('-i', '--which-infos', default = ['norm', 'ent', 'k'],
+              multiple=True,
+              show_default=True,
+              help='list of which infos appear in info plot')
+def analyze(which_directory, all_weights_plus_minus_one,
+            create_perfect_machting_pdf, which_infos):
+    """Run anlyzer tool depending on inputs."""
     try:
-        a = analyser(directory)
-        index = click.prompt(f'which state? (int from 0 - {len(a.files)}', type=int)
-        a.info_statex(int(index))
+        get_analyse(which_directory,
+                    all_weights_plus_minus_one=all_weights_plus_minus_one,
+                    create_perfect_machting_pdf=create_perfect_machting_pdf,
+                    which_infos= which_infos)
     except IOError as e:
         click.echo('ERROR:' + str(e))
         sys.exit(1)

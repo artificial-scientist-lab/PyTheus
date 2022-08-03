@@ -88,7 +88,7 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     for uc_edge in edge_dict.keys():
         mult = len(edge_dict[uc_edge])
         for ii, coloring in enumerate(edge_dict[uc_edge]):
-            drawEdge(uc_edge + coloring, verts, ii, mult,ax,
+            drawEdge(uc_edge + coloring + tuple([graph[tuple(uc_edge + coloring)]]), verts, ii, mult,ax,
                      scale_max=scale_max, max_thickness=max_thickness,
                      show_val = show_value_for_each_edge)
 

@@ -1,0 +1,37 @@
+{
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "cnot23",
+  "ftol": 1e-10,
+  "loss_func": "gcr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1000,
+  "removed_connections": [
+    [
+      0,
+      1
+    ]
+  ],
+  "target_state": [
+    "0000",
+    "0101",
+    "0202",
+    "1011",
+    "1112",
+    "1120"
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "thresholds": [
+    0.35,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

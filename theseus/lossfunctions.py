@@ -6,12 +6,13 @@ Created on Tue Jul 12 11:54:12 2022
 """
 
 import theseus.theseus as th
-
-
+from collections import Counter
+import itertools
+import numpy as np
 
 def state_countrate(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
-    variables = th.stringEdges(graph.edges, imaginary = imaginary)
+    variables = th.stringEdges(graph.edges, imaginary=imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(1+", graph.norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
@@ -20,9 +21,56 @@ def state_countrate(graph, target_state, imaginary=False):
 
 def state_fidelity(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
-    variables = th.stringEdges(graph.edges, imaginary = imaginary)
+    variables = th.stringEdges(graph.edges, imaginary=imaginary)
     graph.getNorm()
     lambdaloss = "".join(["1-", target, "/(0+", graph.norm, ")"])
+    func, lossstring = th.buildLossString(lambdaloss, variables)
+    return func
+
+
+def gate_countrate(graph, target_state, imaginary=False, out_nodes=None):
+    target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
+    variables = th.stringEdges(graph.edges, imaginary=imaginary)
+
+    verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
+    nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
+
+    tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts)/2)
+    edgecovers = []
+    for ec in tmp_edgecovers:
+        counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
+        sum = 0
+        for vert in out_nodes:
+            sum += counter[vert]
+        if sum == len(out_nodes):
+            edgecovers.append(ec)
+
+    cat = th.stateCatalog(edgecovers)
+    norm = th.writeNorm(cat)
+    lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
+    func, lossstring = th.buildLossString(lambdaloss, variables)
+    return func
+
+def gate_fidelity(graph, target_state, imaginary=False, out_nodes=None):
+    target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
+    variables = th.stringEdges(graph.edges, imaginary=imaginary)
+
+    verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
+    nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
+
+    tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts)/2)
+    edgecovers = []
+    for ec in tmp_edgecovers:
+        counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
+        sum = 0
+        for vert in out_nodes:
+            sum += counter[vert]
+        if sum == len(out_nodes):
+            edgecovers.append(ec)
+
+    cat = th.stateCatalog(edgecovers)
+    norm = th.writeNorm(cat)
+    lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
@@ -49,19 +97,19 @@ def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False):
         loss funciton as string
 
     """
-    
+
     cat = graph.state_catalog
     target = th.entanglement_fast(cat, sys_dict)
-    #norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
-    variables = th.stringEdges(graph.edges, imaginary = imaginary)
-        
+    # norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
+    variables = th.stringEdges(graph.edges, imaginary=imaginary)
+
     lambdaloss = "".join(["", target])
     func, lossstring = th.buildLossString(lambdaloss, variables)
 
     return func
 
 
-
 loss_dic = {'ent': [make_lossString_entanglement],
-            'fid': [state_fidelity,state_countrate],
-            'cr': [state_countrate,state_fidelity]}
+            'fid': [state_fidelity, state_countrate],
+            'cr': [state_countrate, state_fidelity],
+            'gcr': [gate_countrate, gate_fidelity]}

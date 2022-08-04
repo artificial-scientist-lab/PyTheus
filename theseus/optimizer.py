@@ -127,9 +127,13 @@ class topological_opti:
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
             loss_specs = {'sys_dict': self.ent_dic,
                           'imaginary': self.imaginary}
-        else:
+        elif self.config['loss_func'] == 'cr' or self.config['loss_func'] == 'fid':
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary}
+        elif self.config['loss_func'] == 'gcr':
+            loss_specs = {'target_state': self.target,
+                          'imaginary': self.imaginary,
+                          'out_nodes': self.config['out_nodes']}
         callable_loss = [func(current_graph, **loss_specs)
                          for func in lossfunctions]
         return callable_loss

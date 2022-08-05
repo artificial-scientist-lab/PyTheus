@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.collections as collections
 import theseus.theseus as th
 import theseus.analyzer as anal 
-
+import matplotlib.patheffects as pe
 
 def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
-             show_val = False,fs = 15):
-    colors = ['blue', 'red', 'green', 'darkorange', 'purple', 'yellow', 'cyan']
+             show_val = False,fs = 15,markersize=25):
+    colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
     col1 = colors[int(edge[2])]
     col2 = colors[int(edge[3])]
 
@@ -32,6 +32,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
         transparency =  min(transparency,1)
     except IndexError:
         transparency = 1
+    
     ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw,alpha=transparency)
     ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw,alpha=transparency)
 
@@ -49,7 +50,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
                 ha='center', va='center',rotation=0,fontweight ='heavy',fontsize= fs)
     try:
         if edge[4] < 0:
-            ax.plot(hp[0], hp[1], marker="d", markersize=25, markeredgewidth="6", markeredgecolor="black",
+            ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="6", markeredgecolor="black",
                      color="white")
     except:
         pass
@@ -57,7 +58,8 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
 
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig = (), add_title= '',
-              show_value_for_each_edge= False, fontsize= 30):
+              show_value_for_each_edge= False, fontsize= 30,zorder=11,
+              markersize=25):
     edge_dict = th.edgeBleach(graph.edges)
 
     num_vertices = len(np.unique(np.array(graph.edges)[:, :2]))
@@ -92,14 +94,16 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
         for ii, coloring in enumerate(edge_dict[uc_edge]):
             drawEdge(uc_edge + coloring + tuple([graph[tuple(uc_edge + coloring)]]), verts, ii, mult,ax,
                      scale_max=scale_max, max_thickness=max_thickness,
-                     show_val = show_value_for_each_edge,fs=0.8*fontsize)
+                     show_val = show_value_for_each_edge,fs=0.8*fontsize,markersize=markersize)
 
     circ = []
-    for vert, coords in verts.items():
+    for vert, coords in verts.items(): 
         circ.append(plt.Circle(coords, 0.1, alpha=0.5))
-        ax.text(coords[0], coords[1], str(vert), zorder=11,
+        ax.text(coords[0], coords[1], str(vert), zorder=zorder,
                 ha='center', va='center', size=fontsize)
-    circ = collections.PatchCollection(circ, zorder=10)
+        
+    circ = collections.PatchCollection(circ, zorder=zorder-1)
+    circ.set(facecolor='lightgrey',edgecolor='dimgray',linewidth=3)
     ax.add_collection(circ)
 
     ax.set_xlim([-1.1, 1.1])

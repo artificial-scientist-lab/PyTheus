@@ -714,7 +714,7 @@ class analyser():
 
         return graph, state_analyzer(graph.state, dim=self.dim)
 
-    def all_perfect_matchings_from_idx_file_to_pdf(self, nth_file=0, other_weights=[],
+    def all_perfect_matchings_to_pdf(self, nth_file=0, other_weights=[],
                                                    given_ket_only="", show=True, row_len=True,
                                                    dpi=100) -> None:
         """
@@ -822,7 +822,7 @@ class analyser():
                           dpi=dpi, bbox_inches='tight',
                           facecolor=figgy.get_facecolor(), edgecolor='none')
             x = int(10*idx/amount_pm)
-            print("[{}{}] {}/{}".format("#"*x, "."*(10-x), idx, amount_pm),
+            print("state {}: [{}{}] {}/{}".format(nth_file,"#"*x, "."*(10-x), idx, amount_pm),
                   end='\r', flush=True)
             plt.close(figgy)
 
@@ -939,7 +939,6 @@ class analyser():
         loss_ax.invert_xaxis()
         loss_ax.grid()
         plt.tight_layout()
-        plt.show()
         return state
 
 
@@ -1043,14 +1042,118 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
     indexs = input_with_check_ints(
         f'which state? (int from 0 - {len(a.files)-1} or idx_1 - idx_2): ',
         [0, len(a.files)-1])
-    for idx in indexs:
+    if len(indexs) == 1:
+        indexs.append(indexs[0])
+    for idx in range(indexs[0],indexs[1]+1):
         a.info_statex(idx, infos=which_infos)
         if create_perfect_machting_pdf:
             a.all_perfect_matchings_from_idx_file_to_pdf(idx)
-        return 0
+    plt.show()
+    input('press arbitary key to exit')
+    return 0
 
 
+
+def save_graph(file_loc, pm=False):
+    
+    
+    def set_size(width, fraction=1, subplots=(1, 1)):
+        """Set figure dimensions to avoid scaling in LaTeX.
+
+        Parameters
+        ----------
+        width: float or string
+                Document width in points, or string of predined document type
+        fraction: float, optional
+                Fraction of the width which you wish the figure to occupy
+        subplots: array-like, optional
+                The number of rows and columns of subplots.
+        Returns
+        -------
+        fig_dim: tuple
+                Dimensions of figure in inches
+        """
+        if width == 'thesis':
+            width_pt = 426.79135
+        elif width == 'beamer':
+            width_pt = 307.28987
+        else:
+            width_pt = width
+
+        # Width of figure (in pts)
+        fig_width_pt = width_pt * fraction
+        # Convert from pt to inches
+        inches_per_pt = 1 / 72.27
+
+        # Golden ratio to set aesthetic figure height
+        # https://disq.us/p/2940ij3
+        golden_ratio = (5**.5 - 1) / 2
+
+        # Figure width in inches
+        fig_width_in = fig_width_pt * inches_per_pt
+        # Figure height in inches
+        fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
+
+        return (fig_width_in, fig_height_in)
+    
+    def turn_dic_in_graph(graph_dict: dict,only_pm= False, thresholds_amplitudes=np.inf):
+        """
+        returns a GRaph object and a state_analyzer object for given state
+
+        Parameters
+        ----------
+        graph_dict : dict
+            dict representing a graph.
+        thresholds_amplitudes : TYPE, optional
+            DESCRIPTION. The default is np.inf.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        imaginary = False
+        if only_pm:
+            for ket, ampl in graph_dict.items():
+                if isinstance(graph_dict[ket],complex):
+                    imaginary = True
+                graph_dict[ket] = 1 if ampl > 0 else -1
+                
+        graph = Graph(graph_dict,imaginary=imaginary)
+        if imaginary is not False:
+            graph.toCartesian()
+        graph.getState()
+        return graph
+    
+    import matplotlib as mpl
+    mpl.rcParams['figure.figsize'] = set_size(455.2441)
+    mpl.rcParams['figure.dpi'] = 80
+    mpl.rcParams['savefig.dpi'] = 100
+    mpl.rcParams['font.size'] = 10
+    mpl.rcParams['ytick.labelsize'] = 10
+    mpl.rcParams['xtick.labelsize'] = 10
+    mpl.rcParams['legend.fontsize'] = 10
+    mpl.rcParams['figure.titlesize'] = 'medium'
+    mpl.rcParams['errorbar.capsize'] = 3
+    mpl.rcParams['lines.linewidth'] = 2
+    mpl.rcParams['lines.markersize'] = 7
+    mpl.rcParams['grid.linewidth'] = 0.7
+    #Direct input 
+    mpl.rcParams["text.usetex"] = True
+    mpl.rcParams["font.family"] = "serif"
+    
+    
+    for ii in os.listdir(file_loc):
+        if ii.endswith('.json'):
+    
+            graph = turn_dic_in_graph(convert_file_path_to_dic(Path(file_loc ) / ii)['graph'],pm)
+            fig = gp.graphPlot(graph, show=False)
+            plt.tight_layout()
+            save_path = Path(file_loc ) /   ii.replace('.json','.pdf')
+            fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
+            
 if __name__ == '__main__':
-    print(entanglement_measure(6*[2], 'dense').max_values(full_vec=True))
-
+    save_graph(r'C:/Users/janpe/Downloads/test_th/paper', pm = True)
+    plt.close()
     pass

@@ -488,7 +488,7 @@ class state_analyzer():
         strs_plus += strs_min
         strs_plus.append(st_col(') ', 'black'))
 
-        string_end = "".join(strs_plus).replace('- ()', '').replace('(+', '(')
+        string_end = "".join(strs_plus).replace('- ()', '')
         string_end = string_wrapper(string_end[1:])
 
         return string_end
@@ -946,25 +946,25 @@ class analyser():
 def input_with_check_ints(question: str, restriciton=[]):
     counter = 0
     while counter < 3:
-        # try:
-        user_input = input(question)
-        if '-' not in user_input:
-            user_input = [int(user_input)]
-        else:
-            user_input = [int(xx) for xx in user_input.split('-')]
-
-        if len(restriciton) != 0:
-
-            if all(restriciton[0] <= xx and xx <= restriciton[1] for xx in user_input):
-                return user_input
+        try:
+            user_input = input(question)
+            if '-' not in user_input:
+                user_input = [int(user_input)]
             else:
-                raise ValueError()
+                user_input = [int(xx) for xx in user_input.split('-')]
 
-        else:
-            return user_input
-        # except ZeroDivisionError:
-           # counter += 1
-        #print(f'inproper input!: try again ({3-counter} trys left)')
+            if len(restriciton) != 0:
+
+                if all(restriciton[0] <= xx and xx <= restriciton[1] for xx in user_input):
+                    return user_input
+                else:
+                    raise ValueError()
+
+            else:
+                return user_input
+        except:
+            counter += 1
+        print(f'inproper input!: try again ({3-counter} trys left)')
 
     import sys
     sys.exit()
@@ -1047,6 +1047,7 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
         a.info_statex(idx, infos=which_infos)
         if create_perfect_machting_pdf:
             a.all_perfect_matchings_from_idx_file_to_pdf(idx)
+        return 0
 
 
 if __name__ == '__main__':

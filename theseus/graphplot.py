@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
 import theseus.theseus as th
-from cmath import polar 
 import theseus.analyzer as anal 
 
 
@@ -41,11 +40,13 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
         if transparency > 0.5 and col1 == "blue" :
             font_col = 'white'
         else: font_col = 'black'
-
+        latex_weight = '${}$'.format(anal.num_in_str(edge[4])) 
+        if latex_weight == '$$':
+            latex_weight = '1'
         ax.text(np.mean([0.9*vert1[0], hp[0]]), np.mean([0.9*vert1[1], hp[1]]),
-                '${}$'.format(anal.num_in_str(edge[4])),
-                 bbox={'facecolor':col1 ,'alpha':transparency,'edgecolor':col2,'pad':1},c =font_col,
-                 ha='center', va='center',rotation=0,fontweight ='heavy',fontsize= fs)
+                latex_weight,
+                bbox={'facecolor':col1 ,'alpha':transparency,'edgecolor':col2,'pad':1},c =font_col,
+                ha='center', va='center',rotation=0,fontweight ='heavy',fontsize= fs)
     try:
         if edge[4] < 0:
             ax.plot(hp[0], hp[1], marker="d", markersize=25, markeredgewidth="6", markeredgecolor="black",
@@ -107,8 +108,10 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
 
     if weight_product:
         total_weight = np.product(graph.weights)
-      
+        
         wp = '${}$'.format(anal.num_in_str(total_weight) )
+        if wp == '$$':
+            wp = '1'
         ax.set_title( wp + str(add_title), fontsize=fontsize)
         
     if add_title != '' and weight_product is False :

@@ -289,7 +289,7 @@ class state_dic_class(dict):
 class state_analyzer():
 
     def __init__(self, state: State,  weights=[], dim=[], precision=1e-3,
-                 measure_kind='dense'):
+                 measure_kind='con'):
         self.dic = state_dic_class(state.state)
         self.norm = state.norm
         self.pre = precision
@@ -308,7 +308,7 @@ class state_analyzer():
         self.func = entanglement_functions[measure_kind]
         self.allbipar = list(hf.get_all_bi_partions(self.num_par))
         self.max = entanglement_measure(self.dim, measure_kind=measure_kind)
-
+        self.measure_kind = measure_kind
     def check_ancillas(self):
         """
         check if given dic has more particles than dim (means we have ancilla)
@@ -390,9 +390,14 @@ class state_analyzer():
 
         def normalizer(x, min_val):
             # little function to make sure that we normalize values
-            # x = min_val -> 1 and x = 1 -> 0
-            alpha = 1/(min_val-1)
-            return alpha * x - alpha
+            # for dense : x = min_val -> 1 and x = 1 -> 0
+            # for concurrence or entropy just diveded by highest poss. value
+            if self.measure_kind == 'dense':
+                alpha = 1/(min_val-1)
+                return alpha * x - alpha
+            else:
+                return x/min_val
+        
         self.con_vec_norm = np.array([normalizer(calc, best) for calc, best in zip(self.con_vec,
                                                                                    self.max.max_values(full_vec=True))])
 
@@ -574,8 +579,8 @@ class state_analyzer():
                     f'\nk={ix + 1}: mean = {klev[0]:.3f} ({klev[1]})', col)
 
         if any(x in args for x in ['concurrence', 'ent']):
-            info_string += f'\ntotal concurrence: {round(self.c,options["dec"])}'
-            info_string += '\nconcurrence vector: \n'
+            info_string += f'\ntotal {self.measure_kind}: {round(self.c,options["dec"])}'
+            info_string += f'\n {self.measure_kind} vector: \n'
             for kk, mask in enumerate(self.k_mask):
                 info_string += f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
 
@@ -705,7 +710,10 @@ class analyser():
         """
         if self.only_pm:
             for ket, ampl in graph_dict.items():
-                graph_dict[ket] = 1 if ampl > 0 else -1
+                if self.summary['imaginary'] is False:
+                    graph_dict[ket] = 1 if ampl > 0 else -1
+                else:
+                    graph_dict[ket] =  [1,ampl[1]] if ampl[0] > 0 else [-1,ampl[1]] 
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
@@ -900,6 +908,7 @@ class analyser():
         ### state + infos ###
 
         st_string = state.state_string(filter_zeros=filter_zeros)
+        print(st_string)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         fs = max(21 - st_string.count('\n'), 10)
 
@@ -1038,7 +1047,7 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
 
     path = convert_input_path(which_directory)
     a = analyser(path, only_pm=all_weights_plus_minus_one)
-    a.plot_losses()
+    #a.plot_losses()
     indexs = input_with_check_ints(
         f'which state? (int from 0 - {len(a.files)-1} or idx_1 - idx_2): ',
         [0, len(a.files)-1])
@@ -1113,10 +1122,7 @@ def save_graph(file_loc, pm=False, fontsize = 12):
     for ii in os.listdir(file_loc):
         if ii.endswith('.json'):
             
-            
-            
             figgy, ax = plt.subplots(figsize=get_figsize(418.2555)) 
-            print(get_figsize(418.2555))
             graph = turn_dic_in_graph(convert_file_path_to_dic(Path(file_loc ) / ii)['graph'],pm)
             fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax ), fontsize=fontsize,
                                max_thickness= 7, zorder= 7,markersize=15)
@@ -1126,5 +1132,12 @@ def save_graph(file_loc, pm=False, fontsize = 12):
             
 if __name__ == '__main__':
     save_graph(r'C:/Users/janpe/Downloads/test_th/paper', pm = True)
+    hs_st = '0011 + 1100 + 0101 + 1010 + 1001+ 0110'
+    omega = np.exp(2/3* 1j * np.pi )
+    hs_st = hs_st.replace(' ','').split('+')
+    HS = state_analyzer(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
+    print(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
+    print(HS.state_string())
+    print( HS.info_string(*['norm', 'ent', 'k']) )
     #plt.close()
-    pass
+  

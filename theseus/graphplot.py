@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.collections as collections
 import theseus.theseus as th
 from cmath import polar 
-
+import theseus.analyzer as anal 
 
 
 def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
-             show_val = False):
+             show_val = False,fs = 15):
     colors = ['blue', 'red', 'green', 'darkorange', 'purple', 'yellow', 'cyan']
     col1 = colors[int(edge[2])]
     col2 = colors[int(edge[3])]
@@ -42,9 +42,10 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
             font_col = 'white'
         else: font_col = 'black'
 
-        ax.text(np.mean([0.9*vert1[0], hp[0]]), np.mean([0.9*vert1[1], hp[1]]),f"{edge[4]:.4f}",
+        ax.text(np.mean([0.9*vert1[0], hp[0]]), np.mean([0.9*vert1[1], hp[1]]),
+                '${}$'.format(anal.num_in_str(edge[4])),
                  bbox={'facecolor':col1 ,'alpha':transparency,'edgecolor':col2,'pad':1},c =font_col,
-                 ha='center', va='center',rotation=0,fontweight ='heavy')
+                 ha='center', va='center',rotation=0,fontweight ='heavy',fontsize= fs)
     try:
         if edge[4] < 0:
             ax.plot(hp[0], hp[1], marker="d", markersize=25, markeredgewidth="6", markeredgecolor="black",
@@ -90,7 +91,7 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
         for ii, coloring in enumerate(edge_dict[uc_edge]):
             drawEdge(uc_edge + coloring + tuple([graph[tuple(uc_edge + coloring)]]), verts, ii, mult,ax,
                      scale_max=scale_max, max_thickness=max_thickness,
-                     show_val = show_value_for_each_edge)
+                     show_val = show_value_for_each_edge,fs=0.8*fontsize)
 
     circ = []
     for vert, coords in verts.items():
@@ -106,11 +107,8 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
 
     if weight_product:
         total_weight = np.product(graph.weights)
-        if isinstance(total_weight, complex):
-            wp = r"$ {0} \cdot e^{{  {1} i   }} $".format(
-                *np.round(polar(total_weight),3))
-        else: 
-            wp = str(np.round(total_weight,3))
+      
+        wp = '${}$'.format(anal.num_in_str(total_weight) )
         ax.set_title( wp + str(add_title), fontsize=fontsize)
         
     if add_title != '' and weight_product is False :

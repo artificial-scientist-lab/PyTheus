@@ -1054,47 +1054,23 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
 
 
 
-def save_graph(file_loc, pm=False):
+def save_graph(file_loc, pm=False, fontsize = 12):
     
     
-    def set_size(width, fraction=1, subplots=(1, 1)):
-        """Set figure dimensions to avoid scaling in LaTeX.
-
-        Parameters
-        ----------
-        width: float or string
-                Document width in points, or string of predined document type
-        fraction: float, optional
-                Fraction of the width which you wish the figure to occupy
-        subplots: array-like, optional
-                The number of rows and columns of subplots.
-        Returns
-        -------
-        fig_dim: tuple
-                Dimensions of figure in inches
+    def get_figsize(columnwidth, wf=1, hf=1):
+        """Parameters:
+          - wf [float]:  width fraction in columnwidth units
+          - hf [float]:  height fraction in columnwidth units.
+                         Set by default to golden ratio.
+          - columnwidth [float]: width of the column in latex. Get this from LaTeX 
+                                 using \showthe\columnwidth
+        Returns:  [fig_width,fig_height]: that should be given to matplotlib
         """
-        if width == 'thesis':
-            width_pt = 426.79135
-        elif width == 'beamer':
-            width_pt = 307.28987
-        else:
-            width_pt = width
-
-        # Width of figure (in pts)
-        fig_width_pt = width_pt * fraction
-        # Convert from pt to inches
-        inches_per_pt = 1 / 72.27
-
-        # Golden ratio to set aesthetic figure height
-        # https://disq.us/p/2940ij3
-        golden_ratio = (5**.5 - 1) / 2
-
-        # Figure width in inches
-        fig_width_in = fig_width_pt * inches_per_pt
-        # Figure height in inches
-        fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
-
-        return (fig_width_in, fig_height_in)
+        fig_width_pt = columnwidth*wf 
+        inches_per_pt = 1.0/72.27               # Convert pt to inch
+        fig_width = fig_width_pt*inches_per_pt  # width in inches
+        fig_height = fig_width*hf      # height in inches
+        return [fig_width, fig_height]
     
     def turn_dic_in_graph(graph_dict: dict,only_pm= False, thresholds_amplitudes=np.inf):
         """
@@ -1127,33 +1103,28 @@ def save_graph(file_loc, pm=False):
         return graph
     
     import matplotlib as mpl
-    mpl.rcParams['figure.figsize'] = set_size(455.2441)
     mpl.rcParams['figure.dpi'] = 80
     mpl.rcParams['savefig.dpi'] = 100
-    mpl.rcParams['font.size'] = 10
-    mpl.rcParams['ytick.labelsize'] = 10
-    mpl.rcParams['xtick.labelsize'] = 10
-    mpl.rcParams['legend.fontsize'] = 10
-    mpl.rcParams['figure.titlesize'] = 'medium'
-    mpl.rcParams['errorbar.capsize'] = 3
-    mpl.rcParams['lines.linewidth'] = 2
-    mpl.rcParams['lines.markersize'] = 7
-    mpl.rcParams['grid.linewidth'] = 0.7
-    #Direct input 
+
     mpl.rcParams["text.usetex"] = True
     mpl.rcParams["font.family"] = "serif"
     
     
     for ii in os.listdir(file_loc):
         if ii.endswith('.json'):
-    
+            
+            
+            
+            figgy, ax = plt.subplots(figsize=get_figsize(418.2555)) 
+            print(get_figsize(418.2555))
             graph = turn_dic_in_graph(convert_file_path_to_dic(Path(file_loc ) / ii)['graph'],pm)
-            fig = gp.graphPlot(graph, show=False)
+            fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax ), fontsize=fontsize,
+                               max_thickness= 7, zorder= 7,markersize=15)
             plt.tight_layout()
             save_path = Path(file_loc ) /   ii.replace('.json','.pdf')
             fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
             
 if __name__ == '__main__':
     save_graph(r'C:/Users/janpe/Downloads/test_th/paper', pm = True)
-    plt.close()
+    #plt.close()
     pass

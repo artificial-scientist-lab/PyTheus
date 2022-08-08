@@ -125,7 +125,8 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     return func
 
 
-def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False):
+def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False,
+                                 var_factor = 0):
     """
     get the loss funcitons of a graph for the concuurence:
         C( |Psi> ) = √( 2 * ( 1 - TR_M( <Psi|Psi> ) ) ) 
@@ -149,7 +150,7 @@ def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False):
     """
 
     cat = graph.state_catalog
-    target = th.entanglement_fast(cat, sys_dict)
+    target = th.entanglement_fast(cat, sys_dict,var_factor)
     # norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
 

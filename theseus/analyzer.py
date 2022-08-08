@@ -15,8 +15,7 @@ import numpy as np
 import theseus.graphplot as gp
 import theseus.help_functions as hf
 from scipy.linalg import logm
-from pathlib import Path
-from theseus.theseus  import ptrace
+from theseus.theseus import ptrace
 
 plt.rc('text', usetex=True)
 plt.rc('text.latex',
@@ -290,7 +289,7 @@ class state_dic_class(dict):
 class state_analyzer():
 
     def __init__(self, state: State,  weights=[], dim=[], precision=1e-3,
-                 measure_kind='dense'):
+                 measure_kind='con'):
         self.dic = state_dic_class(state.state)
         self.norm = state.norm
         self.pre = precision
@@ -308,8 +307,8 @@ class state_analyzer():
         self.num_par = len(self.dim)   # number particles
         self.func = entanglement_functions[measure_kind]
         self.allbipar = list(hf.get_all_bi_partions(self.num_par))
-        self.max = entanglement_measure(self.dim,measure_kind=measure_kind)
-
+        self.max = entanglement_measure(self.dim, measure_kind=measure_kind)
+        self.measure_kind = measure_kind
     def check_ancillas(self):
         """
         check if given dic has more particles than dim (means we have ancilla)
@@ -384,19 +383,24 @@ class state_analyzer():
         def calc_ent(mat, par):
             red = ptrace(mat, par, self.dim)
             return self.func(red)
-        self.con_vec = np.array([calc_ent(qstate, par[0]) for par in
+        self.con_vec = np.array([calc_ent(qstate, par[0]).real for par in
                                  self.allbipar])
- 
+
         self.c = sum(self.con_vec)
-        
-        def normalizer(x,min_val):
+
+        def normalizer(x, min_val):
             # little function to make sure that we normalize values
-            # x = min_val -> 1 and x = 1 -> 0
-            alpha = 1/(min_val-1)
-            return alpha * x - alpha
-        self.con_vec_norm = np.array([normalizer(calc,best) for calc,best in zip(self.con_vec,
-                                                            self.max.max_values(full_vec=True))])
- 
+            # for dense : x = min_val -> 1 and x = 1 -> 0
+            # for concurrence or entropy just diveded by highest poss. value
+            if self.measure_kind == 'dense':
+                alpha = 1/(min_val-1)
+                return alpha * x - alpha
+            else:
+                return x/min_val
+        
+        self.con_vec_norm = np.array([normalizer(calc, best) for calc, best in zip(self.con_vec,
+                                                                                   self.max.max_values(full_vec=True))])
+
         return self.c
 
     def get_reduced_density(self, bipar, normalized=False) -> np.array:
@@ -489,7 +493,7 @@ class state_analyzer():
         strs_plus += strs_min
         strs_plus.append(st_col(') ', 'black'))
 
-        string_end = "".join(strs_plus).replace('- ()', '').replace('(+', '(')
+        string_end = "".join(strs_plus).replace('- ()', '')
         string_end = string_wrapper(string_end[1:])
 
         return string_end
@@ -575,8 +579,8 @@ class state_analyzer():
                     f'\nk={ix + 1}: mean = {klev[0]:.3f} ({klev[1]})', col)
 
         if any(x in args for x in ['concurrence', 'ent']):
-            info_string += f'\ntotal concurrence: {round(self.c,options["dec"])}'
-            info_string += '\nconcurrence vector: \n'
+            info_string += f'\ntotal {self.measure_kind}: {round(self.c,options["dec"])}'
+            info_string += f'\n {self.measure_kind} vector: \n'
             for kk, mask in enumerate(self.k_mask):
                 info_string += f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
 
@@ -591,7 +595,8 @@ class analyser():
     def __init__(self, folder, only_pm=False):
         if isinstance(folder, str):
             self.folder = Path(folder)
-        else: self.folder = folder
+        else:
+            self.folder = folder
         self.check_folder_name()
         self.get_all_states_in_folder_and_summary_file()
         self.dim = self.summary['dimensions']
@@ -655,6 +660,7 @@ class analyser():
             IF mean should be plotted. The default is True.
 
         """
+
         def plotter(axe, num_loss):
             NUM_COLORS = len(self.files)
             cm = plt.get_cmap('gist_rainbow')
@@ -704,7 +710,10 @@ class analyser():
         """
         if self.only_pm:
             for ket, ampl in graph_dict.items():
-                graph_dict[ket] = 1 if ampl > 0 else -1
+                if self.summary['imaginary'] is False:
+                    graph_dict[ket] = 1 if ampl > 0 else -1
+                else:
+                    graph_dict[ket] =  [1,ampl[1]] if ampl[0] > 0 else [-1,ampl[1]] 
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
@@ -713,9 +722,9 @@ class analyser():
 
         return graph, state_analyzer(graph.state, dim=self.dim)
 
-    def all_perfect_matchings_from_idx_file_to_pdf(self,nth_file = 0, other_weights=[],
-                                     given_ket_only="", show=True, row_len=True,
-                                     dpi=100) -> None:
+    def all_perfect_matchings_to_pdf(self, nth_file=0, other_weights=[],
+                                                   given_ket_only="", show=True, row_len=True,
+                                                   dpi=100) -> None:
         """
 
 
@@ -743,15 +752,15 @@ class analyser():
             DESCRIPTION.
 
         """
-        
+
         state_sys = self.files[nth_file]
-        pt = self.folder 
-        pt = pt /  'state_pdfs' / 'tmp'  # move data directory
+        pt = self.folder
+        pt = pt / 'state_pdfs' / 'tmp'  # move data directory
         pt.mkdir(parents=True, exist_ok=True)
         savepath = str(pt)
         for f in os.listdir(savepath):
             os.remove(os.path.join(savepath, f))
-   
+
         graph, __ = self.turn_dic_in_graph_state(state_sys['graph'])
 
         graph.getStateCatalog()
@@ -786,48 +795,49 @@ class analyser():
         num_kets = len(self.dim) - self.dim.count(1)  # eliminate ancillas
         # determinate fontsize:
         fontsize = max(20, 33-num_kets-row_len)
-
+        amount_pm = len(cat.items())
         for idx, (kk, vv) in enumerate(cat.items()):
             ket_string = "".join([str(int(k[1])) for k in kk[:num_kets]])
             total_weight = 0
-            figgy, ax = plt.subplots(1,row_len,
+            figgy, ax = plt.subplots(1, row_len,
                                      figsize=(row_len*800/dpi, 800/dpi),
                                      dpi=dpi)
-            #make ax subscriptable
+
             if row_len == 1:
-                ax = [ax] 
+                ax = [ax]  # make ax subscriptable when lenght one
             for ii, cover in enumerate(vv):
                 weights_for_cover = [graph[edge] for edge in cover]
                 total_weight += np.prod(weights_for_cover)
 
                 figgy = gp.graphPlot(Graph(cover, weights=weights_for_cover),
                                      show=False, weight_product=True,
-                                     show_value_for_each_edge=False,
+                                     show_value_for_each_edge=True,
                                      ax_fig=(figgy, ax[ii]), fontsize=fontsize
                                      )
-            if isinstance(total_weight, complex):
-                title = r'$  {0} \cdot e^{{ {1} i }} \ket{{ {2} }} $'.format(
-                    *np.round(polar(total_weight), 3),ket_string) 
-            else:
-                title = r'$ {0} \cdot \ket{{ {1} }} $'.format(
-                    np.round(total_weight, 3),ket_string) 
+
+            title = r'$  {0} \ket{{ {1} }} $'.format(
+                    num_in_str(total_weight), ket_string)
+
             props = dict(boxstyle='round', facecolor='lightgrey')
-            figgy.suptitle(title,y=0.99,fontsize=35,bbox=props)
+            figgy.suptitle(title, y=0.99, fontsize=35, bbox=props)
             figgy.patch.set_facecolor(colors[idx])
-           # plt.title(title,y=1.01,fontsize=35)
+
             for ii in range(len(ax)):
                 ax[ii].axis('off')
-            #plt.tight_layout()
+            plt.tight_layout()
             figgy.savefig(os.path.join(savepath, ket_string + '(' + str(ii) +
                                        ')' + ".jpeg"),
-                          dpi=dpi, bbox_inches = 'tight',
+                          dpi=dpi, bbox_inches='tight',
                           facecolor=figgy.get_facecolor(), edgecolor='none')
+            x = int(10*idx/amount_pm)
+            print("state {}: [{}{}] {}/{}".format(nth_file,"#"*x, "."*(10-x), idx, amount_pm),
+                  end='\r', flush=True)
             plt.close(figgy)
-  
-        self.convert_img_to_pdf(savepath, 1, self.files[nth_file]['file_name'] )
+
+        self.convert_img_to_pdf(savepath, 1, self.files[nth_file]['file_name'])
         plt.ion()
 
-    def convert_img_to_pdf(self, savepath, row_len, file_name= 'pm_pdf' ,show=False):
+    def convert_img_to_pdf(self, savepath, row_len, file_name='pm_pdf', show=False):
         from PIL import Image
 
         images = [
@@ -865,7 +875,6 @@ class analyser():
         if not name.endswith('.pdf'):
             name += '.pdf'
 
-
         pt.mkdir(parents=True, exist_ok=True)
         filepath = pt / "".join(name)
 
@@ -877,7 +886,6 @@ class analyser():
             plt.imshow(whole_image.convert('RGB'))
             plt.axis('off')
 
-
     def info_statex(self, idx=0, infos=[], filter_zeros=False, figsize=(14, 8)):
 
         ### plot setup ###
@@ -886,10 +894,9 @@ class analyser():
         graph_ax = fig.add_subplot(1, 2, 1)
         state_ax = fig.add_subplot(2, 2, 2)
         loss_ax = fig.add_subplot(2, 2, 4)
-        #figManager = plt.get_current_fig_manager()
-       # figManager.full_screen_toggle()
 
         graph, state = self.turn_dic_in_graph_state(self.files[idx]['graph'])
+        st_dic = self.files[idx]
         ### Graph ###
 
         gp.graphPlot(graph, ax_fig=(fig, graph_ax), show=False)
@@ -899,9 +906,11 @@ class analyser():
             pass
 
         ### state + infos ###
+
         st_string = state.state_string(filter_zeros=filter_zeros)
+        print(st_string)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fs = max(21 - st_string.count('\n') , 10)
+        fs = max(21 - st_string.count('\n'), 10)
 
         text = state_ax.annotate(st_string,
                                  xy=(0.5, 1.05), xycoords=("data", 'axes fraction'),
@@ -915,8 +924,6 @@ class analyser():
                           xytext=(0, -20), textcoords='offset points',
                           ha="center", va="top", fontsize=int(0.8*fs),
                           bbox=props, wrap=True)
-
-        st_dic = self.files[idx]
 
         state_ax.axis('off')
 
@@ -941,111 +948,196 @@ class analyser():
         loss_ax.invert_xaxis()
         loss_ax.grid()
         plt.tight_layout()
-        plt.show()
         return state
 
 
-def input_with_check_ints(question: str, restriciton = []):
+def input_with_check_ints(question: str, restriciton=[]):
     counter = 0
     while counter < 3:
         try:
-            user_input = int( input(question) )
-            if len(restriciton) != 0 :
-                if restriciton[0] <= user_input and user_input <= restriciton[1]:
+            user_input = input(question)
+            if '-' not in user_input:
+                user_input = [int(user_input)]
+            else:
+                user_input = [int(xx) for xx in user_input.split('-')]
+
+            if len(restriciton) != 0:
+
+                if all(restriciton[0] <= xx and xx <= restriciton[1] for xx in user_input):
                     return user_input
                 else:
                     raise ValueError()
+
             else:
                 return user_input
         except:
             counter += 1
-            print(f'inproper input!: try again ({3-counter} trys left)')
-            
+        print(f'inproper input!: try again ({3-counter} trys left)')
+
     import sys
     sys.exit()
-        
+
 
 def check_which_summary_file(path):
     folder_list = [xx for xx in path.iterdir() if xx.is_dir()]
-    #when only one folder exists we take this folder oc
+    # when only one folder exists we take this folder oc
     if len(folder_list) == 1:
         return folder_list[0]
-    for idx,ff in enumerate(folder_list):
+    for idx, ff in enumerate(folder_list):
         aa = convert_file_path_to_dic(ff / 'summary.json')
         print('\n' + ff.name + f'  ({idx=})' + '\n')
-        for key,val in aa.items():
+        for key, val in aa.items():
             print(f'  - {key} : {val}')
             last_key = key
-        print(len(f'  - {last_key} : {aa[last_key]}' )*'-')
-    
+        print(len(f'  - {last_key} : {aa[last_key]}')*'-')
+
     folder_idx = input_with_check_ints(f'Choose one folder index ( 0 - {idx} ):',
-                                  restriciton = [0,idx]
-                                  )
+                                       restriciton=[0, idx]
+                                       )[0]
     return folder_list[folder_idx]
 
-def walk(path): 
-    for p in Path(path).iterdir(): 
-        if p.is_dir(): 
+
+def walk(path):
+    for p in Path(path).iterdir():
+        if p.is_dir():
             yield p
             yield from walk(p)
             continue
-        
+
 
 def convert_input_path(path: str):
-    
-    #first check if no path given then we have to choose system we want to analyze
+
+    # first check if no path given then we have to choose system we want to analyze
     current_dir = os.getcwd()
     if not str(current_dir).endswith('output'):
-        output_dir =  Path(current_dir) / 'output'
+        output_dir = Path(current_dir) / 'output'
     else:
-        output_dir = Path(current_dir) 
-        
-    
+        output_dir = Path(current_dir)
+
     if path is None or len(path) == 0:
         folder_list = list(output_dir.iterdir())
-        for idx,folder in enumerate( folder_list ):
-            
-            print(f'( {idx} ) : {folder}'.replace(str(output_dir),''))
-        idx_folder = input_with_check_ints(f'Choose one folder to analyse ( index: 0 - {idx} )\n',
-                                      restriciton = [0,idx] )
-        path = Path(output_dir) / str( folder_list[idx_folder] )
-    
-    path = Path(path) 
-    #first check if given path is an absolut path and if exists then return
-    for folder in walk(output_dir) :
-       if str(path) in str(folder):
-               path = folder
-               break
+        for idx, folder in enumerate(folder_list):
 
-       
-    if path.is_absolute() and any(  pp.suffix == '.json' for pp in path.iterdir()  ):
+            print(f'( {idx} ) : {folder}'.replace(str(output_dir), ''))
+        idx_folder = input_with_check_ints(f'Choose one folder to analyse ( index: 0 - {idx} )\n',
+                                           restriciton=[0, idx])[0]
+        path = Path(output_dir) / str(folder_list[idx_folder])
+
+    path = Path(path)
+    # first check if given path is an absolut path and if exists then return
+    for folder in walk(output_dir):
+        if str(path) in str(folder):
+            path = folder
+            break
+
+    if path.is_absolute() and any(pp.suffix == '.json' for pp in path.iterdir()):
         if path.exists():
             return path
-        else: raise ValueError('Given absolute Path does not exist')
-        
-    #second one check if name corresponds to one of the folder in output
-    
+        else:
+            raise ValueError('Given absolute Path does not exist')
+
+    # second one check if name corresponds to one of the folder in output
+
     else:
         return check_which_summary_file(path)
 
 
-def get_analyse(which_directory,all_weights_plus_minus_one =False,
-                which_infos=['norm'],create_perfect_machting_pdf=False):
-    
+def get_analyse(which_directory, all_weights_plus_minus_one=False,
+                which_infos=['norm'], create_perfect_machting_pdf=False):
+
     path = convert_input_path(which_directory)
     a = analyser(path, only_pm=all_weights_plus_minus_one)
-    a.plot_losses()
-    index = input_with_check_ints(f'which state? (int from 0 - {len(a.files)-1} ): ',[0,len(a.files)-1])
-    a.info_statex(index, infos=which_infos)
-    if create_perfect_machting_pdf:
-        a.all_perfect_matchings_from_idx_file_to_pdf(index)
+    #a.plot_losses()
+    indexs = input_with_check_ints(
+        f'which state? (int from 0 - {len(a.files)-1} or idx_1 - idx_2): ',
+        [0, len(a.files)-1])
+    if len(indexs) == 1:
+        indexs.append(indexs[0])
+    for idx in range(indexs[0],indexs[1]+1):
+        a.info_statex(idx, infos=which_infos)
+        if create_perfect_machting_pdf:
+            a.all_perfect_matchings_from_idx_file_to_pdf(idx)
+    plt.show()
+    input('press arbitary key to exit')
+    return 0
 
-if __name__  == '__main__':
-    print(entanglement_measure(6*[2],'dense').max_values(full_vec = True) )
-    
-    pass
-    
+
+
+def save_graph(file_loc, pm=False, fontsize = 12):
     
     
+    def get_figsize(columnwidth, wf=1, hf=1):
+        """Parameters:
+          - wf [float]:  width fraction in columnwidth units
+          - hf [float]:  height fraction in columnwidth units.
+                         Set by default to golden ratio.
+          - columnwidth [float]: width of the column in latex. Get this from LaTeX 
+                                 using \showthe\columnwidth
+        Returns:  [fig_width,fig_height]: that should be given to matplotlib
+        """
+        fig_width_pt = columnwidth*wf 
+        inches_per_pt = 1.0/72.27               # Convert pt to inch
+        fig_width = fig_width_pt*inches_per_pt  # width in inches
+        fig_height = fig_width*hf      # height in inches
+        return [fig_width, fig_height]
+    
+    def turn_dic_in_graph(graph_dict: dict,only_pm= False, thresholds_amplitudes=np.inf):
+        """
+        returns a GRaph object and a state_analyzer object for given state
+
+        Parameters
+        ----------
+        graph_dict : dict
+            dict representing a graph.
+        thresholds_amplitudes : TYPE, optional
+            DESCRIPTION. The default is np.inf.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        imaginary = False
+        if only_pm:
+            for ket, ampl in graph_dict.items():
+                if isinstance(graph_dict[ket],complex):
+                    imaginary = True
+                graph_dict[ket] = 1 if ampl > 0 else -1
+                
+        graph = Graph(graph_dict,imaginary=imaginary)
+        if imaginary is not False:
+            graph.toCartesian()
+        graph.getState()
+        return graph
+    
+    import matplotlib as mpl
+    mpl.rcParams['figure.dpi'] = 80
+    mpl.rcParams['savefig.dpi'] = 100
+
+    mpl.rcParams["text.usetex"] = True
+    mpl.rcParams["font.family"] = "serif"
     
     
+    for ii in os.listdir(file_loc):
+        if ii.endswith('.json'):
+            
+            figgy, ax = plt.subplots(figsize=get_figsize(418.2555)) 
+            graph = turn_dic_in_graph(convert_file_path_to_dic(Path(file_loc ) / ii)['graph'],pm)
+            fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax ), fontsize=fontsize,
+                               max_thickness= 7, zorder= 7,markersize=15)
+            plt.tight_layout()
+            save_path = Path(file_loc ) /   ii.replace('.json','.pdf')
+            fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
+            
+if __name__ == '__main__':
+    save_graph(r'C:/Users/janpe/Downloads/test_th/paper', pm = True)
+    hs_st = '0011 + 1100 + 0101 + 1010 + 1001+ 0110'
+    omega = np.exp(2/3* 1j * np.pi )
+    hs_st = hs_st.replace(' ','').split('+')
+    HS = state_analyzer(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
+    print(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
+    print(HS.state_string())
+    print( HS.info_string(*['norm', 'ent', 'k']) )
+    #plt.close()
+  

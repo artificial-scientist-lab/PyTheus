@@ -727,7 +727,7 @@ def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor=0) -> floa
         return mean + var_factor * var
 
 
-def entanglement_fast(avail_states: dict, sys_dict: dict):
+def entanglement_fast(avail_states: dict, sys_dict: dict,var_factor):
     """
     compute the entanglement according to compute_entanglement() of the state given by the graph
     according to given avail_states
@@ -769,7 +769,7 @@ def entanglement_fast(avail_states: dict, sys_dict: dict):
 
     if sys_dict['imaginary'] is False:
         return f'compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
-               + f' {sys_dict} )'
+               + f' {sys_dict}, {var_factor} )'
     else:
         return f'abs(compute_entanglement(np.array({state_vector} ),'.replace("'", "") \
-               + f' {sys_dict} ))'
+               + f' {sys_dict}, {var_factor} ))'

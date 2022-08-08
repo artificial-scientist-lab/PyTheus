@@ -50,7 +50,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
                 ha='center', va='center',rotation=0,fontweight ='heavy',fontsize= fs)
     try:
         if edge[4] < 0:
-            ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="6", markeredgecolor="black",
+            ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="3", markeredgecolor="black",
                      color="white")
     except:
         pass

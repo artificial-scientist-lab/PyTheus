@@ -716,6 +716,7 @@ class analyser():
                     graph_dict[ket] = 1 if ampl > 0 else -1
                 else:
                     graph_dict[ket] =  [1,ampl[1]] if ampl[0] > 0 else [-1,ampl[1]] 
+
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
@@ -804,13 +805,12 @@ class analyser():
             figgy, ax = plt.subplots(1, row_len,
                                      figsize=(row_len*800/dpi, 800/dpi),
                                      dpi=dpi)
-
+            
             if row_len == 1:
                 ax = [ax]  # make ax subscriptable when lenght one
             for ii, cover in enumerate(vv):
                 weights_for_cover = [graph[edge] for edge in cover]
                 total_weight += np.prod(weights_for_cover)
-
                 figgy = gp.graphPlot(Graph(cover, weights=weights_for_cover),
                                      show=False, weight_product=True,
                                      show_value_for_each_edge=True,
@@ -1058,7 +1058,7 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
     for idx in range(indexs[0],indexs[1]+1):
         a.info_statex(idx, infos=which_infos)
         if create_perfect_machting_pdf:
-            a.all_perfect_matchings_from_idx_file_to_pdf(idx)
+            a.all_perfect_matchings_to_pdf(idx)
     plt.show()
     input('press arbitary key to exit')
     return 0

@@ -3,11 +3,24 @@
     "edges_tried": 30,
     "foldername": "toffoli",
     "ftol": 1e-05,
-    "loss_func": "cr",
-    "num_anc": 0,
+    "loss_func": "gcr",
+    "num_anc": 4,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
-    "removed_connections": [[0,1],[0,2],[1,2]],
+    "removed_connections": [
+        [
+            0,
+            1
+        ],
+        [
+            0,
+            2
+        ],
+        [
+            1,
+            2
+        ]
+    ],
     "imaginary": false,
     "real": true,
     "safe_hist": true,
@@ -22,8 +35,13 @@
         "110111",
         "111110"
     ],
+    "out_nodes": [
+        3,
+        4,
+        5
+    ],
     "thresholds": [
-        0.3,
+        1,
         0.1
     ],
     "tries_per_edge": 5,

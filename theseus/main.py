@@ -49,9 +49,6 @@ def run_main(filename, example):
 
     graph_res = optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
 
-    graph_res.getState()
-    print(f'finished with graph with {len(graph_res.edges)} edges.')
-    print(graph_res.state.state)
 
     ancillas = dimensions.count(1)
     if ancillas != 0:
@@ -72,6 +69,9 @@ def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_sta
         else:
             graph_res = optimizer.graph
         sv.save_graph(optimizer)
+        graph_res.getState()
+        print(f'finished with graph with {len(graph_res.edges)} edges.')
+        print(graph_res.state.state)
     return graph_res
 
 

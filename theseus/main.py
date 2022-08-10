@@ -67,7 +67,10 @@ def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_sta
     sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
     for i in range(cnfg['samples']):
         optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
-        graph_res = optimizer.topologicalOptimization()
+        if cnfg['topopt']:
+            graph_res = optimizer.topologicalOptimization()
+        else:
+            graph_res = optimizer.graph
         sv.save_graph(optimizer)
     return graph_res
 
@@ -117,4 +120,8 @@ def read_config(is_example, filename):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:
         cnfg = json.load(input_file)
+    if 'topopt' not in cnfg:
+        cnfg['topopt'] = True
+    if not cnfg['topopt']:
+        cnfg['bulk_thr'] = 0
     return cnfg, filename

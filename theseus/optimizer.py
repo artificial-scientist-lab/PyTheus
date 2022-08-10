@@ -131,7 +131,7 @@ class topological_opti:
         elif self.config['loss_func'] == 'cr' or self.config['loss_func'] == 'fid':
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary}
-        elif self.config['loss_func'] == 'gcr':
+        elif self.config['loss_func'] in ['gcr','gfid','hcr','hfid']:
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes']}

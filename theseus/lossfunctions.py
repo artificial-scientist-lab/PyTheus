@@ -46,7 +46,7 @@ def gate_countrate(graph, target_state, imaginary=False, out_nodes=None):
         if sum == len(out_nodes):
             edgecovers.append(ec)
 
-    cat = th.stateCatalog(edgecovers)
+    cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
@@ -76,29 +76,32 @@ def gate_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
+
 def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
 
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
+    all_edgecovers = []
+    for ii in range((len(verts) - len(nonoutput_verts)) // 2 + 1):
+        tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        edgecovers = []
+        for ec in tmp_edgecovers:
+            counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
+            sum = 0
+            for vert in out_nodes:
+                sum += counter[vert]
+            if sum == len(out_nodes) - 2 * ii:
+                edgecovers.append(ec)
+        all_edgecovers += edgecovers
 
-    tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2)
-    edgecovers = []
-    for ec in tmp_edgecovers:
-        counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
-        sum = 0
-        for vert in out_nodes:
-            sum += counter[vert]
-        if sum == len(out_nodes):
-            edgecovers.append(ec)
-    edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2-1)
-
-    cat = th.stateCatalog(edgecovers)
+    cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
+
 
 def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
@@ -106,19 +109,21 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
 
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
-
-    tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2)
-    edgecovers = []
-    for ec in tmp_edgecovers:
-        counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
-        sum = 0
-        for vert in out_nodes:
-            sum += counter[vert]
-        if sum == len(out_nodes):
-            edgecovers.append(ec)
-    edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=int(len(verts) / 2-1))
-
-    cat = th.stateCatalog(edgecovers)
+    all_edgecovers = []
+    for ii in range((len(verts) - len(nonoutput_verts)) // 2 + 1):
+        tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        edgecovers = []
+        for ec in tmp_edgecovers:
+            counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
+            sum = 0
+            for vert in out_nodes:
+                sum += counter[vert]
+            if sum == len(out_nodes) - 2 * ii:
+                edgecovers.append(ec)
+        #print(ii)
+        #print(edgecovers)
+        all_edgecovers += edgecovers
+    cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
@@ -164,6 +169,6 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [state_fidelity, state_countrate],
             'cr': [state_countrate, state_fidelity],
             'gcr': [gate_countrate, gate_fidelity],
-            'gfid': [gate_fidelity,gate_countrate],
+            'gfid': [gate_fidelity, gate_countrate],
             'hcr': [heralded_countrate, heralded_fidelity],
-            'hfid': [heralded_fidelity,heralded_countrate]}
+            'hfid': [heralded_fidelity, heralded_countrate]}

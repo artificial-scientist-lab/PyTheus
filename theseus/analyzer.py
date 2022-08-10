@@ -122,6 +122,7 @@ entanglement_functions = {
     'dense': lambda matrix: np.trace(matrix@matrix)}
 
 
+
 class entanglement_measure():
 
     def __init__(self, dimensions: list, measure_kind='con'):
@@ -289,7 +290,7 @@ class state_dic_class(dict):
 class state_analyzer():
 
     def __init__(self, state: State,  weights=[], dim=[], precision=1e-3,
-                 measure_kind='con'):
+                 measure_kind='entropy'):
         self.dic = state_dic_class(state.state)
         self.norm = state.norm
         self.pre = precision
@@ -580,7 +581,7 @@ class state_analyzer():
 
         if any(x in args for x in ['concurrence', 'ent']):
             info_string += f'\ntotal {self.measure_kind}: {round(self.c,options["dec"])}'
-            info_string += f'\n {self.measure_kind} vector: \n'
+            info_string += f'\n {self.measure_kind} vector:'
             for kk, mask in enumerate(self.k_mask):
                 info_string += f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
 
@@ -690,6 +691,7 @@ class analyser():
 
         plt.tight_layout()
         plt.show(block=False)
+   
 
     def turn_dic_in_graph_state(self, graph_dict: dict, thresholds_amplitudes=np.inf):
         """
@@ -714,6 +716,7 @@ class analyser():
                     graph_dict[ket] = 1 if ampl > 0 else -1
                 else:
                     graph_dict[ket] =  [1,ampl[1]] if ampl[0] > 0 else [-1,ampl[1]] 
+
         graph = Graph(graph_dict, dimensions=self.dim,
                       imaginary=self.imaginary)
         if self.imaginary is not False:
@@ -802,13 +805,12 @@ class analyser():
             figgy, ax = plt.subplots(1, row_len,
                                      figsize=(row_len*800/dpi, 800/dpi),
                                      dpi=dpi)
-
+            
             if row_len == 1:
                 ax = [ax]  # make ax subscriptable when lenght one
             for ii, cover in enumerate(vv):
                 weights_for_cover = [graph[edge] for edge in cover]
                 total_weight += np.prod(weights_for_cover)
-
                 figgy = gp.graphPlot(Graph(cover, weights=weights_for_cover),
                                      show=False, weight_product=True,
                                      show_value_for_each_edge=True,
@@ -1056,7 +1058,7 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
     for idx in range(indexs[0],indexs[1]+1):
         a.info_statex(idx, infos=which_infos)
         if create_perfect_machting_pdf:
-            a.all_perfect_matchings_from_idx_file_to_pdf(idx)
+            a.all_perfect_matchings_to_pdf(idx)
     plt.show()
     input('press arbitary key to exit')
     return 0
@@ -1066,7 +1068,7 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
 def save_graph(file_loc, pm=False, fontsize = 12):
     
     
-    def get_figsize(columnwidth, wf=1, hf=1):
+    def get_figsize(columnwidth):
         """Parameters:
           - wf [float]:  width fraction in columnwidth units
           - hf [float]:  height fraction in columnwidth units.
@@ -1075,10 +1077,11 @@ def save_graph(file_loc, pm=False, fontsize = 12):
                                  using \showthe\columnwidth
         Returns:  [fig_width,fig_height]: that should be given to matplotlib
         """
-        fig_width_pt = columnwidth*wf 
+        fig_width_pt = columnwidth  # Get this from LaTeX using \showthe\columnwidth
         inches_per_pt = 1.0/72.27               # Convert pt to inch
+        golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
         fig_width = fig_width_pt*inches_per_pt  # width in inches
-        fig_height = fig_width*hf      # height in inches
+        fig_height = fig_width*golden_mean      # height in inches
         return [fig_width, fig_height]
     
     def turn_dic_in_graph(graph_dict: dict,only_pm= False, thresholds_amplitudes=np.inf):
@@ -1101,43 +1104,49 @@ def save_graph(file_loc, pm=False, fontsize = 12):
         imaginary = False
         if only_pm:
             for ket, ampl in graph_dict.items():
-                if isinstance(graph_dict[ket],complex):
-                    imaginary = True
+                if isinstance(graph_dict[ket],list):
+                    imaginary = 'polar'
                 graph_dict[ket] = 1 if ampl > 0 else -1
-                
+        for ket, ampl in graph_dict.items():
+            if isinstance(graph_dict[ket],list):
+                imaginary = 'polar'
         graph = Graph(graph_dict,imaginary=imaginary)
         if imaginary is not False:
             graph.toCartesian()
         graph.getState()
         return graph
     
-    import matplotlib as mpl
-    mpl.rcParams['figure.dpi'] = 80
-    mpl.rcParams['savefig.dpi'] = 100
+    params = {'backend': 'ps',
+          'axes.labelsize': 10,
+          'legend.fontsize': 10,
+          'xtick.labelsize': 8,
+          'ytick.labelsize': 8,
+          'text.usetex': True,}
+    
+    plt.rcParams.update(params)
 
-    mpl.rcParams["text.usetex"] = True
-    mpl.rcParams["font.family"] = "serif"
+    for folder in [pp for pp in os.listdir(file_loc) if '.' not in pp ]:
+
+        cur_file_loc = Path(file_loc) / folder
+        plots = 0
+        for xx in os.listdir(cur_file_loc):
+            if xx.endswith('.json'):
+                plots += 1
+        figgy, ax = plt.subplots(1,plots,figsize=get_figsize(418.2555))
     
-    
-    for ii in os.listdir(file_loc):
-        if ii.endswith('.json'):
-            
-            figgy, ax = plt.subplots(figsize=get_figsize(418.2555)) 
-            graph = turn_dic_in_graph(convert_file_path_to_dic(Path(file_loc ) / ii)['graph'],pm)
-            fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax ), fontsize=fontsize,
-                               max_thickness= 7, zorder= 7,markersize=15)
-            plt.tight_layout()
-            save_path = Path(file_loc ) /   ii.replace('.json','.pdf')
-            fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
+        for idx,ii in enumerate([xx for xx in os.listdir(cur_file_loc) if xx.endswith('.json')]):
+
+            graph = turn_dic_in_graph(convert_file_path_to_dic(Path(cur_file_loc ) / ii)['graph'],pm)
+            try:
+                fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax[idx] ), fontsize=fontsize,
+                               max_thickness= 5, zorder= 20,markersize=10)
+            except TypeError:
+                fig = gp.graphPlot(graph, show=False,ax_fig=(figgy, ax ), fontsize=fontsize,
+                               max_thickness= 5, zorder= 7,markersize=12)
+        plt.tight_layout()
+        save_path = Path(file_loc ) / (folder + '.pdf')
+        fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
             
 if __name__ == '__main__':
-    save_graph(r'C:/Users/janpe/Downloads/test_th/paper', pm = True)
-    hs_st = '0011 + 1100 + 0101 + 1010 + 1001+ 0110'
-    omega = np.exp(2/3* 1j * np.pi )
-    hs_st = hs_st.replace(' ','').split('+')
-    HS = state_analyzer(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
-    print(State(hs_st,amplitudes=[1,1,omega,omega,omega**2,omega**2]))
-    print(HS.state_string())
-    print( HS.info_string(*['norm', 'ent', 'k']) )
-    #plt.close()
+    save_graph(r'C:/Users/janpe/Downloads/test_th/paper')
   

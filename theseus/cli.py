@@ -15,6 +15,7 @@ but can also be imported as a package in normal Python code.
 
 import os
 import sys
+import json
 
 import click
 import pkg_resources
@@ -22,6 +23,7 @@ import pkg_resources
 import theseus
 from theseus.main import run_main
 from theseus.analyzer import get_analyse
+from theseus.graphplot import plotFromFile
 
 
 @click.group()
@@ -36,6 +38,16 @@ def run(filename, example):
     """Run an input file."""
     try:
         run_main(filename, example)
+    except IOError as e:
+        click.echo('ERROR:' + str(e))
+        sys.exit(1)
+
+@cli.command()
+@click.argument('filename')
+def plot(filename):
+    """Plot a solution file."""
+    try:
+        plotFromFile(filename)
     except IOError as e:
         click.echo('ERROR:' + str(e))
         sys.exit(1)

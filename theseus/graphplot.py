@@ -4,6 +4,9 @@ import matplotlib.collections as collections
 import theseus.theseus as th
 import theseus.analyzer as anal 
 import matplotlib.patheffects as pe
+from theseus.fancy_classes import Graph
+import json
+import os
 
 def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
              show_val = False,fs = 15,markersize=25):
@@ -127,3 +130,11 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     else:
         pass
     return fig
+
+def plotFromFile(filename):
+    if not os.path.exists(filename) or os.path.isdir(filename):
+        raise IOError(f'File does not exist: {filename}')
+    with open(filename) as input_file:
+        sol_dict = json.load(input_file)
+    graph = Graph(sol_dict['graph'])
+    graphPlot(graph, scaled_weights=True)

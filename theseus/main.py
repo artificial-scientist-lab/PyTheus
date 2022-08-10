@@ -38,6 +38,9 @@ def run_main(filename, example):
     """
     cnfg, filename = read_config(example, filename)
 
+    if 'description' in cnfg.keys():
+        print(cnfg['description'])
+
     sys.setrecursionlimit(1000000000)
 
     dimensions, sys_dict, target_state = get_dimensions_and_target_state(cnfg)

@@ -1,4 +1,5 @@
 {
+  "description": "Finding a setup for the creation of the three-particle four-dimensional GHZ state. It can be realized with three ancillary particles",
   "bulk_thr": 0.01,
   "edges_tried": 20,
   "foldername": "ghz_346",

@@ -9,7 +9,10 @@ import theseus.theseus as th
 from collections import Counter
 import itertools
 import numpy as np
+from itertools import combinations
 
+import logging
+log = logging.getLogger(__name__)
 
 def state_countrate(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
@@ -84,18 +87,11 @@ def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
     all_edgecovers = []
-    for ii in range((len(verts) - len(nonoutput_verts)) // 2 + 1):
-        tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
-        edgecovers = []
-        for ec in tmp_edgecovers:
-            counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
-            sum = 0
-            for vert in out_nodes:
-                sum += counter[vert]
-            if sum == len(out_nodes) - 2 * ii:
-                edgecovers.append(ec)
-        all_edgecovers += edgecovers
-
+    orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
+    for ii in range(orders):
+        log.info('starting EC')
+        all_edgecovers  += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        log.info(len(all_edgecovers))
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
@@ -110,19 +106,11 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
     all_edgecovers = []
-    for ii in range((len(verts) - len(nonoutput_verts)) // 2 + 1):
-        tmp_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
-        edgecovers = []
-        for ec in tmp_edgecovers:
-            counter = Counter(list(itertools.chain(*th.edgeBleach(ec).keys())))
-            sum = 0
-            for vert in out_nodes:
-                sum += counter[vert]
-            if sum == len(out_nodes) - 2 * ii:
-                edgecovers.append(ec)
-        #print(ii)
-        #print(edgecovers)
-        all_edgecovers += edgecovers
+    orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
+    for ii in range(orders):
+        log.info('starting EC')
+        all_edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        log.info(len(all_edgecovers))
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])

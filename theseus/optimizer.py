@@ -11,6 +11,8 @@ from .lossfunctions import loss_dic
 import numpy as np
 from scipy import optimize
 
+import logging
+log = logging.getLogger(__name__)
 
 class topological_opti:
 
@@ -188,6 +190,7 @@ class topological_opti:
             counter += 1
             if counter % 10 == 0:
                 print('10 invalid preopts')
+                log.info('10 invalid preopts')
 
         for __ in range(self.config['num_pre'] - 1):
             # if stated in config file, do more preoptimizations (esp. useful for concurrence)
@@ -201,6 +204,7 @@ class topological_opti:
                 best_result = result
         self.loss_val = self.update_losses(best_result, losses)
         print(f'best result from pre-opt: {abs(best_result.fun)}')
+        log.info(f'best result from pre-opt: {abs(best_result.fun)}')
 
         preopt_graph = Graph(graph.edges,
                              weights=self.weights_to_valid_input(
@@ -228,6 +232,7 @@ class topological_opti:
                 else:
                     cont = False
             print(f'{num_deleted} edges deleted')
+            log.info(f'{num_deleted} edges deleted')
             valid = False
             while not valid:
                 # it is necessary that the truncated graph passes the checks
@@ -239,6 +244,7 @@ class topological_opti:
                                                  options={'ftol': self.config['ftol']})
                 self.loss_val = self.update_losses(trunc_result, losses)
                 print(f'result after truncation: {abs(trunc_result.fun)}')
+                log.info(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
             preopt_graph = Graph(preopt_graph.edges,
                                  weights=self.weights_to_valid_input(
@@ -339,6 +345,7 @@ class topological_opti:
                 except KeyError:
                     red_graph[idx_of_edge] = amplitude
                     print('edge necessary for producing all kets')
+                    log.info('edge necessary for producing all kets')
                     return red_graph, False  # no success keep current Graph
             else:
                 initial_values, bounds = self.prepOptimizer(len(red_graph))
@@ -377,10 +384,12 @@ class topological_opti:
             self.graph, success = self.optimize_one_edge(
                 num_edge, self.config['tries_per_edge'])
             num_edge += 1
+            log.info(f'deleting edge {num_edge}')
             print(f'deleting edge {num_edge}')
             if success:
                 print(
                     f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
+                log.info(f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
                 num_edge = 0
                 graph_history.append(self.graph)
 

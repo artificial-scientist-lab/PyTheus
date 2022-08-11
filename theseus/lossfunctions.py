@@ -87,7 +87,7 @@ def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     all_edgecovers = []
     orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
     for ii in range(orders):
-        all_edgecovers  = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        all_edgecovers  += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
 
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
@@ -105,7 +105,7 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     all_edgecovers = []
     orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
     for ii in range(orders):
-        all_edgecovers = th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        all_edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])

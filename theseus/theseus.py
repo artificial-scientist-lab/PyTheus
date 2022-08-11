@@ -86,32 +86,37 @@ def edgeBleach(color_edges):
     return bleached_edges
 
 
-def allColorGraphs(color_nodes):
+def allColorGraphs(color_nodes, loops=False):
     '''
     Given a list of colored nodes, i.e., an state. It uses AllPairSplits to generate all graphs that
-    leads to such state. This function is a building block of the function 'allPerfectMatchings'.
+    leads to such state. This function is a building block of the function 'allEdgeCovers'.
     
     Parameters
     ----------
     color_nodes : list of tuples
         List of all colored nodes: [(node,color)...] Some may be repeated.
+    loops : boolean, optional
+        Allow edges to connect twice the same node: (node1, node1, color1, color2).
         
     Returns
     -------
     graph_list : list of tuples
         Nested list with all graphs that produce a given state.
-        For example, given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces: 
-        [(0, 1, 0, 1), (0, 1, 1, 1)]]
+        Example: given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces:
+            [[(0, 0, 0, 1), (1, 1, 1, 1)],    - only if loops are allowed -
+             [(0, 1, 0, 1), (0, 1, 1, 1)]]
     '''
     color_graph = list(allPairSplits(sorted(list(color_nodes))))
     for graph in color_graph: graph.sort()
-    # The following lines builds the edge (node1, node2, color1, color2).
-    # After filtering repited nodes we filter the corresponding graph configurations.
-    color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph
-                    if nd[0][0] != nd[1][0]] for graph in color_graph]
-    color_graph = [graph for graph in color_graph
-                   if len(graph) == len(color_nodes) / 2]
+    if loops:
+        color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph]
+                       for graph in color_graph]
+    else:
+        color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph
+                        if nd[0][0] != nd[1][0]] for graph in color_graph]
+        color_graph = [graph for graph in color_graph if len(graph) == len(color_nodes) / 2]
     return [tuple(tuple(ed) for ed in graph) for graph in np.unique(color_graph, axis=0)]
+
 
 
 # # Informative Functions
@@ -333,7 +338,7 @@ def allPerfectMatchings(dimensions):
     Given a collection of nodes with different dimensions/colors available, it produces all possible
     states that erase from these and the different graphs that can produce such states.
     The graphs nodes can present different colors/dimensions and be connected by more than one edge.
-    
+
     Parameters
     ----------
     dimensions : list
@@ -364,6 +369,57 @@ def allPerfectMatchings(dimensions):
         color_nodes = [[tuple(ed) for ed in graph] for graph in np.unique(color_nodes, axis=0)]
         for coloring in color_nodes:
             color_dict[tuple(coloring)] = allColorGraphs(coloring)
+    return color_dict
+
+
+def allEdgeCovers(dimensions, order=0, loops=False): # This function should replace allPerfectMatchings
+    '''
+    Given a collection of nodes with different dimensions/colors available, it produces all possible
+    states that erase from these and the different graphs that can produce such states.
+    The graphs nodes may have different colors/dimensions. The edges may be duplicated or form loops.
+
+    Parameters
+    ----------
+    dimensions : list
+        Accesible dimensions/colors for each of the nodes of the graph.
+    order : int, optional
+        Orders above the minimum required to cover all nodes.
+        If 0, the output are only perfect machings, with all nodes having degree 1.
+    loops : boolean, optional
+        Allow edges to connect twice the same node. Only available for order>0.
+
+    Returns
+    -------
+    color_dict : dictionary
+        Dictionary of available states. The keys are the different combinations of colored nodes
+        (creator operators), that is, the state produced.
+        For each or state, the dictionary stores a list of all possible graphs that produce such state.
+        The notation employed for the nodes is: (node, color/dimension).
+        The notation employed for the edges is: (node1, node2, color1, color2).
+        Node2 cannot be lower than Node1.
+    '''
+    num_nodes = len(dimensions)
+    # Given a list with N different nodes, if order>0 some nodes will have degree
+    # larger than 1, i.e., their creator operators will be repeated.
+    # crowded_graph stores all ways in which these repeatitions may occur.
+    # For N=4 and order=1: 000123, 001123, 001223, 001233, 011123, 011223...
+    additions = list(itertools.combinations_with_replacement(range(num_nodes), 2 * order))
+    crowded_graph = [list(range(num_nodes))] * len(additions)
+    for ii, added in enumerate(additions):
+        crowded_graph[ii] = sorted(crowded_graph[ii] + list(added))
+    color_dict = {}
+    for crowd in crowded_graph:
+        # For each list of nodes in crowded_graph (with possible repetitions)
+        # we store all dimensions/coloring the nodes can have in color_nodes.
+        color_nodes = []
+        # We distinguish between nodes but not between repeated nodes.
+        # [(node1,color1),(node1,color2)] = [(node1,color2),(node1,color1)]
+        for coloring in itertools.product(*[list(range(dimensions[nn])) for nn in crowd]):
+            color_nodes.append(sorted([[crowd[ii], coloring[ii]] for ii in range(len(crowd))]))
+        # After sorting the list of colored nodes, the next one erase duplicities.
+        color_nodes = [[tuple(ed) for ed in graph] for graph in np.unique(color_nodes, axis=0)]
+        for coloring in color_nodes:
+            color_dict[tuple(coloring)] = allColorGraphs(coloring, loops)
     return color_dict
 
 

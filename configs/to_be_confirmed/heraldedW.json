@@ -1,0 +1,43 @@
+{
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "heraldedW_",
+  "ftol": 1e-06,
+  "loss_func": "hcr",
+  "num_anc": 7,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1000,
+  "target_state": [
+    "001",
+    "010",
+    "100"
+  ],
+  "out_nodes": [
+    0,
+    1,
+    2
+  ],
+  "removed_connections": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "thresholds": [
+    0.5,
+    0.1
+  ],
+  "tries_per_edge": 10,
+  "unicolor": false
+}

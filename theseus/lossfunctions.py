@@ -11,6 +11,8 @@ import itertools
 import numpy as np
 from itertools import combinations
 
+import logging
+log = logging.getLogger(__name__)
 
 def state_countrate(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
@@ -87,8 +89,9 @@ def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     all_edgecovers = []
     orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
     for ii in range(orders):
+        log.info('starting EC')
         all_edgecovers  += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
-
+        log.info(len(all_edgecovers))
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
@@ -105,7 +108,9 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     all_edgecovers = []
     orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
     for ii in range(orders):
+        log.info('starting EC')
         all_edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
+        log.info(len(all_edgecovers))
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])

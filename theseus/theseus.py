@@ -4,6 +4,8 @@
 @author: cruizgo, soerenarlt, janpe
 """
 import itertools
+from math import factorial
+from collections import Counter
 import random
 import numpy as np
 
@@ -619,6 +621,9 @@ def weightProduct(edge_list, imaginary=False):
     return '*'.join([edgeWeight(edge, imaginary) for edge in edge_list])
 
 
+# This expression could also be UNlambdified so we add some check for the Counter
+factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
+
 def writeNorm(state_catalog, imaginary=False):
     '''
     Write a normalization function with all the states of a dictionary.
@@ -640,13 +645,13 @@ def writeNorm(state_catalog, imaginary=False):
     '''
     norm_sum = []
     for key, values in state_catalog.items():
-        term_sum = [f'{weightProduct(graph, imaginary)}' for graph in values]
+        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in values]
         term_sum = ' + '.join(term_sum)
         if imaginary == False:
-            norm_sum.append(f'({term_sum})**2')
+            norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)')
         else:
-            norm_sum.append(f'abs({term_sum})**2')
-    return ' + '.join(norm_sum)
+            norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)')
+    return ' + '.join(norm_sum).replace('/1+', '+').replace('/1)', ')') # To reduce useless terms
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):

@@ -46,6 +46,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         if norm: self.getNorm()
         self.state = DEFAULT_STATE
         if state: self.getState()
+        self.ecready = False
+        self.edgecovers = None
 
     # Long, cumbersome, and very necessary function.
     def graphStarter(self, edges, weights):
@@ -281,6 +283,20 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         '''
         return th.nodeDegrees(self.edges, rising=ascending)
 
+    def getEdgeCovers(self, nodes_left, edge_range):
+        if not self.ecready:
+            self.edgecovers = []
+            for num in edge_range:
+                self.edgecovers += th.findEdgeCovers(self.edges, nodes_left=nodes_left, edges_left=num)
+        else:
+            tmp_edgecovers = []
+            for ec in self.edgecovers:
+                if all(edge in self.edges for edge in ec):
+                    tmp_edgecovers.append(ec)
+            self.edgecovers = tmp_edgecovers
+            self.ecready = True
+        return self.edgecovers
+
     def getStateCatalog(self):
         if self.full:
             self.state_catalog = th.allPerfectMatchings(self.dimensions)
@@ -310,6 +326,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         self.state = State(kets, amplitudes, self.imaginary)
 
         # This could also be defined as __abs__, but what do you give back? The dictionary?
+
     def __abs__(self):
         return_weights = len(self.graph) * [0]
         if self.is_weighted:
@@ -323,9 +340,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 raise ValueError(WRONG_IMAGINARY)
             return return_weights
         else:
-               ValueError('emtpy weights')     
+            ValueError('emtpy weights')
 
-    
     def absolute(self):
         if self.is_weighted:
             if self.imaginary in [False, 'cartesian']:
@@ -399,8 +415,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             n_th_smallest = args[0]  # takes nth given
         else:
             n_th_smallest = slice(*args)
-        
-        if self.imaginary in [False,'cartesian']:
+
+        if self.imaginary in [False, 'cartesian']:
             idx = np.argsort(abs(np.array(self.weights)))
         elif self.imaginary == 'polar':
             idx = np.argsort(abs(np.array([rr[0] for rr in self.weights])))

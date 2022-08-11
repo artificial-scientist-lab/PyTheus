@@ -4,7 +4,7 @@
   "foldername": "heraldedW_",
   "ftol": 1e-06,
   "loss_func": "hcr",
-  "num_anc": 7,
+  "num_anc": 5,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": false,

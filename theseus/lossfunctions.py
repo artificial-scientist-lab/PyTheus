@@ -12,7 +12,9 @@ import numpy as np
 from itertools import combinations
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 def state_countrate(graph, target_state, imaginary=False):
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
@@ -86,12 +88,8 @@ def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
 
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
-    all_edgecovers = []
-    orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
-    for ii in range(orders):
-        log.info('starting EC')
-        all_edgecovers  += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
-        log.info(len(all_edgecovers))
+    edge_range = list(range((len(nonoutput_verts) + 1) // 2, len(verts) // 2 + 1))
+    all_edgecovers = graph.getEdgeCovers(nodes_left=nonoutput_verts, edge_range=edge_range)
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
@@ -105,12 +103,8 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
 
     verts = np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     nonoutput_verts = [ii for ii in verts if ii not in out_nodes]
-    all_edgecovers = []
-    orders = (len(verts) - len(nonoutput_verts)) // 2 + 1
-    for ii in range(orders):
-        log.info('starting EC')
-        all_edgecovers += th.findEdgeCovers(graph.edges, nodes_left=nonoutput_verts, edges_left=len(verts) / 2 - ii)
-        log.info(len(all_edgecovers))
+    edge_range = list(range((len(nonoutput_verts) + 1) // 2, len(verts) // 2 + 1))
+    all_edgecovers = graph.getEdgeCovers(nodes_left=nonoutput_verts, edge_range=edge_range)
     cat = th.stateCatalog(all_edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
@@ -119,7 +113,7 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
 
 
 def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False,
-                                 var_factor = 0):
+                                 var_factor=0):
     """
     get the loss funcitons of a graph for the concuurence:
         C( |Psi> ) = √( 2 * ( 1 - TR_M( <Psi|Psi> ) ) ) 
@@ -143,7 +137,7 @@ def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False,
     """
 
     cat = graph.state_catalog
-    target = th.entanglement_fast(cat, sys_dict,var_factor)
+    target = th.entanglement_fast(cat, sys_dict, var_factor)
     # norm = th.Norm.fromDictionary(cat, real=sys_dict['real'])
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
 

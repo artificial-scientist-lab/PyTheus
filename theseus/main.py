@@ -19,6 +19,8 @@ import theseus.theseus as th
 from theseus.fancy_classes import Graph, State
 from theseus.optimizer import topological_opti
 
+import logging
+log = logging.getLogger(__name__)
 
 def run_main(filename, example):
     """Run the Theseus algorithm on a given input file.
@@ -80,6 +82,7 @@ def build_starting_graph(cnfg, dimensions):
     edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
     edge_list = hf.prepEdgeList(edge_list, cnfg)
     print(f'start graph has {len(edge_list)} edges.')
+    log.info(f'start graph has {len(edge_list)} edges.')
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
     return start_graph
 
@@ -104,6 +107,7 @@ def get_dimensions_and_target_state(cnfg):
         else:
             target_state = State(term_list, imaginary=cnfg['imaginary'])
         print(hf.readableState(target_state))
+        log.info(hf.readableState(target_state))
         target_kets = target_state.kets
         # define local dimensions
         dimensions = th.stateDimensions(target_kets)

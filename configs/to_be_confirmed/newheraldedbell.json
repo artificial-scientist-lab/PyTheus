@@ -1,0 +1,27 @@
+{
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "newheraldedbell",
+  "ftol": 1e-10,
+  "loss_func": "hfid",
+  "num_anc": 4,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1,
+  "target_state": [
+    "00",
+    "11"
+  ],
+  "out_nodes": [
+    0,
+    1
+  ],
+  "thresholds": [
+    0.01,
+    1
+  ],
+  "tries_per_edge": 10,
+  "unicolor": false
+}

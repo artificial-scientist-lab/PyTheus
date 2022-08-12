@@ -1,15 +1,16 @@
 {
-  "bulk_thr": 0.01,
-  "edges_tried": 10,
-  "foldername": "steane",
+  "description": "Steane code with some ancillas.",
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "fiveQEC_1",
   "ftol": 1e-06,
   "loss_func": "cr",
-  "num_anc": 1,
+  "num_anc": 3,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": false,
   "safe_hist": true,
-  "samples": 100,
+  "samples": 1,
   "target_state": [
     "0000000",
     "1010101",
@@ -21,7 +22,7 @@
     "1101001"
   ],
   "thresholds": [
-    0.2,
+    0.25,
     0.1
   ],
   "tries_per_edge": 5,

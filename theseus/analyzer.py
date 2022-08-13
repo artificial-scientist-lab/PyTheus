@@ -17,10 +17,6 @@ import theseus.help_functions as hf
 from scipy.linalg import logm
 from theseus.theseus import ptrace
 
-plt.rc('text', usetex=True)
-plt.rc('text.latex',
-       preamble=r'\usepackage{amsmath}\usepackage{braket}\usepackage{xcolor}')
-
 
 def convert_graph_keys_in_tuple(graph: dict) -> dict:
     """
@@ -46,7 +42,9 @@ def convert_file_path_to_dic(abs_file_path: Path) -> dict:
     return dictionary
 
 
-def string_wrapper(string: str, max_chars_per_line=60) -> str:
+def string_wrapper(string: str, max_chars_per_line=80, 
+                   latex = '$',
+                   line_break_char = '+' ) -> str:
     """
     wraps a string to a given line lenght 
 
@@ -63,17 +61,17 @@ def string_wrapper(string: str, max_chars_per_line=60) -> str:
         wrapped string
 
     """
-    new_string = '$'
+    new_string = latex
     counts = 0
     for ss in string:
-        if counts >= max_chars_per_line and ss == '+':
-            new_string += ss + '$' + '\n' + '$'
+        if counts >= max_chars_per_line and ss == line_break_char:
+            new_string += ss + latex + '\n' + latex
             counts = 0
         else:
             new_string += ss
             counts += 1
 
-    new_string += '$'
+    new_string += latex
     return new_string
 
 
@@ -449,7 +447,7 @@ class state_analyzer():
 
         """
         if with_color:
-            def st_col(strg, col): return r'\color{0}'.format(col) + strg
+            def st_col(strg, col): return r' \color{{{0}}} '.format(col) + strg
         else:
             def st_col(strg, col): return strg
 
@@ -472,7 +470,7 @@ class state_analyzer():
                 if abs(ampl) != 0 or not filter_zeros:
                     strs_plus.append(
                         st_col(f' + {num_in_str(ampl)} \cdot', col))
-                    strs_plus.append(st_col(r'\ket{{{0}}}'.format(ket), col))
+                    strs_plus.append(r'|{0} \rangle'.format(ket))
                     cet_counts += 1
             else:
                 ampl = np.round(1/most * ampl, dec)
@@ -483,7 +481,7 @@ class state_analyzer():
                 if abs(ampl) != 0 or not filter_zeros:
                     strs_min.append(
                         st_col(f' + {num_in_str(ampl,change_sign=True)} \cdot', col))
-                    strs_min.append(st_col(r'\ket{{{0}}}'.format(ket), col))
+                    strs_min.append(r'| {0} \rangle'.format(ket))
                     cet_counts += 1
         try:
             strs_plus[0] = strs_plus[0].replace('+', '')
@@ -555,7 +553,7 @@ class state_analyzer():
         """
         options = {
             'filter_zeros': False,
-            'dec': 3,
+            'dec': 2,
             'with_color': False}
         if options['with_color']:
             def st_col(strg, col): return r'\color{0}'.format(col) + strg
@@ -583,8 +581,9 @@ class state_analyzer():
             info_string += f'\ntotal {self.measure_kind}: {round(self.c,options["dec"])}'
             info_string += f'\n {self.measure_kind} vector:'
             for kk, mask in enumerate(self.k_mask):
-                info_string += f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
-
+                k_info = f'\n k = {kk+1} : {[round(ii,options["dec"]) for ii in self.con_vec_norm[mask]]}'
+    
+                info_string += string_wrapper(k_info,55,line_break_char = ',',latex='',)
         if any(x in args for x in ['n', 'norm']):
             info_string += f'\n normalized by: 1/{round(self.norm,options["dec"])}'
 
@@ -912,20 +911,20 @@ class analyser():
         st_string = state.state_string(filter_zeros=filter_zeros)
         print(st_string)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fs = max(21 - st_string.count('\n'), 10)
+        fs = max(19 - st_string.count('\n'), 10)
 
         text = state_ax.annotate(st_string,
                                  xy=(0.5, 1.05), xycoords=("data", 'axes fraction'),
                                  xytext=(0, -20), textcoords='offset points',
                                  ha="center", va="top", fontsize=fs,
-                                 bbox=props, wrap=True)
+                                 bbox=props)
 
         props = dict(boxstyle='round', facecolor='grey', alpha=0.2)
         state_ax.annotate(state.info_string(*infos, filter_zeros=filter_zeros),
                           xy=(0.5, 0.), xycoords=text,
                           xytext=(0, -20), textcoords='offset points',
                           ha="center", va="top", fontsize=int(0.8*fs),
-                          bbox=props, wrap=True)
+                          bbox=props)
 
         state_ax.axis('off')
 
@@ -1104,9 +1103,11 @@ def save_graph(file_loc, pm=False, fontsize = 12):
         imaginary = False
         if only_pm:
             for ket, ampl in graph_dict.items():
-                if isinstance(graph_dict[ket],list):
+                if isinstance(ampl,list):
                     imaginary = 'polar'
-                graph_dict[ket] = 1 if ampl > 0 else -1
+                    graph_dict[ket] = [1,0] if ampl[0] > 0 else [-1,0]
+                else:
+                    graph_dict[ket] = 1 if ampl > 0 else -1
         for ket, ampl in graph_dict.items():
             if isinstance(graph_dict[ket],list):
                 imaginary = 'polar'
@@ -1148,5 +1149,5 @@ def save_graph(file_loc, pm=False, fontsize = 12):
         fig.savefig(str(save_path), format='pdf', bbox_inches='tight')
             
 if __name__ == '__main__':
-    save_graph(r'C:/Users/janpe/Downloads/test_th/paper')
+    save_graph(r'C:/Users/janpe/Downloads/test_th/paper',pm=True)
   

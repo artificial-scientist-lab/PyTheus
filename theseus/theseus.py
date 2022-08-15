@@ -239,7 +239,7 @@ def stateCatalog(graph_list):
     return state_catalog
 
 
-def buildAllEdges(dimensions, string=False, imaginary=False):
+def buildAllEdges(dimensions, string=False, imaginary=False, loops=False):
     '''
     Given a collection of nodes, each with several possible colors/dimensions, returns all possible
     edges of the graph.
@@ -252,6 +252,8 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
         If True, it returns a list of strings instead of tuples. 
     imaginary : boolean, str ('cartesian' or 'polar'), optional
         If False, it returns real weights.
+    loops : boolean, optional
+        Allow edges to connect twice the same node.
         
     Returns
     -------
@@ -262,9 +264,19 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
     '''
     num_vertices = len(dimensions)
     all_edges = []
-    for pair in itertools.combinations(range(num_vertices), 2):
-        for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
-            all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+    if loops:
+        combo_function = itertools.combinations_with_replacement
+        for pair in combo_function(range(num_vertices), 2):
+            if pair[0] == pair[1]:  # (node1, node1, 1, 0) is not stored
+                for dims in combo_function(range(dimensions[pair[0]]), 2):
+                    all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+            else:
+                for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                    all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+    else:
+        for pair in itertools.combinations(range(num_vertices), 2):
+            for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                all_edges.append((pair[0], pair[1], dims[0], dims[1]))
     # returns edges whether as tuples or as sympy symbols
     if string:
         if imaginary == False:
@@ -651,7 +663,7 @@ def writeNorm(state_catalog, imaginary=False):
             norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)')
         else:
             norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)')
-    return ' + '.join(norm_sum).replace('/1+', '+').replace('/1)', ')') # To reduce useless terms
+    return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('/1+', '+') # To reduce useless terms
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):

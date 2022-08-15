@@ -1,0 +1,48 @@
+{
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "fredkin_post",
+  "ftol": 1e-10,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1000,
+  "removed_connections": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "target_state": [
+    "000000",
+    "001001",
+    "010010",
+    "011011",
+    "100100",
+    "101110",
+    "110101",
+    "111111"
+  ],
+  "out_nodes": [
+    3,
+    4,
+    5
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 10,
+  "unicolor": false
+}

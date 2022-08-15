@@ -49,7 +49,7 @@ def gate_countrate(graph, target_state, imaginary=False, out_nodes=None):
         if sum == len(out_nodes):
             edgecovers.append(ec)
 
-    cat = th.stateCatalog(all_edgecovers)
+    cat = th.stateCatalog(edgecovers)
     norm = th.writeNorm(cat, imaginary=imaginary)
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)

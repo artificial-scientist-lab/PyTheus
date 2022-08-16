@@ -1,7 +1,9 @@
 import unittest
+from pathlib import Path
 
 from tests.fast.config import GHZ_346, BELL
 from theseus.fancy_classes import Graph, defaultValues
+from theseus.main import run_main
 
 
 class TestFancyClassesModule(unittest.TestCase):
@@ -34,3 +36,8 @@ class TestGraph(unittest.TestCase):
         self.assertEqual({
             ((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]
         }, graph.state_catalog)
+
+
+    #import pickle
+    #with open('graph.pck', 'rb') as fh:
+    #    graph = pickle.load(fh)

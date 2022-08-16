@@ -36,8 +36,3 @@ class TestGraph(unittest.TestCase):
         self.assertEqual({
             ((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]
         }, graph.state_catalog)
-
-
-    #import pickle
-    #with open('graph.pck', 'rb') as fh:
-    #    graph = pickle.load(fh)

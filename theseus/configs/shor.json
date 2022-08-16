@@ -1,0 +1,30 @@
+{
+  "description": "Shor error correcting code with only one ancilla.",
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "shorcode_1",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1,
+  "target_state": [
+    "000000000",
+    "000000111",
+    "000111000",
+    "000111111",
+    "111000000",
+    "111000111",
+    "111111000",
+    "111111111"
+  ],
+  "thresholds": [
+    0.25,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

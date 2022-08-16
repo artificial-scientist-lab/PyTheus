@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pkg_resources
+import logging
 
 import theseus
 import theseus.help_functions as hf
@@ -37,9 +38,10 @@ def run_main(filename, example):
         if filename is not valid.
     """
     cnfg, filename = read_config(example, filename)
-
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.info(filename)
     if 'description' in cnfg.keys():
-        print(cnfg['description'])
+        logging.info(cnfg['description'])
 
     sys.setrecursionlimit(1000000000)
 

@@ -39,6 +39,11 @@
 * Hyperdeterminant State ✅✅
 * L state ✅✅
 * Yeo Chua state ✅✅
+* 9 entanglements in 4 qubits
+  * La4 (with complex amplitudes) ✅✅
+  * L053 ✅✅
+  * L071 ✅✅
+  * Other trivial states (stored, but they do not count)
 
 ### k-uniform and AME states
 * 4 qubit real coefficients ✅✅

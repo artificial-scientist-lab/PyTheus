@@ -137,6 +137,13 @@ class topological_opti:
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes']}
+
+        elif self.config['loss_func'] in ['gcrse','gfidse','hcrse','hfidse']:
+            loss_specs = {'target_state': self.target,
+                          'imaginary': self.imaginary,
+                          'in_nodes': self.config['in_nodes'],
+                          'out_nodes': self.config['out_nodes'],
+                          'single_emitters': self.config['single_emitters']}
         callable_loss = [func(current_graph, **loss_specs)
                          for func in lossfunctions]
         return callable_loss

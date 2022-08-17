@@ -14,7 +14,7 @@ class TestHelpFunctionsModule(unittest.TestCase):
         self.assertEqual(expected, readableState(target_state))
 
     def test_flattenlistwithemptylist(self):
-        expected_list = []
+        expected_list = [(0, 1, 0, 0)]
         flattenlist = flatten_lists(expected_list)
         self.assertListEqual(expected_list, flattenlist)
 
@@ -29,11 +29,22 @@ class TestHelpFunctionsModule(unittest.TestCase):
         self.assertListEqual([expected_lists], [flattenlist])
 
     def test_removeConnections(self):
-        edge_list = ['a', 'b','c','d']
-        connect_list = ['x', 'y']
+        edge_list = [(0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 1, 0), (0, 1, 1, 1), (0, 2, 0, 0), (0, 2, 0, 1), (0, 2, 1, 0),
+                     (0, 2, 1, 1), (0, 3, 0, 0), (0, 3, 0, 1), (0, 3, 1, 0), (0, 3, 1, 1), (0, 4, 0, 0), (0, 4, 1, 0),
+                     (0, 5, 0, 0), (0, 5, 1, 0), (1, 2, 0, 0), (1, 2, 0, 1), (1, 2, 1, 0), (1, 2, 1, 1), (1, 3, 0, 0),
+                     (1, 3, 0, 1), (1, 3, 1, 0), (1, 3, 1, 1), (1, 4, 0, 0), (1, 4, 1, 0), (1, 5, 0, 0), (1, 5, 1, 0),
+                     (2, 3, 0, 0), (2, 3, 0, 1), (2, 3, 1, 0), (2, 3, 1, 1), (2, 4, 0, 0), (2, 4, 1, 0), (2, 5, 0, 0),
+                     (2, 5, 1, 0), (3, 4, 0, 0), (3, 4, 1, 0), (3, 5, 0, 0), (3, 5, 1, 0), (4, 5, 0, 0)]
+        connect_list = [[0, 1]]
+        expected_edge_list = [(0, 2, 0, 0), (0, 2, 0, 1), (0, 2, 1, 0), (0, 2, 1, 1), (0, 3, 0, 0), (0, 3, 0, 1),
+                              (0, 3, 1, 0), (0, 3, 1, 1), (0, 4, 0, 0), (0, 4, 1, 0), (0, 5, 0, 0), (0, 5, 1, 0),
+                              (1, 2, 0, 0), (1, 2, 0, 1), (1, 2, 1, 0), (1, 2, 1, 1), (1, 3, 0, 0), (1, 3, 0, 1),
+                              (1, 3, 1, 0), (1, 3, 1, 1), (1, 4, 0, 0), (1, 4, 1, 0), (1, 5, 0, 0), (1, 5, 1, 0),
+                              (2, 3, 0, 0), (2, 3, 0, 1), (2, 3, 1, 0), (2, 3, 1, 1), (2, 4, 0, 0), (2, 4, 1, 0),
+                              (2, 5, 0, 0), (2, 5, 1, 0), (3, 4, 0, 0), (3, 4, 1, 0), (3, 5, 0, 0), (3, 5, 1, 0),
+                              (4, 5, 0, 0)]
         actual_edgelist = removeConnections(edge_list, connect_list)
-        self.assertEqual(edge_list, actual_edgelist)
-        #print(actual_edgelist)
+        self.assertEqual(expected_edge_list, actual_edgelist)
 
     def test_prepEdgelist(self):
         edge_list = [(0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 0, 2), (0, 1, 0, 3), (0, 1, 1, 0), (0, 1, 1, 1), (0, 1, 1, 2),

@@ -311,7 +311,7 @@ def stringEdges(edge_list, imaginary=False):
                 + ['th_{}_{}_{}_{}'.format(*edge) for edge in edge_list])
 
 
-def buildRandomGraph(dimensions, num_edges, cover_all=True):
+def buildRandomGraph(dimensions, num_edges, cover_all=True, loops=False):
     '''
     Given a set of nodes with different dimensions it build a random graph with a given number of edges.
     
@@ -329,10 +329,7 @@ def buildRandomGraph(dimensions, num_edges, cover_all=True):
     graph : list of tuples
         List of randomly chosen edges: [(node1, node2, color1, color2), ...]
     '''
-    all_edges = buildAllEdges(dimensions)
-    # even when only one dimension is available we put it on the symbols
-    # if sorted(dimensions)[-1]==1:
-    #     all_edges = [edge[:2] for edge in all_edges]
+    all_edges = buildAllEdges(dimensions, loops=loops)
     if cover_all:
         num_nodes = len(dimensions)
         if 2 * num_edges >= num_nodes:
@@ -352,6 +349,8 @@ def allPerfectMatchings(dimensions):
     Given a collection of nodes with different dimensions/colors available, it produces all possible
     states that erase from these and the different graphs that can produce such states.
     The graphs nodes can present different colors/dimensions and be connected by more than one edge.
+
+    A fully connected (uncolored) graph with 2n nodes has (2n)!/((2**n)⋅n!) perfect matchings.
 
     Parameters
     ----------
@@ -657,13 +656,16 @@ def writeNorm(state_catalog, imaginary=False):
     '''
     norm_sum = []
     for key, values in state_catalog.items():
+        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
         term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in values]
         term_sum = ' + '.join(term_sum)
         if imaginary == False:
+            # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
+            # The factor should be squared or, in this case, left outside the square
             norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)')
         else:
             norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)')
-    return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('/1+', '+') # To reduce useless terms
+    return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('+ 1*', '+ ')
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
@@ -702,19 +704,27 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     if imaginary == 'polar':
         amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
-    if norm2 != 1: norm2 = str(norm2)
+    if norm2 != 1: # Is this useless? I think so (Carlos)
+        norm2 = str(norm2)
     if state_catalog == None:
         state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     equation_sum = []
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):
-        term_sum = [weightProduct(graph, imaginary) for graph in state_catalog[tuple(ket)]]
-        term_sum = '+'.join(term_sum)
-        equation_sum.append(f'({coef})*({term_sum})')
-    equation_sum = '+'.join(equation_sum)
+        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in state_catalog[tuple(ket)]]
+        term_sum = ' + '.join(term_sum)
+        # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
+        creation_term = factProduct(ket)
+        if (creation_term**.5) % 1 == 0:
+            creation_term = int(creation_term**.5)
+        else:
+            creation_term = f'{creation_term}**.5'
+        equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
+    equation_sum = ' + '.join(equation_sum)
     if imaginary == False:
-        return f'(({equation_sum})**2)/{norm2}'
+        return f'(({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
     else:
-        return f'(abs({equation_sum})**2)/{norm2}'
+        return f'(abs({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
 
 
 def buildLossString(loss_function, variables):

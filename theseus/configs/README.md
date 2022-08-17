@@ -34,7 +34,7 @@
   * (6,5,5) ✅✅
   * (7,3,3) ✅✅
 * W state x W state ✅✅
-* Steane Code 🤔
+* Steane Code (rough) ✅✅
 * Shor Code ✅✅
 * Hyperdeterminant State ✅✅
 * L state ✅✅
@@ -91,6 +91,15 @@
 * controlled Z (known?)
 * Fredkin on 0 ✅✅
 * more ?
+
+### Single Photon Sources as a Resource
+* GHZ 4 particle, 3 dimension, 2 single photon sources, 2 ancilla ✅✅
+* GHZ 4 particle, 3 dimension, 6 single photon sources ✅✅
+* W states
+  * 3 particle ✅✅
+  * 4 particle ✅✅
+  * 5 particle ✅✅
+* heralded CNOT(2,2), 2 single photon sources ✅✅
 
 ### Condensed Matter
 * AKLT

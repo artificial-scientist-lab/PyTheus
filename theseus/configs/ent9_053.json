@@ -1,0 +1,26 @@
+{
+  "description": "9 entanglements for 4 qubits, case L0_(5+3).",
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "ent9_053_1",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1,
+  "target_state": [
+    "0000",
+    "0101",
+    "1000",
+    "1110"
+  ],
+  "thresholds": [
+    0.25,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

@@ -1,0 +1,28 @@
+{
+  "description": "9 entanglements for 4 qubits, case La4.",
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "ent9_a4_1",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": "polar",
+  "safe_hist": true,
+  "samples": 1,
+  "target_state": [
+    "0001",
+    "0110",
+    "1011"
+  ],
+  "amplitudes": [[1, 0], 
+                 [1, 1.5707963267948966], 
+                 [1, 3.141592653589793]],
+  "thresholds": [
+    0.25,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

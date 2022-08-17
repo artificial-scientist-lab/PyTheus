@@ -100,6 +100,7 @@
   * 4 particle ✅✅
   * 5 particle ✅✅
 * heralded CNOT(2,2), 2 single photon sources ✅✅
+* postselected CNOT(2,3), 2 single photon sources ✅✅
 
 ### Condensed Matter
 * AKLT

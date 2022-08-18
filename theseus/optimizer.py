@@ -26,6 +26,7 @@ class topological_opti:
         else:
             self.target = target_state  # object of State class
 
+        # do preoptimization on complete starting graph, this might already take some time
         self.graph = self.pre_optimize_start_graph(start_graph)
         self.saver = saver
         self.save_hist = safe_history
@@ -33,7 +34,7 @@ class topological_opti:
 
     def check(self, result: object, lossfunctions: object):
         """
-        check if all loss functions fulfills conditions for success.
+        check if all loss functions fulfill conditions for success. mostly defined through thresholds.
 
         Parameters
         ----------
@@ -56,10 +57,12 @@ class topological_opti:
             # uncomment to see where checks fail
             # print(result.fun, self.config['thresholds'][0])
             if result.fun > self.config['thresholds'][0]:
+                #if check fails return false
                 return False
             # check if all loss functions are under the corresponding threshold
             for ii in range(1, len(lossfunctions)):
                 if lossfunctions[ii](result.x) > self.config['thresholds'][ii]:
+                    # if check fails return false
                     return False
         # when no check fails return True  = success
         return True
@@ -138,10 +141,15 @@ class topological_opti:
                           'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes']}
 
-        elif self.config['loss_func'] in ['gcrse','gfidse','hcrse','hfidse']:
+        elif self.config['loss_func'] in ['gcrse','gfidse']:
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary,
                           'in_nodes': self.config['in_nodes'],
+                          'out_nodes': self.config['out_nodes'],
+                          'single_emitters': self.config['single_emitters']}
+        elif self.config['loss_func'] in ['hcrse','hfidse']:
+            loss_specs = {'target_state': self.target,
+                          'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes'],
                           'single_emitters': self.config['single_emitters']}
         callable_loss = [func(current_graph, **loss_specs)
@@ -182,25 +190,32 @@ class topological_opti:
         preopt_graph
 
         """
+        # losses is a list of callable lossfunctions, e.g. [countrate(x), fidelity(x)], where x is a vector of edge weights
+        # that can be given to scipy.optimize
         losses = self.get_loss_functions(graph)
         valid = False
         counter = 0
+        # repeat optimization of complete graph until a good solution is found (which satifies self.check())
         while not valid:
-            # find one preoptimization that is valid
+            # prepare optimizer
             initial_values, bounds = self.prepOptimizer(len(graph))
+            # optimization with scipy
             best_result = optimize.minimize(losses[0], x0=initial_values,
                                             bounds=bounds,
                                             method=self.config['optimizer'],
                                             options={'ftol': self.config['ftol']})
             self.loss_val = self.update_losses(best_result, losses)
+            #check if solution is valid
             valid = self.check(best_result, losses)
             counter += 1
+            #print a warning if preoptimization is stuck in a loop
             if counter % 10 == 0:
-                print('10 invalid preopts')
-                log.info('10 invalid preopts')
+                print('10 invalid preoptimization, consider changing parameters.')
+                log.info('10 invalid preoptimization, consider changing parameters.')
 
+        # if num_pre is set to larger than 1 in config, do num_pre preoptimization and choose the best one.
+        # for optimizations with concrete target state, num_pre = 1 is enough
         for __ in range(self.config['num_pre'] - 1):
-            # if stated in config file, do more preoptimizations (esp. useful for concurrence)
             initial_values, bounds = self.prepOptimizer(len(graph))
             result = optimize.minimize(losses[0], x0=initial_values,
                                        bounds=bounds,
@@ -292,7 +307,7 @@ class topological_opti:
 
         return initial_values, bounds
 
-    def termination_condition(self, num_edge) -> bool:
+    def continuationCondition(self, num_edge) -> bool:
         """
         conditions that stop optimization
 
@@ -309,6 +324,8 @@ class topological_opti:
             cont = len(self.graph) > self.config['min_edge'] and num_edge < len(
                 self.graph)
         else:
+            # if num_edge is higher than total number of edges in the graph
+            # or higher than edges_tried, return False
             cont = num_edge < min(len(self.graph), self.config['edges_tried'])
         return cont
 
@@ -330,66 +347,89 @@ class topological_opti:
         success
         """
         # copy current Graph and delete num_edge´s smallest weight
-
-        red_graph = self.graph
-        idx_of_edge = red_graph.minimum(num_edge)
-        amplitude = red_graph[idx_of_edge]
-        red_graph.remove(idx_of_edge, update=False)
-        red_graph.getStateCatalog()
+        # set up reduced graph
+        reduced_graph = self.graph.copy()
+        #find index of num_edge smallest edge
+        idx_of_edge = reduced_graph.minimum(num_edge)
+        #store amplitude in case edge fails and needs to be put back in
+        amplitude = reduced_graph[idx_of_edge]
+        #remove smallest edge
+        reduced_graph.remove(idx_of_edge, update=False)
+        #update state catalog of reduced graph
+        reduced_graph.getStateCatalog()
+        #try a given number of times to delete this edge
         for ii in range(num_tries_one_edge):
+            # if edge is tried for the first time, update loss function and other optimization parameters
+            # also the weights of the old graph are used as initial values (this is much faster)
             if ii == 0:
                 try:
                     # redefine loss functions for reduced graph
-                    losses = self.get_loss_functions(red_graph)
+                    losses = self.get_loss_functions(reduced_graph)
                     # use initial values x0 from previous Graph
-                    x0 = red_graph.weights
-                    initial_values, bounds = self.prepOptimizer(len(red_graph),
+                    x0 = reduced_graph.weights
+                    initial_values, bounds = self.prepOptimizer(len(reduced_graph),
                                                                 x=x0)
+                    # optimize with scipy
                     result = optimize.minimize(losses[0], x0=initial_values,
                                                bounds=bounds,
                                                method=self.config['optimizer'],
                                                options={'ftol': self.config['ftol']})
                 except KeyError:
-                    red_graph[idx_of_edge] = amplitude
+                    # if the target kets can not be produced with the given graph we can give up on this edge
+                    # it wont work
+                    reduced_graph[idx_of_edge] = amplitude
                     print('edge necessary for producing all kets')
                     log.info('edge necessary for producing all kets')
-                    return red_graph, False  # no success keep current Graph
+                    return reduced_graph, False  # no success keep current Graph
+            # if edge has been tried before, reuse loss function etc. and use random initial values
             else:
-                initial_values, bounds = self.prepOptimizer(len(red_graph))
+                # random initial values
+                initial_values, bounds = self.prepOptimizer(len(reduced_graph))
+                # optimize with scipy
                 result = optimize.minimize(losses[0], x0=initial_values,
                                            bounds=bounds,
                                            method=self.config['optimizer'],
                                            options={'ftol': self.config['ftol']})
+            # check if solution is valid
             valid = self.check(result, losses)
 
             if valid:  # if criterion is reached then save reduced graph as graph, else leave graph as is
+                # compute values for all losses
                 self.loss_val = self.update_losses(result, losses)
                 # if clean solution is encountered before optimization finishes, save that too
+                # all weights are +-1 and solution is pretty good, it is interesting enough to be saved
+                # to a file even if topological optimization can be continued
                 if all(np.array(abs(self.graph)) > 0.95):
                     self.saver.save_graph(self)
                 if self.save_hist:
                     self.history.append(self.loss_val)
-
-                return Graph(red_graph.edges,
+                # return updated result graph
+                return Graph(reduced_graph.edges,
                              weights=self.weights_to_valid_input(result.x),
                              imaginary=self.imaginary), True
         # all tries failed keep current Graph
-        red_graph[idx_of_edge] = amplitude
-        return red_graph, False
+        reduced_graph[idx_of_edge] = amplitude
+        return reduced_graph, False
 
     def topologicalOptimization(self, save_hist=True) -> Graph:
         """
-        does the topological main loop. deletes edges until termination condition is met.
+        does the topological main loop. deletes edges until continuation condition fails.
         Returns
         -------
         solution_graph
             result of optimization
         """
+        #start with smallest edge
         num_edge = 0
         graph_history = []
-        while self.termination_condition(num_edge):
+        # if num_edge becomes too large, optimization is stopped
+        while self.continuationCondition(num_edge):
+            # try if num_edge smallest edge can be removed
+            # if successful, return optimized graph after deletion
+            # if not successful, return old graph
             self.graph, success = self.optimize_one_edge(
                 num_edge, self.config['tries_per_edge'])
+            #iterate num_edge to try next smallest edge
             num_edge += 1
             log.info(f'deleting edge {num_edge}')
             print(f'deleting edge {num_edge}')
@@ -397,6 +437,7 @@ class topological_opti:
                 print(
                     f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
                 log.info(f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
+                #reset to try smallest edge again for next iteration
                 num_edge = 0
                 graph_history.append(self.graph)
 

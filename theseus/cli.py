@@ -37,6 +37,7 @@ def cli():
 def run(filename, example):
     """Run an input file."""
     try:
+        # run main routine (read config, set up target, run optimization/store results)
         run_main(filename, example)
     except IOError as e:
         click.echo('ERROR:' + str(e))

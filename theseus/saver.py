@@ -110,7 +110,7 @@ class saver:
                     self.foldername = Path(folder_name)
                     return pt
                 else:  # adapt folder name to avoid same folder with different summaries
-                    folder_name = str(self.get_folder_name()) + f' ({i})'
+                    folder_name = str(self.get_folder_name()) + f'_{i}'
                     i += 1
             else:
                 self.foldername = Path(folder_name)

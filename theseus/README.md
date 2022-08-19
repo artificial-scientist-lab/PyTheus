@@ -1,6 +1,6 @@
 # Pytheus
 
-#Outline for Chapter 1 
+# Outline for Chapter 1 
 ## 1. Graphs & Experiments (2 pages)
 ### 1.1 Crystals (Probabilistic 2 photon sources)
 * Equation & graph example with experiment & more general equation 
@@ -13,7 +13,7 @@
 ### 1.6 Quantum Gates
 ### 1.7 Fock Basis
 
-#Ideas for Outline of Chapter 2 (not fixed) (2 pages)
+# Ideas for Outline of Chapter 2 (not fixed) (2 pages)
 ## 2. Implementation of Pytheus
 ### 2.1 Fidelity and Count Rate
 ### 2.2 Other Loss Functions

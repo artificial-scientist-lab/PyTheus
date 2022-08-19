@@ -1,4 +1,5 @@
 {
+  "description": "Creation of symmetric state for four qutrits",
   "bulk_thr": 0.01,
   "edges_tried": 10,
   "foldername": "symmetric43",

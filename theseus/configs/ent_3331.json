@@ -1,4 +1,5 @@
 {
+  "description": "Maximizing entanglement in k=1 bi-partitions for three qutrits.",
   "K": 1,
   "dim": 3331,
   "ftol": 1e-07,

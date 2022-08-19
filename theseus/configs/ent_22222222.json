@@ -1,4 +1,5 @@
 {
+  "description": "Maximizing entanglement in k=4 bi-partitions for eight qubits.",
   "K": 4,
   "dim": 22222222,
   "ftol": 1e-05,

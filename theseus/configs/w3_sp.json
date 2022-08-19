@@ -1,4 +1,5 @@
 {
+  "description": "Creation of three particle W state with tree single photon emitters",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "w_sp",

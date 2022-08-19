@@ -17,6 +17,18 @@ log = logging.getLogger(__name__)
 
 
 def state_countrate(graph, target_state, imaginary=False):
+    '''
+
+    Parameters
+    ----------
+    graph
+    target_state
+    imaginary
+
+    Returns
+    -------
+    callable loss function for state count rate
+    '''
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=imaginary)
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
     graph.getNorm()
@@ -255,10 +267,10 @@ def heralded_fidelity_se(graph, target_state, imaginary=False, out_nodes=None, s
 def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False,
                                  var_factor=0):
     """
-    get the loss funcitons of a graph for the concuurence:
+    get the loss functions of a graph for the concurrence:
         C( |Psi> ) = √( 2 * ( 1 - TR_M( <Psi|Psi> ) ) ) 
         where TR_M is partial trace (in subsystem M)
-        and return is sum over all possible bipartion
+        and return is sum over all possible bi-partion
 
     Parameters
     ----------

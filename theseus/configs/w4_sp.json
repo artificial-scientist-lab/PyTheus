@@ -1,4 +1,5 @@
 {
+  "description": "Four particle W state from four single photon sources",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "w4_sp",

@@ -1,4 +1,5 @@
 {
+    "description": "Werner state (mixed state)",
     "bulk_thr": 0.01,
     "edges_tried": 30,
     "foldername": "werner",

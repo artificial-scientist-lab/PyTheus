@@ -1,5 +1,5 @@
 {
-    "description": "Steane code with some ancillas.",
+    "description": "Steane code.",
     "bulk_thr": 0,
     "edges_tried": 20,
     "foldername": "fid_steane",

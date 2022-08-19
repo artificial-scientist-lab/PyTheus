@@ -1,4 +1,5 @@
 {
+  "description": "Heralded Fredkin gate where one of the target qubits is set to mode zero.",
   "bulk_thr": 0,
   "edges_tried": 20,
   "foldername": "fredkin",

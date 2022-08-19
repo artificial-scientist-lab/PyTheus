@@ -1,10 +1,11 @@
 {
+    "description": "Postselected Toffoli gate. No ancillary particles.",
     "bulk_thr": 0.01,
     "edges_tried": 30,
     "foldername": "toffoli_post",
     "ftol": 1e-05,
     "loss_func": "cr",
-    "num_anc": 4,
+    "num_anc": 0,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "removed_connections": [

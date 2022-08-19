@@ -1,4 +1,5 @@
 {
+  "description": "Five particle W state from five single photon sources",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "w5_sp",

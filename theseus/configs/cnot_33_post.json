@@ -1,4 +1,5 @@
 {
+    "description": "Postselected CNOT between two qutrits. Two ancillary photons from SPDC.",
     "bulk_thr": 0.01,
     "edges_tried": 30,
     "foldername": "cnot_33",

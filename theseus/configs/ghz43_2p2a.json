@@ -1,4 +1,5 @@
 {
+  "description": "Creation of four particle three-dimensional GHZ state with two single photon emitters and SPDC.",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "ghz43_sp",

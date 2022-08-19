@@ -1,5 +1,5 @@
 {
-  "description": "https://www.nature.com/articles/ncomms6297.pdf",
+  "description": "Mixed state contradicting peres conjecture. https://www.nature.com/articles/ncomms6297.pdf",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "peres",

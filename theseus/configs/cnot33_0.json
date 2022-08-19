@@ -1,4 +1,5 @@
 {
+  "description": "Heralded CNOT gate between two qutrits, where target starts in mode zero. Two ancilla particles from SPDC.",
   "bulk_thr": 0,
   "edges_tried": 20,
   "foldername": "cnot33_0",

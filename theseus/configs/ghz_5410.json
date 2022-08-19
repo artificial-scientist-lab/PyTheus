@@ -1,4 +1,5 @@
 {
+    "description": "Creation of the five-particle four-dimensional GHZ state. Five ancillary particles",
     "bulk_thr": 0,
     "edges_tried": 40,
     "foldername": "ghz_5410",

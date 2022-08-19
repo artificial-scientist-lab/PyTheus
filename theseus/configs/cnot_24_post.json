@@ -1,4 +1,5 @@
 {
+    "description": "Postselected CNOT between a qubit (control) and a photon of dimensionality four (target). Two ancillary photons from SPDC.",
     "bulk_thr": 0.01,
     "edges_tried": 30,
     "foldername": "cnot_24",

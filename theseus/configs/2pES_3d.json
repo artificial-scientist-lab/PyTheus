@@ -1,4 +1,5 @@
 {
+    "description": "Entanglement swapping between two parties of two qutrits each.",
     "bulk_thr": 0.01,
     "edges_tried": 30,
     "foldername": "2pES_3d",

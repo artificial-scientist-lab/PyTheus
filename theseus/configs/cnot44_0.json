@@ -1,4 +1,5 @@
 {
+  "description": "Heralded CNOT gate between two photons of dimensionality 4, where target starts in mode zero. Four ancilla particles from SPDC.",
   "bulk_thr": 0,
   "edges_tried": 20,
   "foldername": "cnot44_0",
@@ -18,9 +19,9 @@
   ],
   "target_state": [
     "0000",
-    "1010",
-    "2020",
-    "3030"
+    "1011",
+    "2022",
+    "3033"
   ],
   "out_nodes": [
     2,

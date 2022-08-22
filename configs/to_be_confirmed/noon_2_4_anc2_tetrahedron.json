@@ -1,0 +1,23 @@
+{
+    "description": "tetrahedron states in Fock basis.",
+    "bulk_thr": 0.1,
+    "edges_tried": 20,
+    "foldername": "noon_2_4_anc2_tetrahedron",
+    "ftol": 1e-05,
+    "loss_func": "ffid",
+    "num_anc": 2,
+    "num_anc_pre": "11",
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": ["40","13"],
+    "amplitudes": [0.5773502691896258,0.8164965809277261],
+    "thresholds": [0.0001],
+    "tries_per_edge": 1,
+    "unicolor": false,
+    "loops":true
+  }
+   
+  

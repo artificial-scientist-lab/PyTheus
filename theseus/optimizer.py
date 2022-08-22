@@ -166,8 +166,13 @@ class topological_opti:
         # fock basis
         #here the keywords for the loss_dic at the bottom of lossfunctions.py are given
         elif self.config['loss_func'] in ['fockcr','fockfid']:
+            #loss_specs = {'target_state': self.target,
+            #              'cnfg': self.config}
             loss_specs = {'target_state': self.target,
-                          'cnfg': self.config}
+                        'target_state_str':self.config['target_state'],
+                        'num_anc':self.config['num_anc'],
+                        'amplitudes':self.config['amplitudes'],
+                        'imaginary': self.imaginary}
 
         # custom loss functions
         elif self.config['loss_func'] == 'lff':

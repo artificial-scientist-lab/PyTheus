@@ -60,10 +60,11 @@ def run_main(filename, example):
         dimensions = cnfg["dimensions"]
         target_state = None
         sys_dict = None
-    elif cnfg['loss_func'] == 'fock':
+    elif cnfg['loss_func'] == 'fockfid':
         #ADD SETUP FOR FOCK OPTIMIZATION HERE
         #start_graph, target_state, dimensions = setup_for_fockbasis()
         sys_dict = None
+        target_state, dimensions, sys_dict, start_graph = setup_for_fockbasis(cnfg)
 
     else: #optimization for target given in config
         #read out target and starting graph from cnfg
@@ -114,6 +115,45 @@ def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_sta
         print(f'finished with graph with {len(graph_res.edges)} edges.')
         print(graph_res.state.state)
     return graph_res
+
+
+def setup_for_fockbasis(cnfg):
+    
+    try:
+        if cnfg["amplitudes"]:
+            print('amplitudes = ', cnfg["amplitudes"])
+        else:
+            print('amplitudes left empty, assuming constant values of one')
+    except KeyError:
+        print('amplitudes not given, assuming constant values of one')
+        cnfg["amplitudes"] = []
+
+    try:
+        if cnfg["imaginary"]:
+            print('imaginary given: ', cnfg["imaginary"])
+        else:
+            print('real numbers used')
+    except KeyError:
+        print('imaginary not given, assuming real numbers.')
+        cnfg["imaginary"] = False
+        
+    sys_dict = None
+
+    term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
+    # not the corrected target_state but has been modified in the loss function
+    # this can be changed afterwards
+    target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
+   
+    print(hf.readableState(target_state))
+    num_mode_particle=[int(s) for s in cnfg['foldername'].split('_') if s.isdigit()]
+    dimensions = [1]*(num_mode_particle[0]+cnfg['num_anc']) # only one dimension at the moment
+    
+    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg["imaginary"],loops=cnfg["loops"])
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
+    print(f'start graph has {len(edge_list)} edges.')
+    start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
+ 
+    return target_state, dimensions, sys_dict, start_graph  
 
 
 def setup_for_ent(cnfg):

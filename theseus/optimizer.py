@@ -133,7 +133,7 @@ class topological_opti:
             loss_specs = {'sys_dict': self.ent_dic,
                           'imaginary': self.imaginary,
                           'var_factor': self.config['var_factor']}
-        elif self.config['loss_func'] == 'cr' or self.config['loss_func'] == 'fid':
+        elif self.config['loss_func'] == 'crold' or self.config['loss_func'] == 'fidold':
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary}
         elif self.config['loss_func'] in ['gcr','gfid','hcr','hfid']:
@@ -152,6 +152,12 @@ class topological_opti:
                           'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes'],
                           'single_emitters': self.config['single_emitters']}
+        elif self.config['loss_func'] in ['cr', 'fid']:
+            loss_specs = {'target_state': self.target,
+                          'cnfg': self.config}
+
+        elif self.config['loss_func'] == 'lff':
+            loss_specs = {'cnfg': self.config}
         callable_loss = [func(current_graph, **loss_specs)
                          for func in lossfunctions]
         return callable_loss

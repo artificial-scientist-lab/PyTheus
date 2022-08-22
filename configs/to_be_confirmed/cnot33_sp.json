@@ -3,12 +3,11 @@
   "edges_tried": 30,
   "foldername": "cnot33sp",
   "ftol": 1e-08,
-  "loss_func": "cr",
-  "num_anc": 4,
+  "loss_func": "crnew",
+  "num_anc": 3,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": false,
-  "real": true,
   "safe_hist": true,
   "samples": 10,
   "target_state": [
@@ -32,12 +31,14 @@
   ],
   "single_emitters": [
     4,
-    5
+    5,
+    6
   ],
   "thresholds": [
     1,
     0.1
   ],
+  "heralding_out": true,
   "tries_per_edge": 5,
   "unicolor": false
 }

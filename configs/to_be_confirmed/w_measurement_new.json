@@ -1,0 +1,25 @@
+{
+  "description": "Measurement for three particle W state",
+  "foldername": "W_measurement",
+  "target_state": [
+    "001",
+    "010",
+    "100"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2
+  ],
+  "num_anc": 0,
+  "loss_func": "cr",
+  "samples": 10,
+  "optimizer": "L-BFGS-B",
+  "ftol": 1e-06,
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "edges_tried": 30
+}

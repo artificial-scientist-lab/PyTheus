@@ -60,6 +60,19 @@ Automatically keeping track of all optimization settings allows users to reprodu
 
 `var_factor`
 
+## Naming Conventions for config files
+#### Gates
+* postselected: `_post`
+* single photon sources: `_sp`
+* target photon starts in mode 0: `_0`
+
+#### GHZ States
+The file `ghz_346` is for a `3` particle `4` dimensional GHZ state produced with a total of `6` photons (in this case this means that 3 ancilla photons are used)
+
+#### Condensed Matter States
+File name ending in `_n` identifies that the `n` particle version of that state is produced.
+
+
 # The List
 
 ✅✅ ... found and saved in configs, counted as list contribution
@@ -136,7 +149,7 @@ Automatically keeping track of all optimization settings allows users to reprodu
     * 3 particle, 4 dimension ✅✅
 * Mean King
     * 2d ✅✅
-    * 3d 🤔
+    * 3d ✅✅
     * 4d 🤔
 * W analyzer ✅✅
 * HS analyzer ✅✅
@@ -171,6 +184,7 @@ Automatically keeping track of all optimization settings allows users to reprodu
     * 5 particle ✅✅
 * heralded CNOT(2,2), 2 single photon sources ✅✅
 * postselected CNOT(2,3), 2 single photon sources ✅✅
+* 3d Entanglement Swapping with single photon sources ✅✅ 
 
 ### Condensed Matter
 

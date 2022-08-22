@@ -12,7 +12,11 @@
     "real": true,
     "safe_hist": true,
     "samples": 10,
-    "removed_connections": [[0,1],[0,2],[1,2]],
+    "in_nodes": [
+        0,
+        1,
+        2
+    ],
     "target_state": [
         "001",
         "010",

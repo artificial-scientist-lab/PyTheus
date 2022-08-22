@@ -8,22 +8,16 @@
     "num_anc": 0,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
-    "removed_connections": [
-        [
-            0,
-            1
-        ],
-        [
-            0,
-            2
-        ],
-        [
-            1,
-            2
-        ]
+    "in_nodes": [
+        0,
+        1,
+        2
     ],
-    "imaginary": false,
-    "real": true,
+    "out_nodes": [
+        3,
+        4,
+        5
+    ],
     "safe_hist": true,
     "samples": 10,
     "target_state": [
@@ -36,15 +30,9 @@
         "110111",
         "111110"
     ],
-    "out_nodes": [
-        3,
-        4,
-        5
-    ],
     "thresholds": [
         0.3,
         0.1
     ],
-    "tries_per_edge": 5,
-    "unicolor": false
+    "tries_per_edge": 5
 }

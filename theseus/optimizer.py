@@ -136,35 +136,12 @@ class topological_opti:
                           'imaginary': self.imaginary,
                           'var_factor': self.config['var_factor']}
 
-        # OLD FUNCTIONS, WILL BE DELETED
-        elif self.config['loss_func'] == 'crold' or self.config['loss_func'] == 'fidold':
-            loss_specs = {'target_state': self.target,
-                          'imaginary': self.imaginary}
-        elif self.config['loss_func'] in ['gcr','gfid','hcr','hfid']:
-            loss_specs = {'target_state': self.target,
-                          'imaginary': self.imaginary,
-                          'out_nodes': self.config['out_nodes']}
-
-        elif self.config['loss_func'] in ['gcrse','gfidse']:
-            loss_specs = {'target_state': self.target,
-                          'imaginary': self.imaginary,
-                          'in_nodes': self.config['in_nodes'],
-                          'out_nodes': self.config['out_nodes'],
-                          'single_emitters': self.config['single_emitters']}
-        elif self.config['loss_func'] in ['hcrse','hfidse']:
-            loss_specs = {'target_state': self.target,
-                          'imaginary': self.imaginary,
-                          'out_nodes': self.config['out_nodes'],
-                          'single_emitters': self.config['single_emitters']}
-        # END OF OLD FUNCTIONS
-
-        # NEW CR and FID
+        # CR and FID
         elif self.config['loss_func'] in ['cr', 'fid']:
             loss_specs = {'target_state': self.target,
                           'cnfg': self.config}
 
         # fock basis
-        #here the keywords for the loss_dic at the bottom of lossfunctions.py are given
         elif self.config['loss_func'] in ['fockcr','fockfid']:
             #loss_specs = {'target_state': self.target,
             #              'cnfg': self.config}

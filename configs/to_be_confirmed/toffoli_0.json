@@ -1,29 +1,12 @@
 {
   "description": "Heralded Toffoli gate where incoming target qubit is zero. Two ancillary photons.",
-  "bulk_thr": 0.01,
   "edges_tried": 30,
   "foldername": "toffoli_0",
   "ftol": 1e-05,
-  "loss_func": "gcr",
+  "loss_func": "cr",
   "num_anc": 2,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
-  "removed_connections": [
-    [
-      0,
-      1
-    ],
-    [
-      0,
-      2
-    ],
-    [
-      1,
-      2
-    ]
-  ],
-  "imaginary": false,
-  "real": true,
   "safe_hist": true,
   "samples": 10,
   "target_state": [
@@ -32,13 +15,19 @@
     "100100",
     "110111"
   ],
+  "in_nodes": [
+    0,
+    1,
+    2
+  ],
   "out_nodes": [
     3,
     4,
     5
   ],
+  "heralding_out": true,
   "thresholds": [
-    1,
+    0.3,
     0.1
   ],
   "tries_per_edge": 5,

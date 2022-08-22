@@ -5,19 +5,11 @@
   "foldername": "HS_analyzer",
   "ftol": 1e-06,
   "loss_func": "cr",
-  "num_anc": 4,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": "polar",
-  "real": true,
   "safe_hist": true,
   "samples": 10,
-  "removed_connections": [
-    [
-      0,
-      1
-    ]
-  ],
   "target_state": [
     "0011",
     "1100",
@@ -25,6 +17,12 @@
     "0101",
     "1001",
     "0110"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2,
+    3
   ],
   "amplitudes": [
     [
@@ -56,6 +54,5 @@
     0.3,
     0.1
   ],
-  "tries_per_edge": 5,
-  "unicolor": false
+  "tries_per_edge": 5
 }

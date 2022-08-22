@@ -1,21 +1,22 @@
 {
-  "bulk_thr": 0.01,
+  "description": "Postselected CNOT gate between qubit (control) and qutrit (target) with two single photon sources.",
   "edges_tried": 30,
-  "foldername": "cnot22sp1",
-  "ftol": 1e-06,
-  "loss_func": "gcrse",
-  "num_anc": 8,
+  "foldername": "cnot23_post_sp",
+  "ftol": 1e-08,
+  "loss_func": "cr",
+  "num_anc": 2,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": false,
-  "real": true,
   "safe_hist": true,
   "samples": 10,
   "target_state": [
     "0000",
     "0101",
+    "0202",
     "1011",
-    "1110"
+    "1112",
+    "1210"
   ],
   "in_nodes": [
     0,
@@ -27,14 +28,11 @@
   ],
   "single_emitters": [
     4,
-    5,
-    6,
-    7
+    5
   ],
   "thresholds": [
-    1,
-    0.3
+    0.3,
+    0.1
   ],
-  "tries_per_edge": 5,
-  "unicolor": false
+  "tries_per_edge": 5
 }

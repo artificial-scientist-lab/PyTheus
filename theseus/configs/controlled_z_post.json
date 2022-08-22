@@ -1,10 +1,10 @@
 {
-  "description": "Heralded Controlled Z gate.",
+  "description": "Postselected Controlled Z gate.",
   "edges_tried": 30,
   "foldername": "controlled_z",
   "ftol": 1e-05,
   "loss_func": "cr",
-  "num_anc": 4,
+  "num_anc": 2,
   "optimizer": "L-BFGS-B",
   "samples": 10,
   "target_state": [
@@ -21,7 +21,7 @@
     2,
     3
   ],
-  "heralding_out": true,
+  "heralding_out": false,
   "amplitudes": [
     1,
     1,

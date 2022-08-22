@@ -4,8 +4,8 @@
   "edges_tried": 30,
   "foldername": "cnot22sp",
   "ftol": 1e-06,
-  "loss_func": "gcrse",
-  "num_anc": 4,
+  "loss_func": "cr",
+  "num_anc": 2,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "imaginary": false,
@@ -26,6 +26,8 @@
     2,
     3
   ],
+  "heralding_out": true,
+  "brutal_covers": true,
   "single_emitters": [
     4,
     5
@@ -34,6 +36,5 @@
     1,
     0.1
   ],
-  "tries_per_edge": 5,
-  "unicolor": false
+  "tries_per_edge": 5
 }

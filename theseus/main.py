@@ -326,6 +326,7 @@ def setup_for_target(cnfg):
 
     # turn edge list into graph
     graph = Graph(edge_list)
+    graph.imaginary = cnfg["imaginary"]
 
     return target_state, graph, cnfg
 

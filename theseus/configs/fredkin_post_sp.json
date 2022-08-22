@@ -1,10 +1,10 @@
 {
-  "description": "Post-selected Fredkin gate with two ancilla photons.",
+  "description": "Post-selected Fredkin gate with one single photon emitter.",
   "edges_tried": 20,
   "foldername": "fredkin_post",
   "ftol": 1e-08,
   "loss_func": "cr",
-  "num_anc": 2,
+  "num_anc": 1,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "safe_hist": true,
@@ -28,6 +28,9 @@
     3,
     4,
     5
+  ],
+  "single_emitters": [
+    6
   ],
   "thresholds": [
     0.3,

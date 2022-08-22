@@ -129,10 +129,14 @@ class topological_opti:
         """
         # get loss function acc. to config
         lossfunctions = loss_dic[self.config['loss_func']]
+
+        # entanglement loss function
         if self.config['loss_func'] == 'ent':  # we optimize for entanglement
             loss_specs = {'sys_dict': self.ent_dic,
                           'imaginary': self.imaginary,
                           'var_factor': self.config['var_factor']}
+
+        # OLD FUNCTIONS, WILL BE DELETED
         elif self.config['loss_func'] == 'crold' or self.config['loss_func'] == 'fidold':
             loss_specs = {'target_state': self.target,
                           'imaginary': self.imaginary}
@@ -152,10 +156,20 @@ class topological_opti:
                           'imaginary': self.imaginary,
                           'out_nodes': self.config['out_nodes'],
                           'single_emitters': self.config['single_emitters']}
+        # END OF OLD FUNCTIONS
+
+        # NEW CR and FID
         elif self.config['loss_func'] in ['cr', 'fid']:
             loss_specs = {'target_state': self.target,
                           'cnfg': self.config}
 
+        # fock basis
+        #here the keywords for the loss_dic at the bottom of lossfunctions.py are given
+        elif self.config['loss_func'] in ['fockcr','fockfid']:
+            loss_specs = {'target_state': self.target,
+                          'cnfg': self.config}
+
+        # custom loss functions
         elif self.config['loss_func'] == 'lff':
             loss_specs = {'cnfg': self.config}
         callable_loss = [func(current_graph, **loss_specs)

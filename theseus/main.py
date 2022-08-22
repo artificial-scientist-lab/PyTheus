@@ -60,11 +60,17 @@ def run_main(filename, example):
         dimensions = cnfg["dimensions"]
         target_state = None
         sys_dict = None
+    elif cnfg['loss_func'] == 'fock':
+        #ADD SETUP FOR FOCK OPTIMIZATION HERE
+        #start_graph, target_state, dimensions = setup_for_fockbasis()
+        sys_dict = None
 
     else: #optimization for target given in config
         #read out target and starting graph from cnfg
         #modifies cnfg to incorporate topological constraints
         target_state, start_graph, cnfg = setup_for_target(cnfg)
+        #target_state is state object
+        #start_graph is graph object
         dimensions = cnfg["dimensions"]
         sys_dict = None
 

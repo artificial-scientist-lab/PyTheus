@@ -18,6 +18,9 @@ log = logging.getLogger(__name__)
 
 
 def brutal_covers(cnfg, graph):
+    # this functions is sometimes used instead of findEdgecovers, should be much slower in general, but faster at
+    # applying topological constraints atm
+
     non_output_verts = [vert for vert in cnfg["verts"] if vert not in cnfg["out_nodes"]]
     # minimum number of edges that can cover non output vertices
     min_edges = len(non_output_verts) // 2
@@ -72,6 +75,8 @@ def brutal_covers(cnfg, graph):
 
 
 def heralded_covers(cnfg, graph):
+    # calls findEdgecovers and applies topological constraints
+
     non_output_verts = [vert for vert in cnfg["verts"] if vert not in cnfg["out_nodes"]]
     # minimum number of edges that can cover non output vertices
     min_edges = len(non_output_verts) // 2
@@ -118,6 +123,8 @@ def heralded_covers(cnfg, graph):
 
 
 def count_rate(graph, target_state, cnfg):
+    # can be used for state-creation/measurements/gates, post-selected/heralded
+
     # set up target equation
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
     # get variable names
@@ -142,6 +149,8 @@ def count_rate(graph, target_state, cnfg):
 
 
 def fidelity(graph, target_state, cnfg):
+    # can be used for state-creation/measurements/gates, post-selected/heralded
+
     # set up target equation
     target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
     # get variable names
@@ -165,6 +174,19 @@ def fidelity(graph, target_state, cnfg):
     return func
 
 
+def fock_countrate():
+    # THIS IS JUST A TEMPLATE
+    # ADD THE ACTUAL FUNCTION HERE
+    pass
+
+
+def fock_fidelity():
+    # THIS IS JUST A TEMPLATE
+    # ADD THE ACTUAL FUNCTION HERE
+    pass
+
+
+# WILL BE DELETED
 def state_countrate(graph, target_state, imaginary=False):
     '''
 
@@ -191,6 +213,7 @@ def state_countrate(graph, target_state, imaginary=False):
     return func
 
 
+# WILL BE DELETED
 def state_fidelity(graph, target_state, imaginary=False):
     '''
 
@@ -219,6 +242,7 @@ def state_fidelity(graph, target_state, imaginary=False):
     # TODO this could be combined with heralded loss functions
 
 
+# WILL BE DELETED
 def gate_countrate(graph, target_state, imaginary=False, out_nodes=None):
     '''
     returns simplified count rate for a gate built from SPDC crystals. selects for events where the correct number of
@@ -265,6 +289,7 @@ def gate_countrate(graph, target_state, imaginary=False, out_nodes=None):
     # TODO this could be combined with heralded loss functions
 
 
+# WILL BE DELETED
 def gate_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     '''
     returns fidelity for a gate built from SPDC crystals. selects for events where the correct number of
@@ -309,6 +334,7 @@ def gate_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     return func
 
 
+# WILL BE DELETED
 def gate_countrate_se(graph, target_state, imaginary=False, out_nodes=None, in_nodes=None, single_emitters=None):
     '''
     returns simplified count rate for a gate built from single_emitters and SPDC crystals.
@@ -357,6 +383,7 @@ def gate_countrate_se(graph, target_state, imaginary=False, out_nodes=None, in_n
     return func
 
 
+# WILL BE DELETED
 def gate_fidelity_se(graph, target_state, imaginary=False, out_nodes=None, in_nodes=None, single_emitters=None):
     '''
     returns fidelity for a gate built from single_emitters and SPDC crystals.
@@ -405,6 +432,7 @@ def gate_fidelity_se(graph, target_state, imaginary=False, out_nodes=None, in_no
     return func
 
 
+# WILL BE DELETED
 def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     '''
     returns simplified count rate of a target state heralded in out_nodes when the detectors belonging to the
@@ -439,6 +467,7 @@ def heralded_countrate(graph, target_state, imaginary=False, out_nodes=None):
     return func
 
 
+# WILL BE DELETED
 def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     '''
     returns simplified count rate of a target state heralded in out_nodes when the detectors belonging to the
@@ -473,6 +502,7 @@ def heralded_fidelity(graph, target_state, imaginary=False, out_nodes=None):
     return func
 
 
+# WILL BE DELETED
 def heralded_countrate_se(graph, target_state, imaginary=False, out_nodes=None, single_emitters=None):
     '''
     returns simplified count rate for a target state created from single photon emitters, heralded by clicks
@@ -526,6 +556,7 @@ def heralded_countrate_se(graph, target_state, imaginary=False, out_nodes=None, 
     return func
 
 
+# WILL BE DELETED
 def heralded_fidelity_se(graph, target_state, imaginary=False, out_nodes=None, single_emitters=None):
     '''
     returns fidelity for a target state created from single photon emitters, heralded by clicks
@@ -630,6 +661,8 @@ def loss_from_function(graph, cnfg=[]):
     return func
 
 
+# optimizer optimizes first function in list
+# at each optimization step, all functions in list are checked if they satisfy the thresholds
 loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [fidelity, count_rate],
             'cr': [count_rate, fidelity],
@@ -643,4 +676,6 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'hfid': [heralded_fidelity, heralded_countrate],
             'hcrse': [heralded_countrate_se, heralded_fidelity_se],
             'hfidse': [heralded_fidelity_se, heralded_countrate_se],
-            'lff': [loss_from_function]}
+            'lff': [loss_from_function],
+            'fockcr': [fock_countrate],
+            'fockfid': [fock_fidelity]}

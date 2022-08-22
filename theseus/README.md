@@ -160,6 +160,15 @@ To find solutions with higher weights we have introduced the _simplified count r
 This section gives examples for config files showcasing the features for different kinds of experiments that can
 searched for.
 
+## Target State Optimization
+
+This is used when the in- and out-going states can be clearly defined by a state functions. For those, the loss
+functions `cr` and `fid` are used.
+
+Below are some examples to give an idea of the scope.
+
+For further details, refer to the definition of the function `setup_for_target` in `main.py`.
+
 ### Post-selected State creation
 
 Here is an example for a config file optimizing for a graph that creates a three particle four-dimensional GHZ state.
@@ -324,4 +333,69 @@ Additionaly `heralding_out` is set to `true` here. The photons corresponding to 
 
 ```
 
-For further details, refer to the definition of the function `setup_for_target` in `main.py`.
+## Entanglement Optimization
+
+When `loss_func` is set to `"ent"`, no target state is set. Instead the optimizer maximizes the entanglement that can be
+achieved by a graph with the local dimensions given by `dim`.
+
+```json
+{
+  "description": "Maximizing entanglement in k=2 bi-partitions for four qubits.",
+  "K": 2,
+  "dim": 2222,
+  "ftol": 1e-07,
+  "loss_func": "ent",
+  "min_edge": 4,
+  "num_pre": 5,
+  "optimizer": "SLSQP",
+  "imaginary": false,
+  "samples": 10,
+  "thresholds": [
+    0.000001
+  ],
+  "tries_per_edge": 3,
+  "var_factor": 0
+}
+```
+
+## Optimizing for Arbitrary Functions of the Graph
+
+There is also the option to define an arbitrary loss function, which should be defined or imported in `lossfunctions.py`
+.
+
+Here is an example for optimizing the assembly index of the graph.
+
+```json
+{
+  "foldername": "assembly",
+  "loss_func": "lff",
+  "lff_name": "top_n_assembly",
+  "dimensions": [
+    2,
+    2,
+    2,
+    2
+  ],
+  "num_vertices": 4,
+  "num_cols": 2,
+  "size_of_graph": 8,
+  "optimizer": "L-BFGS-B",
+  "ftol": 1e-06,
+  "samples": 1,
+  "thresholds": [
+    99999
+  ],
+  "topopt": false,
+  "edges_tried": 30,
+  "tries_per_edge": 5,
+  "unicolor": false,
+  "imaginary": false,
+  "num_pre": 1,
+  "save_history": true
+}
+```
+
+To use a custom defined loss function `loss_func` should be set to `"lff"` (loss from function).
+
+The name of the loss function is given as a string to `lff_name`. This function should be defined or imported
+in `lossfunctions.py`. It should take a `Graph` object and a `cnfg` dictionary as arguments and return a real number.

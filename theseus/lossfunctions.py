@@ -11,7 +11,7 @@ import itertools
 import numpy as np
 from itertools import combinations
 from itertools import combinations_with_replacement
-from theseus.custom_loss.assembly_index import assembly_index
+from theseus.custom_loss.assembly_index import assembly_index, top_n_assembly
 import logging
 
 log = logging.getLogger(__name__)

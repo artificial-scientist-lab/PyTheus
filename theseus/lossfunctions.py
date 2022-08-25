@@ -304,5 +304,6 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [fidelity, count_rate],
             'cr': [count_rate, fidelity],
             'lff': [loss_from_function],
-            'fockcr': [fock_countrate],
-            'fockfid': [fock_fidelity]}
+            #'fockcr': [fock_countrate],
+            #'fockfid': [fock_fidelity]
+           }

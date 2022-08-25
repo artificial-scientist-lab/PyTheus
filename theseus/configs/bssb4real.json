@@ -1,0 +1,35 @@
+{
+  "description": "Creation of BSSB4 state of 4 qubits. https://iopscience.iop.org/article/10.1088/0305-4470/38/5/013/pdf",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "bssb4real_NOanc",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "1101",
+    "1011",
+    "0011",
+    "1110",
+    "0110"
+  ],
+  "amplitudes": [
+      1.4142135623730951,
+      1.4142135623730951,
+      1,
+      1,
+      1,
+      1],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

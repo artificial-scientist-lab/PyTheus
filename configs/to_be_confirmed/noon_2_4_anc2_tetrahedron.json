@@ -14,7 +14,7 @@
     "samples": 10,
     "target_state": ["40","13"],
     "amplitudes": [0.5773502691896258,0.8164965809277261],
-    "thresholds": [0.0001],
+    "thresholds": [0.0001,0.1],
     "tries_per_edge": 1,
     "unicolor": false,
     "loops":true

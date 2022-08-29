@@ -1,0 +1,17 @@
+{
+  "description": "Maximizing entanglement in k=4 bi-partitions for eight qubits.",
+  "K": 4,
+  "dim": 22222222,
+  "ftol": 1e-05,
+  "loss_func": "ent",
+  "min_edge": 8,
+  "num_pre": 2,
+  "optimizer": "SLSQP",
+  "imaginary": false,
+  "samples": 200,
+  "thresholds": [
+    0.001
+  ],
+  "tries_per_edge": 3,
+  "var_factor": 0
+}

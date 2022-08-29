@@ -1,4 +1,5 @@
 {
+  "description": "Low countrate creation of six particle three-dimensional GHZ state. No ancillary particles",
   "bulk_thr": 0.01,
   "edges_tried": 10,
   "foldername": "f-6-3-6",

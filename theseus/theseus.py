@@ -4,6 +4,8 @@
 @author: cruizgo, soerenarlt, janpe
 """
 import itertools
+from math import factorial
+from collections import Counter
 import random
 import numpy as np
 
@@ -86,32 +88,37 @@ def edgeBleach(color_edges):
     return bleached_edges
 
 
-def allColorGraphs(color_nodes):
+def allColorGraphs(color_nodes, loops=False):
     '''
     Given a list of colored nodes, i.e., an state. It uses AllPairSplits to generate all graphs that
-    leads to such state. This function is a building block of the function 'allPerfectMatchings'.
+    leads to such state. This function is a building block of the function 'allEdgeCovers'.
     
     Parameters
     ----------
     color_nodes : list of tuples
         List of all colored nodes: [(node,color)...] Some may be repeated.
+    loops : boolean, optional
+        Allow edges to connect twice the same node: (node1, node1, color1, color2).
         
     Returns
     -------
     graph_list : list of tuples
         Nested list with all graphs that produce a given state.
-        For example, given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces: 
-        [(0, 1, 0, 1), (0, 1, 1, 1)]]
+        Example: given the nodes [(0,0),(0,1),(1,1),(1,1)] it produces:
+            [[(0, 0, 0, 1), (1, 1, 1, 1)],    - only if loops are allowed -
+             [(0, 1, 0, 1), (0, 1, 1, 1)]]
     '''
     color_graph = list(allPairSplits(sorted(list(color_nodes))))
     for graph in color_graph: graph.sort()
-    # The following lines builds the edge (node1, node2, color1, color2).
-    # After filtering repited nodes we filter the corresponding graph configurations.
-    color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph
-                    if nd[0][0] != nd[1][0]] for graph in color_graph]
-    color_graph = [graph for graph in color_graph
-                   if len(graph) == len(color_nodes) / 2]
+    if loops:
+        color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph]
+                       for graph in color_graph]
+    else:
+        color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph
+                        if nd[0][0] != nd[1][0]] for graph in color_graph]
+        color_graph = [graph for graph in color_graph if len(graph) == len(color_nodes) / 2]
     return [tuple(tuple(ed) for ed in graph) for graph in np.unique(color_graph, axis=0)]
+
 
 
 # # Informative Functions
@@ -232,7 +239,7 @@ def stateCatalog(graph_list):
     return state_catalog
 
 
-def buildAllEdges(dimensions, string=False, imaginary=False):
+def buildAllEdges(dimensions, string=False, imaginary=False, loops=False):
     '''
     Given a collection of nodes, each with several possible colors/dimensions, returns all possible
     edges of the graph.
@@ -245,6 +252,8 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
         If True, it returns a list of strings instead of tuples. 
     imaginary : boolean, str ('cartesian' or 'polar'), optional
         If False, it returns real weights.
+    loops : boolean, optional
+        Allow edges to connect twice the same node.
         
     Returns
     -------
@@ -255,9 +264,19 @@ def buildAllEdges(dimensions, string=False, imaginary=False):
     '''
     num_vertices = len(dimensions)
     all_edges = []
-    for pair in itertools.combinations(range(num_vertices), 2):
-        for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
-            all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+    if loops:
+        combo_function = itertools.combinations_with_replacement
+        for pair in combo_function(range(num_vertices), 2):
+            if pair[0] == pair[1]:  # (node1, node1, 1, 0) is not stored
+                for dims in combo_function(range(dimensions[pair[0]]), 2):
+                    all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+            else:
+                for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                    all_edges.append((pair[0], pair[1], dims[0], dims[1]))
+    else:
+        for pair in itertools.combinations(range(num_vertices), 2):
+            for dims in itertools.product(*[range(dimensions[ii]) for ii in pair]):
+                all_edges.append((pair[0], pair[1], dims[0], dims[1]))
     # returns edges whether as tuples or as sympy symbols
     if string:
         if imaginary == False:
@@ -292,7 +311,7 @@ def stringEdges(edge_list, imaginary=False):
                 + ['th_{}_{}_{}_{}'.format(*edge) for edge in edge_list])
 
 
-def buildRandomGraph(dimensions, num_edges, cover_all=True):
+def buildRandomGraph(dimensions, num_edges, cover_all=True, loops=False):
     '''
     Given a set of nodes with different dimensions it build a random graph with a given number of edges.
     
@@ -310,10 +329,7 @@ def buildRandomGraph(dimensions, num_edges, cover_all=True):
     graph : list of tuples
         List of randomly chosen edges: [(node1, node2, color1, color2), ...]
     '''
-    all_edges = buildAllEdges(dimensions)
-    # even when only one dimension is available we put it on the symbols
-    # if sorted(dimensions)[-1]==1:
-    #     all_edges = [edge[:2] for edge in all_edges]
+    all_edges = buildAllEdges(dimensions, loops=loops)
     if cover_all:
         num_nodes = len(dimensions)
         if 2 * num_edges >= num_nodes:
@@ -333,7 +349,9 @@ def allPerfectMatchings(dimensions):
     Given a collection of nodes with different dimensions/colors available, it produces all possible
     states that erase from these and the different graphs that can produce such states.
     The graphs nodes can present different colors/dimensions and be connected by more than one edge.
-    
+
+    A fully connected (uncolored) graph with 2n nodes has (2n)!/((2**n)⋅n!) perfect matchings.
+
     Parameters
     ----------
     dimensions : list
@@ -364,6 +382,57 @@ def allPerfectMatchings(dimensions):
         color_nodes = [[tuple(ed) for ed in graph] for graph in np.unique(color_nodes, axis=0)]
         for coloring in color_nodes:
             color_dict[tuple(coloring)] = allColorGraphs(coloring)
+    return color_dict
+
+
+def allEdgeCovers(dimensions, order=0, loops=False): # This function should replace allPerfectMatchings
+    '''
+    Given a collection of nodes with different dimensions/colors available, it produces all possible
+    states that erase from these and the different graphs that can produce such states.
+    The graphs nodes may have different colors/dimensions. The edges may be duplicated or form loops.
+
+    Parameters
+    ----------
+    dimensions : list
+        Accesible dimensions/colors for each of the nodes of the graph.
+    order : int, optional
+        Orders above the minimum required to cover all nodes.
+        If 0, the output are only perfect machings, with all nodes having degree 1.
+    loops : boolean, optional
+        Allow edges to connect twice the same node. Only available for order>0.
+
+    Returns
+    -------
+    color_dict : dictionary
+        Dictionary of available states. The keys are the different combinations of colored nodes
+        (creator operators), that is, the state produced.
+        For each or state, the dictionary stores a list of all possible graphs that produce such state.
+        The notation employed for the nodes is: (node, color/dimension).
+        The notation employed for the edges is: (node1, node2, color1, color2).
+        Node2 cannot be lower than Node1.
+    '''
+    num_nodes = len(dimensions)
+    # Given a list with N different nodes, if order>0 some nodes will have degree
+    # larger than 1, i.e., their creator operators will be repeated.
+    # crowded_graph stores all ways in which these repeatitions may occur.
+    # For N=4 and order=1: 000123, 001123, 001223, 001233, 011123, 011223...
+    additions = list(itertools.combinations_with_replacement(range(num_nodes), 2 * order))
+    crowded_graph = [list(range(num_nodes))] * len(additions)
+    for ii, added in enumerate(additions):
+        crowded_graph[ii] = sorted(crowded_graph[ii] + list(added))
+    color_dict = {}
+    for crowd in crowded_graph:
+        # For each list of nodes in crowded_graph (with possible repetitions)
+        # we store all dimensions/coloring the nodes can have in color_nodes.
+        color_nodes = []
+        # We distinguish between nodes but not between repeated nodes.
+        # [(node1,color1),(node1,color2)] = [(node1,color2),(node1,color1)]
+        for coloring in itertools.product(*[list(range(dimensions[nn])) for nn in crowd]):
+            color_nodes.append(sorted([[crowd[ii], coloring[ii]] for ii in range(len(crowd))]))
+        # After sorting the list of colored nodes, the next one erase duplicities.
+        color_nodes = [[tuple(ed) for ed in graph] for graph in np.unique(color_nodes, axis=0)]
+        for coloring in color_nodes:
+            color_dict[tuple(coloring)] = allColorGraphs(coloring, loops)
     return color_dict
 
 
@@ -563,6 +632,9 @@ def weightProduct(edge_list, imaginary=False):
     return '*'.join([edgeWeight(edge, imaginary) for edge in edge_list])
 
 
+# This expression could also be UNlambdified so we add some check for the Counter
+factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
+
 def writeNorm(state_catalog, imaginary=False):
     '''
     Write a normalization function with all the states of a dictionary.
@@ -584,13 +656,16 @@ def writeNorm(state_catalog, imaginary=False):
     '''
     norm_sum = []
     for key, values in state_catalog.items():
-        term_sum = [f'{weightProduct(graph, imaginary)}' for graph in values]
+        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in values]
         term_sum = ' + '.join(term_sum)
         if imaginary == False:
-            norm_sum.append(f'({term_sum})**2')
+            # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
+            # The factor should be squared or, in this case, left outside the square
+            norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)')
         else:
-            norm_sum.append(f'abs({term_sum})**2')
-    return ' + '.join(norm_sum)
+            norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)')
+    return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('+ 1*', '+ ')
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
@@ -629,19 +704,27 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     if imaginary == 'polar':
         amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
-    if norm2 != 1: norm2 = str(norm2)
+    if norm2 != 1: # Is this useless? I think so (Carlos)
+        norm2 = str(norm2)
     if state_catalog == None:
         state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     equation_sum = []
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):
-        term_sum = [weightProduct(graph, imaginary) for graph in state_catalog[tuple(ket)]]
-        term_sum = '+'.join(term_sum)
-        equation_sum.append(f'({coef})*({term_sum})')
-    equation_sum = '+'.join(equation_sum)
+        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in state_catalog[tuple(ket)]]
+        term_sum = ' + '.join(term_sum)
+        # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
+        creation_term = factProduct(ket)
+        if (creation_term**.5) % 1 == 0:
+            creation_term = int(creation_term**.5)
+        else:
+            creation_term = f'{creation_term}**.5'
+        equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
+    equation_sum = ' + '.join(equation_sum)
     if imaginary == False:
-        return f'(({equation_sum})**2)/{norm2}'
+        return f'(({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
     else:
-        return f'(abs({equation_sum})**2)/{norm2}'
+        return f'(abs({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
 
 
 def buildLossString(loss_function, variables):

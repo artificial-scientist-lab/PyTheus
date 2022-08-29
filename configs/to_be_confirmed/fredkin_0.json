@@ -1,0 +1,37 @@
+{
+  "description": "Heralded Fredkin gate where one of the target qubits is set to mode zero.",
+  "bulk_thr": 0,
+  "edges_tried": 20,
+  "foldername": "fredkin_0",
+  "ftol": 1e-10,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1000,
+  "target_state": [
+    "000000",
+    "010010",
+    "100100",
+    "110101"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2
+  ],
+  "out_nodes": [
+    3,
+    4,
+    5
+  ],
+  "heralding_out": true,
+  "novac": true,
+  "thresholds": [
+    0.3,
+    0.2
+  ],
+  "tries_per_edge": 10
+}

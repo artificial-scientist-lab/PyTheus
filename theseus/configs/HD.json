@@ -1,4 +1,5 @@
 {
+  "description": "Creation of hyperdeterminant state. Four ancillary particles. https://iopscience.iop.org/article/10.1088/1742-6596/698/1/012003/pdf",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "HD",

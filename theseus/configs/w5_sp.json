@@ -1,0 +1,31 @@
+{
+  "description": "Five particle W state from five single photon sources",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "w5_sp",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "00001",
+    "00010",
+    "00100",
+    "01000",
+    "10000"
+  ],
+  "single_emitters": [
+    5,6,7,8,9
+  ],
+  "thresholds": [
+    0.35,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Maximizing entanglement in k=3 bi-partitions for six qubits.",
+  "K": 2,
+  "dim": 222222,
+  "ftol": 1e-06,
+  "loss_func": "ent",
+  "min_edge": 8,
+  "num_pre": 3,
+  "optimizer": "SLSQP",
+  "imaginary": false,
+  "samples": 20,
+  "thresholds": [
+    0.0001
+  ],
+  "tries_per_edge": 3,
+  "var_factor": 0
+}

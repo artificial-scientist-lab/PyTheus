@@ -11,6 +11,8 @@ import sys
 from pathlib import Path
 
 import pkg_resources
+import logging
+log = logging.getLogger(__name__)
 
 import theseus
 import theseus.help_functions as hf
@@ -18,6 +20,8 @@ import theseus.saver as saver
 import theseus.theseus as th
 from theseus.fancy_classes import Graph, State
 from theseus.optimizer import topological_opti
+import itertools
+import numpy as np
 
 
 def run_main(filename, example):
@@ -36,37 +40,295 @@ def run_main(filename, example):
     IOError
         if filename is not valid.
     """
+    # step 1: read in config file
     cnfg, filename = read_config(example, filename)
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.info(filename)
+    if 'description' in cnfg.keys():
+        logging.info(cnfg['description'])
 
     sys.setrecursionlimit(1000000000)
 
-    dimensions, sys_dict, target_state = get_dimensions_and_target_state(cnfg)
+    # step 2: build up target and starting graph
+    if cnfg['loss_func'] == 'ent':  # optimization for entanglement requires specific setup
+        dimensions, sys_dict, start_graph = setup_for_ent(cnfg)
+        target_state = None
+    elif cnfg['loss_func'] == 'lff': #optimization of a custom loss function
+        edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg['imaginary'])
+        print(f'start graph has {len(edge_list)} edges.')
+        start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
+        dimensions = cnfg["dimensions"]
+        target_state = None
+        sys_dict = None
+    elif cnfg['loss_func'] == 'fockfid':
+        #ADD SETUP FOR FOCK OPTIMIZATION HERE
+        #start_graph, target_state, dimensions = setup_for_fockbasis()
+        sys_dict = None
+        target_state, dimensions, sys_dict, start_graph = setup_for_fockbasis(cnfg)
 
-    start_graph = build_starting_graph(cnfg, dimensions)
+    else: #optimization for target given in config
+        #read out target and starting graph from cnfg
+        #modifies cnfg to incorporate topological constraints
+        target_state, start_graph, cnfg = setup_for_target(cnfg)
+        #target_state is state object
+        #start_graph is graph object
+        dimensions = cnfg["dimensions"]
+        sys_dict = None
 
-    graph_res = optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
-
-    graph_res.getState()
-    print(f'finished with graph with {len(graph_res.edges)} edges.')
-    print(graph_res.state.state)
-
-    ancillas = dimensions.count(1)
-    if ancillas != 0:
-        end_res = dict()
-        for kets, ampl in graph_res.state.state.items():
-            end_res[kets[:-ancillas]] = ampl
-    else:
-        end_res = graph_res.state.state
+    # step 3: start optimization
+    optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
 
 
 def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state):
-    # topological optimization
+    '''
+    main optimization routine
+
+    Parameters
+    ----------
+    cnfg
+    dimensions
+    filename
+    start_graph
+    sys_dict
+    target_state
+
+    Returns
+    -------
+    result graph
+    '''
+    # initialize saver object, keeps track of loss history, writes solutions to files, writes best/summary file
     sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
+    # iterate over number samples
     for i in range(cnfg['samples']):
+        # initialize optimizer object, do preoptimization on complete graph, truncate graph according to bulk_thr
         optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
-        graph_res = optimizer.topologicalOptimization()
+        if cnfg['topopt']:
+            # topological optimization (deleting edges one by one)
+            graph_res = optimizer.topologicalOptimization()
+        else:
+            # if topological optimization not wanted, return graph after optimization on complete graph
+            graph_res = optimizer.graph
+        # write solution to file
         sv.save_graph(optimizer)
+        # compute state of result graph
+        graph_res.getState()
+        print(f'finished with graph with {len(graph_res.edges)} edges.')
+        print(graph_res.state.state)
     return graph_res
+
+
+def setup_for_fockbasis(cnfg):
+    
+    try:
+        if cnfg["amplitudes"]:
+            print('amplitudes = ', cnfg["amplitudes"])
+        else:
+            print('amplitudes left empty, assuming constant values of one')
+    except KeyError:
+        print('amplitudes not given, assuming constant values of one')
+        cnfg["amplitudes"] = []
+
+    try:
+        if cnfg["imaginary"]:
+            print('imaginary given: ', cnfg["imaginary"])
+        else:
+            print('real numbers used')
+    except KeyError:
+        print('imaginary not given, assuming real numbers.')
+        cnfg["imaginary"] = False
+        
+    sys_dict = None
+
+    term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
+    # not the corrected target_state but has been modified in the loss function
+    # this can be changed afterwards
+    target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
+   
+    print(hf.readableState(target_state))
+    num_mode_particle=[int(s) for s in cnfg['foldername'].split('_') if s.isdigit()]
+    dimensions = [1]*(num_mode_particle[0]+cnfg['num_anc']) # only one dimension at the moment
+    
+    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg["imaginary"],loops=cnfg["loops"])
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
+    print(f'start graph has {len(edge_list)} edges.')
+    start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
+ 
+    return target_state, dimensions, sys_dict, start_graph  
+
+
+def setup_for_ent(cnfg):
+    # concurrence optimization
+    # define local dimensions
+    dimensions = [int(ii) for ii in str(cnfg['dim'])]
+    if len(dimensions) % 2 != 0:
+        dimensions.append(1)
+    target_state = None
+    # compute sys_dict
+    sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'], imaginary=cnfg['imaginary'])
+    # build starting graph
+    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
+    print(f'start graph has {len(edge_list)} edges.')
+    start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
+    return dimensions, sys_dict, start_graph
+
+
+def setup_for_target(cnfg):
+    # default values
+    try:
+        cnfg["in_nodes"]
+    except KeyError:
+        cnfg["in_nodes"] = []
+
+    try:
+        cnfg["out_nodes"]
+    except KeyError:
+        cnfg["out_nodes"] = []
+
+    if not cnfg["in_nodes"]:
+        if not cnfg["out_nodes"]:
+            print('no in/out nodes given. assuming that target terms correspond to out_nodes. state creation mode')
+            cnfg["out_nodes"] = list(range(len(cnfg["target_state"][0])))
+        else:
+            print('no in_nodes given. state creation mode.')
+    else:
+        if not cnfg["out_nodes"]:
+            print('no out_nodes given. assuming that target terms correspond to in_nodes. measurement mode')
+        else:
+            print('in_nodes and out_nodes given. target terms are read as a logic table for a quantum gate')
+
+    if len(cnfg["out_nodes"]) + len(cnfg["in_nodes"]) != len(cnfg["target_state"][0]):
+        print('TARGET DOES NOT MATCH IN_NODES AND cnfg.out_nodes')
+
+    # num_anc gives the number of photons that go into detectors that are not cnfg.out_nodes (including those coming from single photon sources)
+    try:
+        print(f'number of ancillary photons = {cnfg["num_anc"]}')
+    except KeyError:
+        print('num_anc not given, assuming that number of ancillary photons = 0')
+        cnfg["num_anc"] = 0
+
+    try:
+        if cnfg["single_emitters"]:
+            print('single_emitters given. nodes corresponding to single photon sources: ', cnfg["single_emitters"])
+        else:
+            print('single_emitters not given. no single photon sources in setup.')
+    except KeyError:
+        print('no single photon emitters used')
+        cnfg["single_emitters"] = []
+
+    # add num_anc+len(single_emitters) vertices to graph (every ancillary detector and every single emitter needs a node)
+    if cnfg["num_anc"] + len(cnfg["out_nodes"]) < len(cnfg["in_nodes"]) + len(cnfg["single_emitters"]):
+        print('not enough ancillas given')
+    additional_nodes = cnfg["num_anc"] + len(cnfg["single_emitters"])
+    if not cnfg["out_nodes"]:
+        additional_nodes += len(cnfg["in_nodes"])
+
+    try:
+        if cnfg["removed_connections"]:
+            print('removed_connections given. additional constraints on the graph.')
+            print('removed_connections = ', cnfg["removed_connections"])
+        else:
+            print('removed_connections not given. no additional constraints on the graph')
+    except KeyError:
+        print('removed_connections not given. assuming no additional constraints')
+        cnfg["removed_connections"] = []
+
+    try:
+        if cnfg["unicolor"]:
+            print("unicolor simplification used.")
+    except KeyError:
+        cnfg["unicolor"] = False
+
+    try:
+        if cnfg["amplitudes"]:
+            print('amplitudes = ', cnfg["amplitudes"])
+        else:
+            print('amplitudes left empty, assuming constant values of one')
+    except KeyError:
+        print('amplitudes not given, assuming constant values of one')
+        cnfg["amplitudes"] = []
+
+    try:
+        if cnfg["imaginary"]:
+            print('imaginary given: ', cnfg["imaginary"])
+        else:
+            print('real numbers used')
+    except KeyError:
+        print('imaginary not given, assuming real numbers.')
+        cnfg["imaginary"] = False
+
+    try:
+        if cnfg["heralding_out"]:
+            print("heralding_out = True. out_nodes are not detected. ancillary detectors herald the outgoing state")
+        else:
+            print("heralding_out = False. out_nodes are detected. outgoing state is post-selected.")
+    except KeyError:
+        print('heralding_out not given, assuming post-selection')
+        cnfg["heralding_out"] = False
+
+    try:
+        if cnfg["number_resolving"]:
+            print('number resolving detectors used.')
+        else:
+            print('no number resolving detectors used')
+    except KeyError:
+        print('no information about photon-number resolving detectors given, assuming none are used')
+        cnfg["number_resolving"] = False
+
+    try:
+        cnfg["brutal_covers"]
+    except KeyError:
+        cnfg["brutal_covers"] = False
+
+    try:
+        cnfg["bulk_thr"]
+    except KeyError:
+        cnfg["bulk_thr"] = 0
+
+    try:
+        cnfg["save_hist"]
+    except KeyError:
+        cnfg["save_hist"] = True
+
+    try:
+        cnfg["num_pre"]
+    except KeyError:
+        cnfg["num_pre"] = 1
+
+    # define target
+    target = [term + additional_nodes * '0' for term in cnfg["target_state"]]
+    target_state = State(target, amplitudes=cnfg["amplitudes"], imaginary=cnfg["imaginary"])
+    # print readable expression of the target state
+    print(hf.readableState(target_state))
+
+    # build starting graph
+    # local dimensions necessary for each node to produce target
+    cnfg["dimensions"] = th.stateDimensions(target_state.kets)
+    # get complete starting graph according to local dimensions
+    edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg["imaginary"])
+
+    # introduce topological constraints
+    # start with explicitly removed connections
+    removed_connections = cnfg["removed_connections"]
+    # add other restrictions imposed by specific kinds of nodes
+    disjoint_nodes = cnfg["single_emitters"] + cnfg["in_nodes"]
+    removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
+    edge_list = hf.removeConnections(edge_list, removed_connections)
+    #apply unicolor simplification
+    if cnfg['unicolor']:
+        num_data_nodes = len(cnfg['target_state'][0])
+        edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
+    print(f'start graph has {len(edge_list)} edges.')
+
+    cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
+    cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
+                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
+
+    # turn edge list into graph
+    graph = Graph(edge_list)
+    graph.imaginary = cnfg["imaginary"]
+
+    return target_state, graph, cnfg
 
 
 def build_starting_graph(cnfg, dimensions):
@@ -79,6 +341,8 @@ def build_starting_graph(cnfg, dimensions):
 
 
 def get_dimensions_and_target_state(cnfg):
+    # check if we are optimizing for entanglement
+    # there is not a concrete target state and you have to define sys_dict
     if cnfg['loss_func'] == 'ent':
         # concurrence optimization
         # define local dimensions
@@ -86,6 +350,7 @@ def get_dimensions_and_target_state(cnfg):
         if len(dimensions) % 2 != 0:
             dimensions.append(1)
         target_state = None
+        # compute sys_dict
         sys_dict = hf.get_sysdict(dimensions, bipar_for_opti=cnfg['K'],
                                   imaginary=cnfg['imaginary'])
     else:
@@ -93,10 +358,12 @@ def get_dimensions_and_target_state(cnfg):
         sys_dict = None
         # add ancillas
         term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
+        # include amplitudes in target state if given
         if 'amplitudes' in cnfg:
             target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
         else:
             target_state = State(term_list, imaginary=cnfg['imaginary'])
+        # print readable expression of the target state
         print(hf.readableState(target_state))
         target_kets = target_state.kets
         # define local dimensions
@@ -105,13 +372,25 @@ def get_dimensions_and_target_state(cnfg):
 
 
 def read_config(is_example, filename):
+    ''''
+    read config json and output cnfg dict
+    '''
+    # check if filename ends in json, add extension if needed
     if not filename.endswith('.json'):
         filename += '.json'
+    # option for running files from example folder
     if is_example:
         examples_dir = pkg_resources.resource_filename(theseus.__name__, "configs")
         filename = Path(examples_dir) / filename
+    # error if file does not exist
     if not os.path.exists(filename) or os.path.isdir(filename):
         raise IOError(f'File does not exist: {filename}')
+    # load json into dict
     with open(filename) as input_file:
         cnfg = json.load(input_file)
+    # set some default value for some keys of dict
+    if 'topopt' not in cnfg:
+        cnfg['topopt'] = True
+    if not cnfg['topopt']:
+        cnfg['bulk_thr'] = 0
     return cnfg, filename

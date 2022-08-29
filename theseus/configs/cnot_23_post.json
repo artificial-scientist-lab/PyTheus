@@ -1,0 +1,37 @@
+{
+  "description": "Postselected CNOT between a qubit (control) and a qutrit (target). Two ancillary photons from SPDC.",
+  "bulk_thr": 0.01,
+  "edges_tried": 30,
+  "foldername": "cnot_23_post",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "0101",
+    "0202",
+    "1011",
+    "1112",
+    "1210"
+  ],
+  "in_nodes": [
+    0,
+    1
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

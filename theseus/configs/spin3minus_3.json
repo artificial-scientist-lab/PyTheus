@@ -1,4 +1,5 @@
 {
+    "description": "Condensed matter state spin3minus of three particles.",
     "bulk_thr": 0.01,
     "edges_tried": 10,
     "foldername": "spin3minus_3",

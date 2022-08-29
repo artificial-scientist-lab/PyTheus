@@ -1,4 +1,5 @@
 {
+  "description": "A state with real number coefficients that can only be realized with a complex valued graph",
   "bulk_thr": 0.01,
   "edges_tried": 10,
   "foldername": "complex4qubit",

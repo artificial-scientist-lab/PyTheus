@@ -89,10 +89,22 @@ def prepEdgeList(edge_list, cnfg):
     except KeyError:
         pass
 
+    removed_connections = []
+    disjoint_nodes = []
     try:
-        edge_list = removeConnections(edge_list, cnfg['removed_connections'])
+        disjoint_nodes += cnfg['in_nodes']
     except KeyError:
         pass
+    try:
+        disjoint_nodes += cnfg['single_emitters']
+    except KeyError:
+        pass
+    removed_connections += list(itertools.combinations(disjoint_nodes,2))
+    try:
+         removed_connections += cnfg['removed_connections']
+    except KeyError:
+        pass
+    edge_list = removeConnections(edge_list,removed_connections)
     return edge_list
 
 

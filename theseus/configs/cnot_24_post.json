@@ -1,0 +1,36 @@
+{
+    "description": "Postselected CNOT between a qubit (control) and a photon of dimensionality four (target). Two ancillary photons from SPDC.",
+    "edges_tried": 30,
+    "foldername": "cnot_24_post",
+    "ftol": 1e-08,
+    "loss_func": "cr",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000",
+        "0101",
+        "0202",
+        "0303",
+        "1011",
+        "1112",
+        "1213",
+        "1310"
+    ],
+    "in_nodes": [
+        0,
+        1
+    ],
+    "out_nodes": [
+        2,
+        3
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

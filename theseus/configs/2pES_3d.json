@@ -1,0 +1,33 @@
+{
+    "description": "Entanglement swapping between two parties of two qutrits each.",
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "2pES_3d",
+    "ftol": 1e-04,
+    "loss_func": "cr",
+    "num_anc": 6,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "removed_connections": [[0,2],[0,3],[1,2],[1,3]],
+    "target_state": [
+        "0000",
+        "0101",
+        "0202",
+        "1010",
+        "1111",
+        "1212",
+        "2020",
+        "2121",
+        "2222"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

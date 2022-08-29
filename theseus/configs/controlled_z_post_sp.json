@@ -1,0 +1,39 @@
+{
+  "description": "Postselected Controlled Z gate. Single Photon sources.",
+  "edges_tried": 30,
+  "foldername": "controlled_z_post_sp",
+  "ftol": 1e-05,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "optimizer": "L-BFGS-B",
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "0101",
+    "1010",
+    "1111"
+  ],
+  "in_nodes": [
+    0,
+    1
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "single_emitters": [
+    4
+  ],
+  "heralding_out": false,
+  "amplitudes": [
+    1,
+    1,
+    1,
+    -1
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 5
+}

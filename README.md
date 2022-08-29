@@ -38,6 +38,12 @@ theseus run PATH_TO_YOUR_INPUT_FILE
 Output of optimization is saved to a directory called `output`. Names of the subdirectorie are specified by the name
 and content of the config file.
 
+To plot the graph corresponding to one result saved as a json file, execute 
+
+```
+theseus plot PATH_TO_RESULT_FILE
+```
+
 To analyze a subdirectory corresponding to one run, type
 
 ```

@@ -1,0 +1,36 @@
+{
+    "description": "Postselected CNOT between two qutrits. Two ancillary photons from SPDC.",
+    "edges_tried": 30,
+    "foldername": "cnot_33",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 2,
+    "optimizer": "L-BFGS-B",
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000",
+        "0101",
+        "0202",
+        "1011",
+        "1112",
+        "1210",
+        "2022",
+        "2120",
+        "2221"
+    ],
+    "in_nodes": [
+        0,
+        1
+    ],
+    "out_nodes": [
+        2,
+        3
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

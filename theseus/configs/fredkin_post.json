@@ -1,0 +1,37 @@
+{
+  "description": "Post-selected Fredkin gate with two ancilla photons.",
+  "edges_tried": 20,
+  "foldername": "fredkin_post",
+  "ftol": 1e-08,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "safe_hist": true,
+  "samples": 1000,
+  "target_state": [
+    "000000",
+    "001001",
+    "010010",
+    "011011",
+    "100100",
+    "101110",
+    "110101",
+    "111111"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2
+  ],
+  "out_nodes": [
+    3,
+    4,
+    5
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 10
+}

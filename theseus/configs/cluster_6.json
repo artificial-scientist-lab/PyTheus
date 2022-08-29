@@ -1,4 +1,5 @@
 {
+    "description": "Creation of six particle cluster state.",
     "bulk_thr": 0,
     "edges_tried": 30,
     "foldername": "cluster_6",

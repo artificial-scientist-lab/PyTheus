@@ -1,21 +1,11 @@
 {
-  "bulk_thr": 0.01,
+  "description": "Heralded Controlled Z gate.",
   "edges_tried": 30,
   "foldername": "controlled_z",
   "ftol": 1e-05,
   "loss_func": "cr",
-  "num_anc": 2,
-  "num_pre": 1,
+  "num_anc": 4,
   "optimizer": "L-BFGS-B",
-  "removed_connections": [
-    [
-      0,
-      1
-    ]
-  ],
-  "imaginary": false,
-  "real": true,
-  "safe_hist": true,
   "samples": 10,
   "target_state": [
     "0000",
@@ -23,6 +13,15 @@
     "1010",
     "1111"
   ],
+  "in_nodes": [
+    0,
+    1
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "heralding_out": true,
   "amplitudes": [
     1,
     1,
@@ -33,6 +32,5 @@
     0.3,
     0.1
   ],
-  "tries_per_edge": 5,
-  "unicolor": false
+  "tries_per_edge": 5
 }

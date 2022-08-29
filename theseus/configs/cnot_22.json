@@ -1,15 +1,12 @@
 {
-    "bulk_thr": 0.01,
+    "description": "Postselected CNOT between two qubits. Two ancillary particles from SPDC.",
     "edges_tried": 30,
     "foldername": "cnot_22",
     "ftol": 1e-06,
     "loss_func": "cr",
     "num_anc": 2,
-    "num_pre": 1,
     "optimizer": "L-BFGS-B",
-    "removed_connections": [[0,1]],
     "imaginary": false,
-    "real": true,
     "safe_hist": true,
     "samples": 10,
     "target_state": [
@@ -18,10 +15,17 @@
         "1011",
         "1110"
     ],
+    "in_nodes": [
+        0,1
+    ],
+    "out_nodes": [
+        2,3
+    ],
+    "heralding_out": true,
+    "novac": true,
     "thresholds": [
         0.3,
         0.1
     ],
-    "tries_per_edge": 5,
-    "unicolor": false
+    "tries_per_edge": 5
 }

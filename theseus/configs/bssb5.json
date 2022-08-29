@@ -1,0 +1,39 @@
+{
+  "description": "Creation of BSSB5 state of 5 qubits. https://iopscience.iop.org/article/10.1088/0305-4470/38/5/013/pdf",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "bssb5",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "00000",
+    "00011",
+    "01001",
+    "01010",
+    "10000",
+    "10011",
+    "11101",
+    "11110"
+  ],
+  "amplitudes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      -1],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

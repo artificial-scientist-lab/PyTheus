@@ -1,4 +1,5 @@
 {
+  "description": "Low countrate creation of four particle four-dimensional GHZ state. Two ancillary particles",
   "bulk_thr": 0,
   "edges_tried": 30,
   "foldername": "f-4-4-6",

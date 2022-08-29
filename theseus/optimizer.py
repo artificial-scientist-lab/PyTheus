@@ -146,7 +146,6 @@ class topological_opti:
             #loss_specs = {'target_state': self.target,
             #              'cnfg': self.config}
             loss_specs = {'target_state': self.target,
-                        'target_state_str':self.config['target_state'],
                         'num_anc':self.config['num_anc'],
                         'amplitudes':self.config['amplitudes'],
                         'imaginary': self.imaginary}

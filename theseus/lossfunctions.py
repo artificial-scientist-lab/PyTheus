@@ -182,7 +182,7 @@ def fidelity(graph, target_state, cnfg):
 """
 Number states in Fock basis
 """
-def fock_fidelity(graph, target_state,target_state_str, num_anc, amplitudes, imaginary=False): #num_anc_pre
+def fock_fidelity(graph, target_state, num_anc, amplitudes, imaginary=False): #num_anc_pre
 
     # original ket is in the form: [((0,m),(1,n),(2,k1),(3,k2)...]; 
     # here the m, n, k1, k2 are the number of particles instead of dimensions
@@ -190,35 +190,35 @@ def fock_fidelity(graph, target_state,target_state_str, num_anc, amplitudes, ima
     # make the ket in the correct form 
     # [((0,0),(0,0)...,(1,0),(1,0),... (2,0),(2,0),...,(3,0),(3,0),...]
     # m times (0,0); n times (1,0); k1 times (2,0); k2 times (3,0), etc.
-    target_kets_temp = target_state.kets 
-    target_kets=[]
-    accum = [sum([[(i,0)]*max(0,n) for i,n in k ],[]) for k in target_kets_temp]
-    for ii in accum:
-        target_kets.append(tuple(ii))   
+    # target_kets_temp = target_state.kets 
+    # target_kets=[]
+    # accum = [sum([[(i,0)]*max(0,n) for i,n in k ],[]) for k in target_kets_temp]
+    # for ii in accum:
+    #     target_kets.append(tuple(ii))   
         
          
-    all_verts= range(graph.num_nodes)#np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
+    #all_verts= range(graph.num_nodes)#np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
     #anc_each_num=[int(i) for i in num_anc_pre]
-    state_each_num=[int(i) for i in target_state_str[0]] # all terms have the same photon number
+    #state_each_num=[int(i) for i in target_state_str[0]] # all terms have the same photon number
     
-    total_particle_num=sum(state_each_num)+num_anc #sum(anc_each_num)
+    total_particle_num = len(target_state.kets[0])
+    #total_particle_num=sum(state_each_num)+num_anc #sum(anc_each_num)
     
-    anc_position=all_verts[len(all_verts)-num_anc:]
-    anc_kets=[]
-    for jj in anc_position:
-        anc_kets.append((jj,0))
+    # anc_position=all_verts[len(all_verts)-num_anc:]
+    # anc_kets=[]
+    # for jj in anc_position:
+    #     anc_kets.append((jj,0))
+        
+    anc_nodes = list(range(graph.num_nodes - num_anc, graph.num_nodes))
     
     
     edgecover_target = list(itertools.combinations_with_replacement(graph.edges,int(total_particle_num/2)))
     cat = th.stateCatalog(edgecover_target)
     
-    if len(anc_kets)!=0:
+    if len(anc_nodes)>0:
         for ket in list(cat.keys()):
             shopping = Counter(ket)
-            anc_conditions=[]
-            for ii in range(num_anc):
-                anc_conditions.append(shopping[anc_kets[ii]]==1)
-            if all(anc_conditions):
+            if all(shopping[(ii,0)]==1 for ii in anc_nodes):
                 pass
             else:
                 del cat[ket]
@@ -229,7 +229,7 @@ def fock_fidelity(graph, target_state,target_state_str, num_anc, amplitudes, ima
     
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
     
-    target = th.targetEquation(target_kets,amplitudes=amplitudes,state_catalog=cat)
+    target = th.targetEquation(target_state.kets,amplitudes=amplitudes,state_catalog=cat)
     norm = th.writeNorm(cat)
 
    # epsilon = 1e-10
@@ -240,64 +240,44 @@ def fock_fidelity(graph, target_state,target_state_str, num_anc, amplitudes, ima
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
 
+def fock_countrate(graph, target_state, num_anc, amplitudes, imaginary=False): #num_anc_pre
 
-def fock_countrate(graph, target_state,target_state_str, num_anc, amplitudes, imaginary=False): #num_anc_pre
-
-    # original ket is in the form: [((0,m),(1,n),(2,k1),(3,k2)...]; 
-    # here the m, n, k1, k2 are the number of particles instead of dimensions
+  
     
-    # make the ket in the correct form 
-    # [((0,0),(0,0)...,(1,0),(1,0),... (2,0),(2,0),...,(3,0),(3,0),...]
-    # m times (0,0); n times (1,0); k1 times (2,0); k2 times (3,0), etc.
-    target_kets_temp = target_state.kets 
-    target_kets=[]
-    accum = [sum([[(i,0)]*max(0,n) for i,n in k ],[]) for k in target_kets_temp]
-    for ii in accum:
-        target_kets.append(tuple(ii))   
+    total_particle_num = len(target_state.kets[0])
         
-         
-    all_verts= range(graph.num_nodes)#np.unique(list(itertools.chain(*th.edgeBleach(graph.edges).keys())))
-    #anc_each_num=[int(i) for i in num_anc_pre]
-    state_each_num=[int(i) for i in target_state_str[0]] # all terms have the same photon number
-    
-    total_particle_num=sum(state_each_num)+num_anc #sum(anc_each_num)
-    
-    anc_position=all_verts[len(all_verts)-num_anc:]
-    anc_kets=[]
-    for jj in anc_position:
-        anc_kets.append((jj,0))
+    anc_nodes = list(range(graph.num_nodes - num_anc, graph.num_nodes))
     
     
     edgecover_target = list(itertools.combinations_with_replacement(graph.edges,int(total_particle_num/2)))
     cat = th.stateCatalog(edgecover_target)
     
-    if len(anc_kets)!=0:
+    if len(anc_nodes)!=0:
         for ket in list(cat.keys()):
             shopping = Counter(ket)
-            anc_conditions=[]
-            for ii in range(num_anc):
-                anc_conditions.append(shopping[anc_kets[ii]]==1)
-            if all(anc_conditions):
+            if all(shopping[(ii,0)]==1 for ii in anc_nodes):
                 pass
             else:
                 del cat[ket]
           
- 
+    # this cause a problem in the optimizer as it actually does not use len(useful_deges)
     #useful_edges = sorted(set(sum(sum(cat.values(),[]), ())))
     #variables = th.stringEdges(useful_edges)
     
     variables = th.stringEdges(graph.edges, imaginary=imaginary)
     
-    target = th.targetEquation(target_kets,amplitudes=amplitudes,state_catalog=cat)
+    target = th.targetEquation(target_state.kets,amplitudes=amplitudes,state_catalog=cat)
     norm = th.writeNorm(cat)
 
    # epsilon = 1e-10
     epsilon = 1
     lambdaloss = f'1-({target})/({epsilon} + {norm})'   
-   #  lambdaloss="".join(["1-", target, "/(0+", norm, ")"])
+   #  lambdaloss="".join(["1-", target, "/(1+", norm, ")"])
     
     func, lossstring = th.buildLossString(lambdaloss, variables)
     return func
+
+
 
 def make_lossString_entanglement(graph, sys_dict: dict, imaginary=False,
                                  var_factor=0):

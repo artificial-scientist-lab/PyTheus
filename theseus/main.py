@@ -139,12 +139,23 @@ def setup_for_fockbasis(cnfg):
         
     sys_dict = None
 
-    term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
+    #term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
+    term_list = []
+    for term in cnfg["target_state"]:
+        ket = []
+        for ii, tt in enumerate(term):
+            ket += [(ii,0)]*tt
+        #ket = [ for ii, tt in enumerate(term)]
+        for ii in range(cnfg['num_anc']):
+            ket.append((len(term) + ii, 0))
+        term_list.append(tuple(ket))
+    #print(np.shape(term_list))
+            
     # not the corrected target_state but has been modified in the loss function
     # this can be changed afterwards
     target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
    
-    print(hf.readableState(target_state))
+    #print(hf.readableState(target_state))
     num_mode_particle=[int(s) for s in cnfg['foldername'].split('_') if s.isdigit()]
     dimensions = [1]*(num_mode_particle[0]+cnfg['num_anc']) # only one dimension at the moment
     

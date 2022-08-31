@@ -107,10 +107,12 @@ class TestHelpFunctionsModule(unittest.TestCase):
                                 (0, 2, 2, 2), (0, 2, 3, 3), (0, 3, 0, 0), (0, 4, 0, 0), (0, 5, 0, 0), (1, 2, 0, 0),
                                 (1, 2, 1, 1), (1, 2, 2, 2), (1, 2, 3, 3), (1, 3, 0, 0), (1, 4, 0, 0), (1, 5, 0, 0),
                                 (2, 3, 0, 0), (2, 4, 0, 0), (2, 5, 0, 0), (3, 4, 0, 0), (3, 5, 0, 0), (4, 5, 0, 0)]
-        temp_node = 7
+        temp_node = 6
         check = 'hello checking the initial values:'
-        print(check, temporary_string[::4])
+        #print(check, temporary_string)
         out_partition = makeUnicolor(temporary_string, temp_node)
+        print(out_partition)
         self.assertEqual(expected_sorted_edge, out_partition)
+        print(expected_sorted_edge)
 
         pass

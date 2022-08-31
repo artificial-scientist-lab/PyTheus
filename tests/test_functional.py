@@ -79,3 +79,12 @@ class FunctionalTests(unittest.TestCase):
         result = runner.invoke(run, ['--example', 'cnot_22.json'])
         assert result.exit_code == 0
 
+    def test_input_with_json_ending_from_example_director_startinggraph(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'ghz_5410.json'])
+        assert result.exit_code == 0
+
+    def test_input_with_json_ending_from_example1_director(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'cnot22_sp.json'])
+        assert result.exit_code == 0

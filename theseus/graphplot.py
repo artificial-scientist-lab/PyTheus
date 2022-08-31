@@ -102,7 +102,8 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
                      show_val = show_value_for_each_edge,fs=0.8*fontsize,markersize=markersize)
 
     circ = []
-    for vert, coords in verts.items(): 
+    alphabet = list(map(chr, range(97, 123)))
+    for vert, coords in zip( alphabet ,verts.values()): 
         circ.append(plt.Circle(coords, 0.1, alpha=0.5))
         ax.text(coords[0], coords[1], str(vert), zorder=zorder,
                 ha='center', va='center', size=fontsize)

@@ -62,7 +62,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig = (), add_title= '',
               show_value_for_each_edge= False, fontsize= 30,zorder=11,
-              markersize=25, letter_nodes = True):
+              markersize=25, number_nodes = True):
 
     edge_dict = th.edgeBleach(graph.edges)
 
@@ -102,11 +102,11 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
                      show_val = show_value_for_each_edge,fs=0.8*fontsize,markersize=markersize)
 
     circ = []
-    if letter_nodes:
-        alphabet = verts.keys()
+    if number_nodes:
+        node_labels = verts.keys()
     else:
-        alphabet = list(map(chr, range(97, 123)))
-    for vert, coords in zip( alphabet ,verts.values()): 
+        node_labels = list(map(chr, range(97, 123)))
+    for vert, coords in zip( node_labels ,verts.values()): 
         circ.append(plt.Circle(coords, 0.1, alpha=0.5))
         ax.text(coords[0], coords[1], str(vert), zorder=zorder,
                 ha='center', va='center', size=fontsize)
@@ -137,13 +137,13 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
         pass
     return fig
 
-def plotFromFile(filename,letter_nodes=True):
+def plotFromFile(filename,number_nodes=True):
     if not os.path.exists(filename) or os.path.isdir(filename):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:
         sol_dict = json.load(input_file)
     graph = Graph(sol_dict['graph'])
-    graphPlot(graph, scaled_weights=True, letter_nodes=letter_nodes)
+    graphPlot(graph, scaled_weights=True, number_nodes=number_nodes)
 
 
 

@@ -122,10 +122,13 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 * L state ✅✅
 * Yeo Chua state ✅✅
 * 9 entanglements in 4 qubits
-    * La4 (with complex amplitudes) ✅✅
+    * La4 (with real amplitudes) ✅✅
     * L053 ✅✅
     * L071 ✅✅
     * Other trivial states (stored, but they do not count)
+* Bell gem
+    * 4 particles ✅✅
+    * 8 particles 🤔
 
 ### k-uniform and AME states
 
@@ -197,8 +200,11 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 
 ### Condensed Matter
 
-* AKLT
+* AKLT spin 1
     * 3 particle ✅✅
+    * 4 particle 🤔
+* AKLT spin 2
+    * 3 particle 🤔
     * 4 particle 🤔
 * Haldane states
     * 3 particle A 🤔
@@ -213,19 +219,30 @@ File name ending in `_n` identifies that the `n` particle version of that state 
     * 5 particle ✅✅
     * 6 particle ✅✅
 * weak Antiferrometric
-    * 1 - 3 particle (rough) ✅✅
-    * 2 - 3 particle (rough) ✅✅
+    * 1 - 3 particle ~~(rough)~~ ✅✅
+    * 2 - 3 particle ~~(rough)~~ ✅✅
     * 3 - 3 particle ✅✅
     * 4 - 3 particle ✅✅
 * 3 particle spin3- ✅✅
-* 3 particle spin3+ ✅✅
+* 3 particle spin3+ (same than previous, only color changes)
 * 4 particle spin half ✅✅
-* 3 particle spin1 ("fake") ✅✅
+* 3 particle spin1 ~~("fake")~~ ✅✅
 * 1d spin half wire ✅✅
 
 ### Other
 
 * 4 qubit state that needs complex numbers ✅✅
+
+### Fock States
+* Noon 2 modes 2 particles (not new, but pedagogic)
+* Noon 2 modes 3 particles (new?)
+* Noon 3 modes 3 particles (can it be generalized?) ✅✅
+* Tetrahedron 40+13 (different coefs) ✅✅
+* Cube 80+44+08 ✅✅
+* Octahedron, either 04-40 or 51-15
+    * fake with 2 ancillas ✅✅
+    * honest with 4 ancillas ✅✅
+    * check 40+04 from xuemei
 
 ### More ideas/inspiration
 
@@ -234,10 +251,8 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 * optimize quantum info inequalities (similar to CHSH)
 * maximize robustness (similar to HS state)
 * GKP states
-* Fock states
 * Heralded states
 * experiments with interesting restrictions
-* 9 ways of entangling 4 qubits
 
 ```python
 

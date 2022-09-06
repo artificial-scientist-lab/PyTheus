@@ -204,10 +204,10 @@ File name ending in `_n` identifies that the `n` particle version of that state 
     * 3 particle ✅✅
     * 4 particle 🤔
 * AKLT spin 2
-    * 3 particle 🤔
+    * 3 particle ✅✅
     * 4 particle 🤔
 * Haldane states
-    * 3 particle A 🤔
+    * 3 particle A ✅✅
     * 3 particle B ✅✅
     * 3 particle C (same than previous)
 * Majumdar Gosh states
@@ -228,6 +228,10 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 * 4 particle spin half ✅✅
 * 3 particle spin1 ~~("fake")~~ ✅✅
 * 1d spin half wire ✅✅
+* Onsager scar for 6 qubits ✅✅
+* Onsager scar for 8 qubits 🤔
+* PXP scar for 6 qubits ✅✅
+* PXP scar for 8 qubits 🤔
 
 ### Other
 

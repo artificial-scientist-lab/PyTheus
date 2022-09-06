@@ -209,7 +209,7 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 * Haldane states
     * 3 particle A 🤔
     * 3 particle B ✅✅
-    * 3 particle C ✅✅
+    * 3 particle C (same than previous)
 * Majumdar Gosh states
     * 4 particle ✅✅
     * 6 particle ✅✅
@@ -220,9 +220,9 @@ File name ending in `_n` identifies that the `n` particle version of that state 
     * 6 particle ✅✅
 * weak Antiferrometric
     * 1 - 3 particle ~~(rough)~~ ✅✅
-    * 2 - 3 particle ~~(rough)~~ ✅✅
+    * 2 - 3 particle ~~(rough)~~ (same than previous)
     * 3 - 3 particle ✅✅
-    * 4 - 3 particle ✅✅
+    * 4 - 3 particle (same than previous)
 * 3 particle spin3- ✅✅
 * 3 particle spin3+ (same than previous, only color changes)
 * 4 particle spin half ✅✅
@@ -235,7 +235,7 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 
 ### Fock States
 * Noon 2 modes 2 particles (not new, but pedagogic)
-* Noon 2 modes 3 particles (new?)
+* Noon 2 modes 3 particles (not new, but pedagogic?)
 * Noon 3 modes 3 particles (can it be generalized?) ✅✅
 * Tetrahedron 40+13 (different coefs) ✅✅
 * Cube 80+44+08 ✅✅

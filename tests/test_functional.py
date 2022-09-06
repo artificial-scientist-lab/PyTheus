@@ -86,5 +86,5 @@ class FunctionalTests(unittest.TestCase):
 
     def test_input_with_json_ending_from_example1_director(self):
         runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'cnot22_sp.json'])
+        result = runner.invoke(run, ['--example', 'ES_2-4-6.json'])
         assert result.exit_code == 0

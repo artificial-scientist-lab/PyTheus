@@ -100,7 +100,3 @@ class TestTheseusModule(unittest.TestCase):
                     'th_2_5_1_0', 'th_2_5_2_0', 'th_2_5_3_0', 'th_3_4_0_0', 'th_3_5_0_0', 'th_4_5_0_0']
         self.assertEqual(exp_out, actual)
         self.assertEqual(174, len(actual))
-        print(actual[1])
-        print(actual)
-        print(type(actual))
-        print(len(actual))

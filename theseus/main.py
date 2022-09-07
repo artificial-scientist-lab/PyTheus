@@ -60,7 +60,7 @@ def run_main(filename, example):
         dimensions = cnfg["dimensions"]
         target_state = None
         sys_dict = None
-    elif cnfg['loss_func'] == 'fockfid':
+    elif cnfg['loss_func'] in ['fockcr','fockfid']:
         #ADD SETUP FOR FOCK OPTIMIZATION HERE
         #start_graph, target_state, dimensions = setup_for_fockbasis()
         sys_dict = None

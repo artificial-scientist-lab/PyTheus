@@ -244,13 +244,14 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 ### Fock States
 * Noon 2 modes 2 particles (not new, but pedagogic)
 * Noon 2 modes 3 particles (not new, but pedagogic?)
-* Noon 3 modes 3 particles (can it be generalized?) ✅✅
-* Tetrahedron 40+13 (different coefs) ✅✅
+* Noon 3 modes 3 particles (3 ancillas) (can it be generalized?) ✅✅
+* Noon 4 modes 3 particles (5 ancillas) (can it be generalized?) ✅✅
+* Tetrahedron, either 30+03 or 40+13 (different coefs) ✅✅
 * Cube 80+44+08 ✅✅
 * Octahedron, either 04-40 or 51-15
     * epsilon with 2 ancillas ✅✅✅
     * clean with 4 ancillas ✅✅✅
-    * check 40+04 from xuemei
+    * check 40+04 from xuemei (it was epsilon)
 
 ### More ideas/inspiration
 

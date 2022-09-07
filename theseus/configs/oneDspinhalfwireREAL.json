@@ -1,0 +1,33 @@
+{
+  "description": "Condensed Matter state 1D spin-half wire of four particles.",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "oneDspinhalfwire4fid",
+  "ftol": 1e-06,
+  "loss_func": "fid",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+        "0000",
+        "0001",
+        "0010",
+        "0100",
+        "0111",
+        "1000",
+        "1011",
+        "1101",
+        "1110",
+        "1111"
+  ],
+  "amplitudes": [1.414213562373095, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -1.414213562373095],
+  "thresholds": [
+    0.01,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

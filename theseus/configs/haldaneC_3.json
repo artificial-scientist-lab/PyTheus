@@ -12,7 +12,7 @@
     "safe_hist": true,
     "samples": 100,
     "target_state": [
-        "021",
+        "021",  
         "012",
         "201",
         "222",

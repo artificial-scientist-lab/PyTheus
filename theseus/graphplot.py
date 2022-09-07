@@ -35,6 +35,8 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
         transparency =  min(transparency,1)
     except IndexError:
         transparency = 1
+    except TypeError:
+        transparency = 1
     
     ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw,alpha=transparency)
     ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw,alpha=transparency)
@@ -62,7 +64,7 @@ def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig = (), add_title= '',
               show_value_for_each_edge= False, fontsize= 30,zorder=11,
-              markersize=25, number_nodes = True):
+              markersize=25, number_nodes = True, filename = ''):
 
     edge_dict = th.edgeBleach(graph.edges)
 
@@ -135,6 +137,9 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
         plt.pause(0.01)
     else:
         pass
+    if filename:
+        fig.savefig(filename+".pdf")
+
     return fig
 
 def plotFromFile(filename,number_nodes=True):

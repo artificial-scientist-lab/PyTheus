@@ -3,7 +3,7 @@ import unittest
 from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
-    stringEdges
+    stringEdges, allPerfectMatchings, allEdgeCovers
 
 
 class TestTheseusModule(unittest.TestCase):
@@ -98,5 +98,26 @@ class TestTheseusModule(unittest.TestCase):
                     'th_1_4_3_0', 'th_1_5_0_0', 'th_1_5_1_0', 'th_1_5_2_0', 'th_1_5_3_0', 'th_2_3_0_0', 'th_2_3_1_0',
                     'th_2_3_2_0', 'th_2_3_3_0', 'th_2_4_0_0', 'th_2_4_1_0', 'th_2_4_2_0', 'th_2_4_3_0', 'th_2_5_0_0',
                     'th_2_5_1_0', 'th_2_5_2_0', 'th_2_5_3_0', 'th_3_4_0_0', 'th_3_5_0_0', 'th_4_5_0_0']
+        self.assertEqual('r_0_1_0_1', actual[1])
+        self.assertEqual('r_4_5_0_0', actual[86])
+        self.assertEqual('th_0_1_0_0', actual[87])
+        self.assertEqual('th_4_5_0_0', actual[173])
         self.assertEqual(exp_out, actual)
         self.assertEqual(174, len(actual))
+
+
+    def test_allPerfectMatchings(self):
+        actual = allPerfectMatchings([4, 4, 4, 1, 1, 1])
+        exp_value = [((0, 1, 0, 0), (2, 3, 0, 0), (4, 5, 0, 0)), ((0, 1, 0, 0), (2, 4, 0, 0), (3, 5, 0, 0)),
+                     ((0, 1, 0, 0), (2, 5, 0, 0), (3, 4, 0, 0)), ((0, 2, 0, 0), (1, 3, 0, 0), (4, 5, 0, 0)),
+                     ((0, 2, 0, 0), (1, 4, 0, 0), (3, 5, 0, 0)), ((0, 2, 0, 0), (1, 5, 0, 0), (3, 4, 0, 0)),
+                     ((0, 3, 0, 0), (1, 2, 0, 0), (4, 5, 0, 0)), ((0, 3, 0, 0), (1, 4, 0, 0), (2, 5, 0, 0)),
+                     ((0, 3, 0, 0), (1, 5, 0, 0), (2, 4, 0, 0)), ((0, 4, 0, 0), (1, 2, 0, 0), (3, 5, 0, 0)),
+                     ((0, 4, 0, 0), (1, 3, 0, 0), (2, 5, 0, 0)), ((0, 4, 0, 0), (1, 5, 0, 0), (2, 3, 0, 0)),
+                     ((0, 5, 0, 0), (1, 2, 0, 0), (3, 4, 0, 0)), ((0, 5, 0, 0), (1, 3, 0, 0), (2, 4, 0, 0)),
+                     ((0, 5, 0, 0), (1, 4, 0, 0), (2, 3, 0, 0))]
+        self.assertIn(((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)), actual.keys())
+        self.assertIn(((0, 3), (1, 3), (2, 2), (3, 0), (4, 0), (5, 0)), actual.keys())
+        self.assertIn(exp_value,actual.values())
+        self.assertEqual(64, len(actual))
+

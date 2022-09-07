@@ -4,8 +4,8 @@
     "edges_tried": 30,
     "foldername": "werner",
     "ftol": 1e-06,
-    "loss_func": "cr",
-    "num_anc": 3,
+    "loss_func": "fid",
+    "num_anc": 1,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
     "imaginary": false,
@@ -20,9 +20,17 @@
         "103",
         "114"
     ],
+    "amplitudes": [
+        0.69,
+        0.69,
+        0.31,
+        0.31,
+        0.31,
+        0.31
+    ],
     "thresholds": [
-        0.3,
-        0.1
+        0.05,
+        1
     ],
     "tries_per_edge": 5,
     "unicolor": false

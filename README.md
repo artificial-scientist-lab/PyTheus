@@ -3,13 +3,7 @@ Theseus, a highly-efficient inverse-design algorithm for quantum optical experim
 
 ## Installation
 
-Using pip:
-
-```
-pip install theseuslab
-```
-
-Alternatively, from sources (after cloning the repository):
+When published it will be possible to install via `pip install`. Untill then, install from source (after cloning the repository):
 
 ```
 python setup.py install

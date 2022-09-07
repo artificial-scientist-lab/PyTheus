@@ -146,7 +146,7 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 
 ### Mixed States
 
-* Werner State ✅✅
+* Werner State ✅✅✅
 * Peres State (epsilon) ✅✅✅
 * more ?
 

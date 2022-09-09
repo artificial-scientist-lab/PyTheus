@@ -3,7 +3,7 @@ import unittest
 from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
-    stringEdges, allPerfectMatchings, allEdgeCovers
+    stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs
 
 
 class TestTheseusModule(unittest.TestCase):
@@ -120,4 +120,20 @@ class TestTheseusModule(unittest.TestCase):
         self.assertIn(((0, 3), (1, 3), (2, 2), (3, 0), (4, 0), (5, 0)), actual.keys())
         self.assertIn(exp_value,actual.values())
         self.assertEqual(64, len(actual))
+
+    def test_allEdgeCovers(self):
+        actual = allEdgeCovers([2, 2])
+        val = {((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 0), (1, 1)): [((0, 1, 0, 1),)],
+               ((0, 1), (1, 0)): [((0, 1, 1, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]}
+        self.assertEqual(list(val.keys()), list(actual.keys()))
+        self.assertEqual(list(val.values()), list(actual.values()))
+
+    def test_allColorGraphs_Falseloop(self):
+        actual = allColorGraphs([(0,0),(0,1),(1,1),(1,1)], loops = False)
+        self.assertEqual([((0, 1, 0, 1), (0, 1, 1, 1))], actual)
+
+    def test_allColorGraphs_Trueloop(self):
+        actual = allColorGraphs([(0, 0), (0, 1), (1, 1), (1, 1)], loops=True)
+        self.assertEqual(((0, 0, 0, 1), (1, 1, 1, 1)), actual[0])
+        self.assertEqual(((0, 1, 0, 1), (0, 1, 1, 1)), actual[1])
 

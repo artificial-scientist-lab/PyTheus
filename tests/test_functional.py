@@ -81,7 +81,7 @@ class FunctionalTests(unittest.TestCase):
 
     def test_input_with_json_ending_from_example_director_startinggraph(self):
         runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'ghz_5410.json'])
+        result = runner.invoke(run, ['--example', 'spin3plus_3.json'])
         assert result.exit_code == 0
 
     def test_input_with_json_ending_from_example1_director(self):

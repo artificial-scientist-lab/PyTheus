@@ -1,11 +1,17 @@
 import abc
 import json
+import sys
+import traceback
 import unittest
 from filecmp import cmp
 from typing import List
 
+from numpy import array
+
 from theseus import main
-from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent
+from theseus.help_functions import readableState
+from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
+    setup_for_target
 
 
 class TestMainModule(unittest.TestCase):
@@ -27,10 +33,6 @@ class TestMainModule(unittest.TestCase):
 
     def test_build_starting_graph(self):
         cnfg, filename = read_config(is_example=True, filename='ghz_346')
-        confi = {'bulk_thr': 0.01, 'edges_tried': 20, 'foldername': 'ghz_346', 'ftol': 1e-06, 'loss_func': 'cr',
-                 'num_anc': 3, 'num_pre': 1, 'optimizer': 'L-BFGS-B', 'imaginary': False, 'safe_hist': True,
-                 'samples': 1, 'target_state': ['000', '111', '222', '333'], 'thresholds': [0.25, 0.1],
-                 'tries_per_edge': 5, 'unicolor': False}
         dimension_key = [4, 4, 4, 1, 1, 1]
         expected_outcome = {(0, 1, 0, 0): True, (0, 1, 0, 1): True, (0, 1, 0, 2): True, (0, 1, 0, 3): True,
                             (0, 1, 1, 0): True, (0, 1, 1, 1): True, (0, 1, 1, 2): True, (0, 1, 1, 3): True,
@@ -100,3 +102,26 @@ class TestMainModule(unittest.TestCase):
         self.assertEqual(list(exp[2].values()), actual[2].weights)
         self.assertEqual(list(exp[2].keys()), actual[2].edges)
 
+    def test_setup_for_target(self):
+        cnfg, filename = read_config(is_example=True, filename='cnot_22.json')
+        read_state = {'|000000>': True, '|010100>': True, '|101100>': True, '|111000>': True}
+        kets = [((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)), ((0, 0), (1, 1), (2, 0), (3, 1), (4, 0), (5, 0)),
+                ((0, 1), (1, 0), (2, 1), (3, 1), (4, 0), (5, 0)), ((0, 1), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0))]
+        out_config = {'description': 'Postselected CNOT between two qubits. Two ancillary particles from SPDC.',
+                      'edges_tried': 30, 'foldername': 'cnot_22', 'ftol': 1e-06, 'loss_func': 'cr', 'num_anc': 2,
+                      'optimizer': 'L-BFGS-B', 'imaginary': False, 'safe_hist': True, 'samples': 10,
+                      'target_state': ['0000', '0101', '1011', '1110'], 'in_nodes': [0, 1], 'out_nodes': [2, 3],
+                      'heralding_out': True, 'novac': True, 'thresholds': [0.3, 0.1], 'tries_per_edge': 5,
+                      'topopt': True, 'single_emitters': [], 'removed_connections': [[0, 1]], 'unicolor': False,
+                      'amplitudes': [], 'number_resolving': False, 'brutal_covers': False, 'bulk_thr': 0,
+                      'save_hist': True, 'num_pre': 1, 'dimensions': [2, 2, 2, 2, 1, 1],
+                      'verts': array([0, 1, 2, 3, 4, 5]), 'anc_detectors': [4, 5]}
+        actual = setup_for_target(cnfg)
+        self.assertEqual(list(kets), list(actual[0].kets))
+        self.assertTrue(True, actual[0].amplitudes)
+        #self.assertEqual(read_state, readableState(actual[0]))
+        print(actual[1])
+        print(type(actual[1]))
+        self.assertEqual(out_config.keys(), actual[2].keys())
+        self.assertSetEqual(set(map(type, out_config.values())), set(map(type, actual[2].values())))
+        self.assertEqual(all(out_config.values()), all(actual[2].values()))

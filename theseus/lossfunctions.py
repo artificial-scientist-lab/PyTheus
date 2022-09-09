@@ -252,7 +252,7 @@ def fock_countrate(graph, target_state, num_anc, amplitudes, imaginary=False): #
     edgecover_target = list(itertools.combinations_with_replacement(graph.edges,int(total_particle_num/2)))
     cat = th.stateCatalog(edgecover_target)
     
-    if len(anc_nodes)!=0:
+    if len(anc_nodes)>0:
         for ket in list(cat.keys()):
             shopping = Counter(ket)
             if all(shopping[(ii,0)]==1 for ii in anc_nodes):
@@ -338,6 +338,6 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'fid': [fidelity, count_rate],
             'cr': [count_rate, fidelity],
             'lff': [loss_from_function],
-            #'fockcr': [fock_countrate],
-            'fockfid': [fock_fidelity,fock_countrate]
+            'fockfid': [fock_fidelity,fock_countrate],
+            'fockcr': [fock_countrate,fock_fidelity]
            }

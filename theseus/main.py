@@ -60,7 +60,7 @@ def run_main(filename, example):
         dimensions = cnfg["dimensions"]
         target_state = None
         sys_dict = None
-    elif cnfg['loss_func'] == 'fockfid':
+    elif cnfg['loss_func'] in ['fockcr','fockfid']:
         #ADD SETUP FOR FOCK OPTIMIZATION HERE
         #start_graph, target_state, dimensions = setup_for_fockbasis()
         sys_dict = None
@@ -155,9 +155,9 @@ def setup_for_fockbasis(cnfg):
     # this can be changed afterwards
     target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
    
-    #print(hf.readableState(target_state))
-    num_mode_particle=[int(s) for s in cnfg['foldername'].split('_') if s.isdigit()]
-    dimensions = [1]*(num_mode_particle[0]+cnfg['num_anc']) # only one dimension at the moment
+    #print(hf.readableState(target_state)) 
+    num_mode_particle = len(cnfg["target_state"][0]) 
+    dimensions = [1]*(num_mode_particle +cnfg['num_anc']) # only one dimension at the moment
     
     edge_list = th.buildAllEdges(dimensions, imaginary=cnfg["imaginary"],loops=cnfg["loops"])
     edge_list = hf.prepEdgeList(edge_list, cnfg)

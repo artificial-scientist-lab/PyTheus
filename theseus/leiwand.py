@@ -2,7 +2,7 @@ import os
 
 from planar import Polygon
 import sys
-
+import itertools
 
 docstring = """
 Use this script like this
@@ -22,9 +22,12 @@ option keys are the following
 variables = {
     "line_width": 4.0,
     "radius": 3,
-    "color0": "{RGB}{0,0,204}",
-    "color1": "{RGB}{0,204,0}",
-    "color2": "{RGB}{204,0,0}",
+    "col0": "{RGB}{0,0,204}",
+    "col1": "{RGB}{204,0,0}",
+    "col2": "{RGB}{0,204,0}",
+    "col3": "{RGB}{255, 165, 0}",
+    "col4": "{RGB}{128,0,128}",
+    "col5": "{RGB}{255, 255, 0}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
     "angle": 180,
@@ -36,6 +39,7 @@ variables = {
 def leiwand(data):
     poly = {}
     output = "testtt"
+    numcolors = 6
 
     external_vertices = None
     if variables['vertices'] is not None:
@@ -48,18 +52,10 @@ def leiwand(data):
     if variables["whitespace"] is not None:
         whitespace = variables["whitespace"]
     with open(output + ".tex", "w") as outf:
-        optionmap = {
-            (0, 0): "color=zerocol",
-            (1, 1): "color=onecol",
-            (2, 2): "color=twocol",
-            (0, 1): "bicolor={zerocol}{onecol}",
-            (1, 0): "bicolor={onecol}{zerocol}",
-            (0, 2): "bicolor={zerocol}{twocol}",
-            (2, 0): "bicolor={green}{zerocol}",
-            (1, 2): "bicolor={onecol}{twocol}",
-            (2, 1): "bicolor={twocol}{onecol}"
-        }
-
+        optionmap =  {tuple([c1,c2]):f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in itertools.permutations(range(numcolors),2)}
+        for ii in range(numcolors):
+            optionmap[(ii, ii)] = f"color = col{ii}"
+        print(optionmap)
         if whitespace is not None:
             print("\documentclass[border={}]{}".format(whitespace, r"{standalone}"), file=outf)
         else:
@@ -75,9 +71,8 @@ def leiwand(data):
         \pagestyle{empty}
     """, file=outf)
         colors = r"\definecolor{vertexcol}" + variables["vertexcolor"]
-        colors += r"\definecolor{onecol}" + variables["color0"]
-        colors += r"\definecolor{twocol}" + variables["color1"]
-        colors += r"\definecolor{zerocol}" + variables["color2"]
+        for ii in range(numcolors):
+            colors += f"\definecolor{{col{ii}}}" + variables[f"col{ii}"]
         colors += r"\definecolor{fontcolor}" + variables["fontcolor"]
         print(colors, file=outf)
         print(r"""
@@ -145,7 +140,8 @@ def leiwand(data):
             b = d[5]
             opacity = max(0.3, abs(weight) / max_weight)
             print(edge_string.format(v1=v1, v2=v2,
-                                     options="line width={lw},".format(lw=variables["line_width"]) + optionmap[(t1, t2)] + ", bend right=" + str(b),
+                                     options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
+                                         (t1, t2)] + ", bend right=" + str(b),
                                      opacity=opacity), file=outf)
 
         print(r"""

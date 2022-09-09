@@ -3,6 +3,7 @@ import os
 from planar import Polygon
 import sys
 import itertools
+import numpy as np
 
 docstring = """
 Use this script like this
@@ -30,7 +31,7 @@ variables = {
     "col5": "{RGB}{255, 255, 0}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
-    "angle": 180,
+    "angle": 0,
     "vertices": None,
     "whitespace": "10pt"
 }
@@ -38,7 +39,7 @@ variables = {
 
 def leiwand(data):
     poly = {}
-    output = "testtt"
+    output = "graph"
     numcolors = 6
 
     external_vertices = None
@@ -52,7 +53,8 @@ def leiwand(data):
     if variables["whitespace"] is not None:
         whitespace = variables["whitespace"]
     with open(output + ".tex", "w") as outf:
-        optionmap =  {tuple([c1,c2]):f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in itertools.permutations(range(numcolors),2)}
+        optionmap = {tuple([c1, c2]): f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in
+                     itertools.permutations(range(numcolors), 2)}
         for ii in range(numcolors):
             optionmap[(ii, ii)] = f"color = col{ii}"
         print(optionmap)
@@ -116,10 +118,12 @@ def leiwand(data):
             vertices = external_vertices
         else:
             # sort vertices alphabetically
-            vertices = list(reversed(sorted(vertices)))
+            vertices = list(sorted(vertices))
 
         if len(poly) < len(vertices):
-            poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(variables["angle"]))
+            #poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
+            angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
+            poly = [tuple([variables["radius"]*np.cos(theta - variables["angle"]), variables["radius"]*np.sin(theta - variables["angle"])]) for theta in angles]
         else:
             # sort alphabetically
             poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
@@ -139,11 +143,20 @@ def leiwand(data):
             t2 = d[4]
             b = d[5]
             opacity = max(0.3, abs(weight) / max_weight)
-            print(edge_string.format(v1=v1, v2=v2,
-                                     options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
-                                         (t1, t2)] + ", bend right=" + str(b),
-                                     opacity=opacity), file=outf)
+            angles = [360 * ii / len(vertices) for ii in range(len(vertices))]
+            if v1 == v2:  # loop
+                angle1 = angles[int(v1)]+30
+                angle2 = angles[int(v1)]-30
 
+                print(edge_string.format(v1=v1, v2=v2,
+                                         options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
+                                             (t1, t2)] + ", looseness=" + str(b) + f",right,out={angle1},in={angle2}",
+                                         opacity=opacity), file=outf)
+            else:
+                print(edge_string.format(v1=v1, v2=v2,
+                                         options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
+                                             (t1, t2)] + ", bend right=" + str(b),
+                                         opacity=opacity), file=outf)
         print(r"""
         \end{tikzpicture}
 

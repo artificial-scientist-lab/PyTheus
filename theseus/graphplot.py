@@ -7,6 +7,7 @@ import matplotlib.patheffects as pe
 from theseus.fancy_classes import Graph
 import json
 import os
+import theseus.leiwand
 
 def drawEdge(edge, verts, ind, mult,ax, scale_max=None, max_thickness=10,
              show_val = False,fs = 15,markersize=25):
@@ -141,6 +142,18 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
         fig.savefig(filename+".pdf")
 
     return fig
+
+def leiwandPlot(graph):
+    data = []
+    edge_dict = th.edgeBleach(graph.edges)
+    for uc_edge in edge_dict.keys():
+        mult = len(edge_dict[uc_edge])
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            edge = tuple(uc_edge+coloring)
+            weight = graph[edge]
+            bend = -45 + (ii+0.5)*90/mult
+            data.append([weight,str(edge[0]),edge[2],str(edge[1]),edge[3],bend])
+    theseus.leiwand.leiwand(data)
 
 def plotFromFile(filename,number_nodes=True):
     if not os.path.exists(filename) or os.path.isdir(filename):

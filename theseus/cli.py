@@ -45,10 +45,11 @@ def run(filename, example):
 
 @cli.command()
 @click.argument('filename')
-def plot(filename):
+@click.option('--pdf', default="", help='save output to pdf')
+def plot(filename, pdf):
     """Plot a solution file."""
     try:
-        plotFromFile(filename)
+        plotFromFile(filename, outfile = pdf)
     except IOError as e:
         click.echo('ERROR:' + str(e))
         sys.exit(1)

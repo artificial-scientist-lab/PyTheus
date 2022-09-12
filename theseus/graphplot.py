@@ -162,10 +162,10 @@ def leiwandPlot(graph):
     theseus.leiwand.leiwand(data)
 
 
-def plotFromFile(filename, number_nodes=True):
+def plotFromFile(filename, number_nodes=True, outfile = ""):
     if not os.path.exists(filename) or os.path.isdir(filename):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:
         sol_dict = json.load(input_file)
     graph = Graph(sol_dict['graph'])
-    graphPlot(graph, scaled_weights=True, number_nodes=number_nodes)
+    graphPlot(graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)

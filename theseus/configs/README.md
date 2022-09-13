@@ -197,7 +197,7 @@ File name ending in `_n` identifies that the `n` particle version of that state 
 * CNOT(2,2) with two single photon sources ✅✅✅ (different from known experiment, better successrate?)
 * CNOT(2,3) postselected with three single photon sources ✅✅✅
 * CNOT(3,3) postselected with four single photon sources ✅✅
-* Fredkin postselected with one single photon source ✅✅
+* Fredkin postselected with one single photon source ✅✅ (done in experiment already?)
 * controlled Z with three single photon sources ✅✅✅
 * controlled Z postselected with one single photon source ✅✅✅
 * 3d Entanglement Swapping with single photon sources ✅✅✅

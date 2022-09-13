@@ -1,6 +1,5 @@
 import os
 
-from planar import Polygon
 import sys
 import itertools
 import numpy as np

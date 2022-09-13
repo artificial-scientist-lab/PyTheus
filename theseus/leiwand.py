@@ -53,10 +53,12 @@ def leiwand(data):
     if variables["whitespace"] is not None:
         whitespace = variables["whitespace"]
     with open(output + ".tex", "w") as outf:
-        optionmap = {tuple([c1, c2]): f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in
+        optionmap = {tuple([c1, c2, True]): f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in
                      itertools.permutations(range(numcolors), 2)}
         for ii in range(numcolors):
-            optionmap[(ii, ii)] = f"color = col{ii}"
+            optionmap[(ii, ii, True)] = f"color = col{ii}"
+        optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c1}}}{{col{c2}}}" for c1, c2 in
+                     itertools.product(range(numcolors), repeat=2)})
         print(optionmap)
         if whitespace is not None:
             print("\documentclass[border={}]{}".format(whitespace, r"{standalone}"), file=outf)
@@ -68,6 +70,7 @@ def leiwand(data):
         \usepackage{verbatim}
 
         \usetikzlibrary{decorations.markings}
+        \usetikzlibrary{positioning,shapes.geometric} 
 
         \begin{document}
         \pagestyle{empty}
@@ -86,6 +89,23 @@ def leiwand(data):
             markings,
             mark=at position 0.5 with {
               \node[draw=none,inner sep=0pt,fill=none,text width=0pt,minimum size=0pt] {\global\setlength\mylen{\pgfdecoratedpathlength}};
+            },
+          },
+          draw=#1,
+          dash pattern=on 0.5\mylen off 1.0\mylen,
+          preaction={decorate},
+          postaction={
+            draw=#2,
+            dash pattern=on 0.5\mylen off 0.5\mylen,dash phase=0.5\mylen
+          },
+          }
+        }
+        \tikzset{
+        bicolor_neg/.style n args={2}{
+          decoration={
+            markings,
+            mark=at position 0.5 with {
+              \node[diamond, draw,minimum width=10pt]{\global\setlength\mylen{\pgfdecoratedpathlength}};
             },
           },
           draw=#1,
@@ -121,9 +141,10 @@ def leiwand(data):
             vertices = list(sorted(vertices))
 
         if len(poly) < len(vertices):
-            #poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
+            # poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
             angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
-            poly = [tuple([variables["radius"]*np.cos(theta - variables["angle"]), variables["radius"]*np.sin(theta - variables["angle"])]) for theta in angles]
+            poly = [tuple([variables["radius"] * np.cos(theta - variables["angle"]),
+                           variables["radius"] * np.sin(theta - variables["angle"])]) for theta in angles]
         else:
             # sort alphabetically
             poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
@@ -144,18 +165,20 @@ def leiwand(data):
             b = d[5]
             opacity = max(0.3, abs(weight) / max_weight)
             angles = [360 * ii / len(vertices) for ii in range(len(vertices))]
+            weight_pos = (weight > 0)
             if v1 == v2:  # loop
-                angle1 = angles[int(v1)]+30
-                angle2 = angles[int(v1)]-30
+                angle1 = angles[int(v1)] + 30
+                angle2 = angles[int(v1)] - 30
 
                 print(edge_string.format(v1=v1, v2=v2,
                                          options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
-                                             (t1, t2)] + ", looseness=" + str(b) + f",right,out={angle1},in={angle2}",
+                                             (t1, t2, weight_pos)] + ", looseness=" + str(
+                                             b) + f",right,out={angle1},in={angle2}",
                                          opacity=opacity), file=outf)
             else:
                 print(edge_string.format(v1=v1, v2=v2,
                                          options="line width={lw},".format(lw=variables["line_width"]) + optionmap[
-                                             (t1, t2)] + ", bend right=" + str(b),
+                                             (t1, t2, weight_pos)] + ", bend right=" + str(b),
                                          opacity=opacity), file=outf)
         print(r"""
         \end{tikzpicture}

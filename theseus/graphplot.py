@@ -157,7 +157,7 @@ def leiwandPlot(graph):
                 loose = 10 + 5*ii
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
             else:
-                bend = -45 + (ii + 0.5) * 90 / mult
+                bend = -22.5 + (ii + 0.5) * 45 / mult
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
     theseus.leiwand.leiwand(data)
 

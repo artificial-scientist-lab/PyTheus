@@ -11,7 +11,7 @@ from numpy import array
 from theseus import main
 from theseus.help_functions import readableState
 from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
-    setup_for_target
+    setup_for_target, setup_for_fockbasis
 
 
 class TestMainModule(unittest.TestCase):
@@ -70,7 +70,7 @@ class TestMainModule(unittest.TestCase):
                                           ((0, 3), (1, 3), (2, 3), (3, 0), (4, 0), (5, 0)): True})
         actual = get_dimensions_and_target_state(cnfg)
         self.assertEqual([4, 4, 4, 1, 1, 1], actual[0])
-        self.assertEqual(None, actual[1])
+        self.assertIsNone(actual[1])
         self.assertEqual(list(exp[2].values()), actual[2].amplitudes)
         self.assertEqual(list(exp[2].keys()), actual[2].kets)
 
@@ -116,12 +116,32 @@ class TestMainModule(unittest.TestCase):
                       'amplitudes': [], 'number_resolving': False, 'brutal_covers': False, 'bulk_thr': 0,
                       'save_hist': True, 'num_pre': 1, 'dimensions': [2, 2, 2, 2, 1, 1],
                       'verts': array([0, 1, 2, 3, 4, 5]), 'anc_detectors': [4, 5]}
+        graph = {(0, 2, 0, 0): True, (0, 2, 0, 1): True, (0, 2, 1, 0): True, (0, 2, 1, 1): True, (0, 3, 0, 0): True,
+                 (0, 3, 0, 1): True, (0, 3, 1, 0): True, (0, 3, 1, 1): True, (0, 4, 0, 0): True, (0, 4, 1, 0): True,
+                 (0, 5, 0, 0): True, (0, 5, 1, 0): True, (1, 2, 0, 0): True, (1, 2, 0, 1): True, (1, 2, 1, 0): True,
+                 (1, 2, 1, 1): True, (1, 3, 0, 0): True, (1, 3, 0, 1): True, (1, 3, 1, 0): True, (1, 3, 1, 1): True,
+                 (1, 4, 0, 0): True, (1, 4, 1, 0): True, (1, 5, 0, 0): True, (1, 5, 1, 0): True, (2, 3, 0, 0): True,
+                 (2, 3, 0, 1): True, (2, 3, 1, 0): True, (2, 3, 1, 1): True, (2, 4, 0, 0): True, (2, 4, 1, 0): True,
+                 (2, 5, 0, 0): True, (2, 5, 1, 0): True, (3, 4, 0, 0): True, (3, 4, 1, 0): True, (3, 5, 0, 0): True,
+                 (3, 5, 1, 0): True, (4, 5, 0, 0): True}
         actual = setup_for_target(cnfg)
         self.assertEqual(list(kets), list(actual[0].kets))
-        self.assertTrue(True, actual[0].amplitudes)
-        #self.assertEqual(read_state, readableState(actual[0]))
-        print(actual[1])
-        print(type(actual[1]))
+        self.assertTrue(all(actual[0].amplitudes))
+        # self.assertEqual(read_state, readableState(actual[0]))
+        self.assertEqual(list(graph.values()), actual[1].weights)
+        self.assertEqual(list(graph.keys()), actual[1].edges)
         self.assertEqual(out_config.keys(), actual[2].keys())
         self.assertSetEqual(set(map(type, out_config.values())), set(map(type, actual[2].values())))
         self.assertEqual(all(out_config.values()), all(actual[2].values()))
+
+    def test_setup_for_fockbasis(self):
+        cnfg, filename = read_config(is_example=True, filename='fock_tetrahedron_short.json')
+        actual = setup_for_fockbasis(cnfg)
+        self.assertEqual([((0, 0), (0, 0), (0, 0), (2, 0)), ((1, 0), (1, 0), (1, 0), (2, 0))], actual[0].kets)
+        self.assertEqual([1, 1.4142135623730951], actual[0].amplitudes)
+        self.assertEqual([1,1,1], actual[1])
+        self.assertIsNone(actual[2])
+        self.assertEqual([(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (1, 1, 0, 0), (1, 2, 0, 0), (2, 2, 0, 0)], actual[3].edges)
+        self.assertTrue(all(actual[3].weights))
+
+

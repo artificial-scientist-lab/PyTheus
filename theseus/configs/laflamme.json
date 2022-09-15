@@ -1,0 +1,31 @@
+{
+    "description": "Laflamme code.",
+    "bulk_thr": 1e-3,
+    "edges_tried": 30,
+    "foldername": "laflamme_cr",
+    "ftol": 1e-04,
+    "loss_func": "cr",
+    "num_anc": 3,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "00000", "11000", "01100", "00110",
+        "00011", "10001", "10100", "01010",
+        "00101", "10010", "01001", "11110",
+        "01111", "10111", "11011", "11101"
+    ],
+    "amplitudes": [1,1,1,1,
+                   1,1,-1,-1,
+                   -1,-1,-1,-1,
+                   -1,-1,-1,-1
+                  ],
+    "thresholds": [
+        0.1,
+        0.01
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false
+}

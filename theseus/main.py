@@ -22,7 +22,7 @@ from theseus.fancy_classes import Graph, State
 from theseus.optimizer import topological_opti
 import itertools
 import numpy as np
-
+import random
 
 def run_main(filename, example):
     """Run the Theseus algorithm on a given input file.
@@ -47,6 +47,8 @@ def run_main(filename, example):
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 
+    random.seed(cnfg['seed'])
+    np.random.seed(seed=cnfg['seed'])
     sys.setrecursionlimit(1000000000)
 
     # step 2: build up target and starting graph
@@ -402,6 +404,8 @@ def read_config(is_example, filename):
     # set some default value for some keys of dict
     if 'topopt' not in cnfg:
         cnfg['topopt'] = True
+    if 'seed' not in cnfg:
+        cnfg['seed'] = random.randrange(sys.maxsize)
     if not cnfg['topopt']:
         cnfg['bulk_thr'] = 0
     return cnfg, filename

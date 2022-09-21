@@ -57,8 +57,9 @@ def leiwand(data,name='graph'):
                      itertools.permutations(range(numcolors), 2)}
         for ii in range(numcolors):
             optionmap[(ii, ii, True)] = f"bicolor={{col{ii}}}{{col{ii}}}"
-        optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c1}}}{{col{c2}}}" for c1, c2 in
-                     itertools.product(range(numcolors), repeat=2)})
+        optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c2}}}{{col{c1}}}" for c1, c2 in
+                     itertools.product(range(numcolors), repeat=2)}) 
+        # if use f"bicolor_neg={{col{c1}}}{{col{c2}}}" will inverse the color for the negitive edges, don't know why; 
         #print(optionmap)
         if whitespace is not None:
             print("\documentclass[border={}]{}".format(whitespace, r"{standalone}"), file=outf)

@@ -64,12 +64,10 @@ def leiwand(data):
         else:
             print(r"\documentclass{standalone}", file=outf)
         print(r"""
-
-        \usepackage{tikz}
-        \usepackage{verbatim}
-
-        \usetikzlibrary{decorations.markings}
-        \usetikzlibrary{positioning,shapes.geometric} 
+        
+         \usepackage{tikz}
+         \usetikzlibrary{decorations.markings, shapes.geometric} 
+ 
 
         \begin{document}
         \pagestyle{empty}
@@ -80,45 +78,21 @@ def leiwand(data):
         colors += r"\definecolor{fontcolor}" + variables["fontcolor"]
         print(colors, file=outf)
         print(r"""
-        \newlength\mylen
-        % check https://tex.stackexchange.com/questions/270001/tikz-coloring-edge-segments-with-different-colors
         \tikzset{
-        bicolor/.style n args={2}{
-          decoration={
-            markings,
-            mark=at position 0.5 with {
-              \node[draw=none,inner sep=0pt,fill=none,text width=0pt,minimum size=0pt] {\global\setlength\mylen{\pgfdecoratedpathlength}};
+            bicolor/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
             },
-          },
-          draw=#1,
-          dash pattern=on 0.5\mylen off 1.0\mylen,
-          preaction={decorate},
-          postaction={
-            draw=#2,
-            dash pattern=on 0.5\mylen off 0.5\mylen,dash phase=0.5\mylen
-          },
-          }
-        }
-        \tikzset{
-        bicolor_neg/.style n args={2}{
-          decoration={
-            markings,
-            mark=at position 0.5 with {
-              \node[diamond, draw,minimum width=10pt]{\global\setlength\mylen{\pgfdecoratedpathlength}};
+            bicolor_neg/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={decoration={markings, mark=at position 0.5 with {\node[diamond, fill=white,aspect=0.7,draw, thin, minimum width=10pt] {};}}, decorate},
             },
-          },
-          draw=#1,
-          dash pattern=on 0.5\mylen off 1.0\mylen,
-          preaction={decorate},
-          postaction={
-            draw=#2,
-            dash pattern=on 0.5\mylen off 0.5\mylen,dash phase=0.5\mylen
-          },
-          }
+            vertex/.style={circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt},
         }
 
         \begin{tikzpicture}
-          \tikzstyle{vertex}=[circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt]\textbf{}
+        
         """, file=outf)
 
         vertices = []
@@ -153,7 +127,9 @@ def leiwand(data):
                                                                              i] + "}", x=coord[0], y=coord[1]),
                   file=outf)
 
-        edge_string = r"\path ({v1}) edge[{options}, opacity={opacity}] ({v2});"
+        #edge_string = r"\path ({v1}) edge[{options}, opacity={opacity}] ({v2});"
+        edge_string = r"\path[{options}, opacity={opacity}] ({v1}) to ({v2});"
+        
         for d in data:
             assert (len(d) == 6)
             weight = d[0]
@@ -214,3 +190,5 @@ if __name__ == "__main__":
 
     print("calling with: ", sys.argv)
     leiwand(sys.argv)
+
+

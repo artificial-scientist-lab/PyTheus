@@ -144,7 +144,7 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     return fig
 
 
-def leiwandPlot(graph):
+def leiwandPlot(graph,name='graph'):
     data = []
     edge_dict = th.edgeBleach(graph.edges)
     for uc_edge in edge_dict.keys():
@@ -159,7 +159,7 @@ def leiwandPlot(graph):
             else:
                 bend = -22.5 + (ii + 0.5) * 45 / mult
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
-    theseus.leiwand.leiwand(data)
+    theseus.leiwand.leiwand(data,name)
 
 
 def plotFromFile(filename, number_nodes=True, outfile = ""):

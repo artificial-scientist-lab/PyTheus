@@ -36,9 +36,9 @@ variables = {
 }
 
 
-def leiwand(data):
+def leiwand(data,name='graph'):
     poly = {}
-    output = "graph"
+    output = name
     numcolors = 6
 
     external_vertices = None
@@ -46,7 +46,7 @@ def leiwand(data):
         external_vertices = variables["vertices"].split(' ')
         # reverse order (drawing is counter-clockwise)
         external_vertices = list(reversed(external_vertices))
-        print("got vertices: ", external_vertices)
+        #print("got vertices: ", external_vertices)
 
     whitespace = None
     if variables["whitespace"] is not None:
@@ -55,10 +55,10 @@ def leiwand(data):
         optionmap = {tuple([c1, c2, True]): f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in
                      itertools.permutations(range(numcolors), 2)}
         for ii in range(numcolors):
-            optionmap[(ii, ii, True)] = f"color = col{ii}"
+            optionmap[(ii, ii, True)] = f"bicolor={{col{ii}}}{{col{ii}}}"
         optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c1}}}{{col{c2}}}" for c1, c2 in
                      itertools.product(range(numcolors), repeat=2)})
-        print(optionmap)
+        #print(optionmap)
         if whitespace is not None:
             print("\documentclass[border={}]{}".format(whitespace, r"{standalone}"), file=outf)
         else:
@@ -67,17 +67,18 @@ def leiwand(data):
         
          \usepackage{tikz}
          \usetikzlibrary{decorations.markings, shapes.geometric} 
+         
+        """, file=outf)
  
-
-        \begin{document}
-        \pagestyle{empty}
-    """, file=outf)
         colors = r"\definecolor{vertexcol}" + variables["vertexcolor"]
         for ii in range(numcolors):
             colors += f"\definecolor{{col{ii}}}" + variables[f"col{ii}"]
         colors += r"\definecolor{fontcolor}" + variables["fontcolor"]
         print(colors, file=outf)
+       
         print(r"""
+        \begin{document}
+      
         \tikzset{
             bicolor/.style n args={2}{
                 postaction={draw=#1, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
@@ -86,7 +87,7 @@ def leiwand(data):
             bicolor_neg/.style n args={2}{
                 postaction={draw=#1, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
                 postaction={draw=#2, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
-                postaction={decoration={markings, mark=at position 0.5 with {\node[diamond, fill=white,aspect=0.7,draw, thin, minimum width=10pt] {};}}, decorate},
+                postaction={decoration={markings, mark=at position 0.5 with {\node[diamond, fill=white, aspect=0.7,draw, thin, minimum width=10pt,opacity=1] {};}}, decorate},
             },
             vertex/.style={circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt},
         }

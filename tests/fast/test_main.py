@@ -7,11 +7,12 @@ from filecmp import cmp
 from typing import List
 
 from numpy import array
+from pygments.lexers import graph
 
 from theseus import main
 from theseus.help_functions import readableState
 from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
-    setup_for_target, setup_for_fockbasis
+    setup_for_target, setup_for_fockbasis, optimize_graph
 
 
 class TestMainModule(unittest.TestCase):
@@ -139,9 +140,24 @@ class TestMainModule(unittest.TestCase):
         actual = setup_for_fockbasis(cnfg)
         self.assertEqual([((0, 0), (0, 0), (0, 0), (2, 0)), ((1, 0), (1, 0), (1, 0), (2, 0))], actual[0].kets)
         self.assertEqual([1, 1.4142135623730951], actual[0].amplitudes)
-        self.assertEqual([1,1,1], actual[1])
+        self.assertEqual([1, 1, 1], actual[1])
         self.assertIsNone(actual[2])
-        self.assertEqual([(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (1, 1, 0, 0), (1, 2, 0, 0), (2, 2, 0, 0)], actual[3].edges)
+        self.assertEqual([(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (1, 1, 0, 0), (1, 2, 0, 0), (2, 2, 0, 0)],
+                         actual[3].edges)
         self.assertTrue(all(actual[3].weights))
 
-
+    def test_optimize_graph(self):
+        cnfg, filename = read_config(is_example=True, filename='werner.json')
+        dimension = [2, 2, 5, 1]
+        trgt_state = {((0, 0), (1, 1), (2, 0), (3, 0)): 0.69, ((0, 1), (1, 0), (2, 0), (3, 0)): 0.69,
+                      ((0, 0), (1, 0), (2, 1), (3, 0)): 0.31, ((0, 0), (1, 1), (2, 2), (3, 0)): 0.31,
+                      ((0, 1), (1, 0), (2, 3), (3, 0)): 0.31, ((0, 1), (1, 1), (2, 4), (3, 0)): 0.31}
+        exp_output = {(2, 3, 3, 0): -0.23585197809440675, (1, 3, 1, 0): -0.43514355328051485,
+                      (0, 3, 0, 0): 0.5136695782478442, (1, 2, 0, 1): -0.8345901796167418,
+                      (1, 2, 1, 2): -0.8345926447434294, (0, 1, 0, 1): 0.9042627799530236,
+                      (0, 2, 1, 4): 0.985201959504516, (2, 3, 0, 0): -0.9995958500905592, (0, 1, 1, 0): 1.0}
+        t_state = ["010", "100", "001", "012", "103", "114"]
+        actual = optimize_graph(cnfg, dimension, filename, build_starting_graph(cnfg, dimension), None, trgt_state)
+        print(actual)
+        print(type(actual))
+        print(len(actual))

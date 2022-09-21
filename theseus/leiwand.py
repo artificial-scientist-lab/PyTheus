@@ -28,6 +28,7 @@ variables = {
     "col3": "{RGB}{255, 165, 0}",
     "col4": "{RGB}{128,0,128}",
     "col5": "{RGB}{255, 255, 0}",
+    "col6": "{RGB}{102, 0, 102}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
     "angle": 0,
@@ -39,7 +40,7 @@ variables = {
 def leiwand(data,name='graph'):
     poly = {}
     output = name
-    numcolors = 6
+    numcolors = 7
 
     external_vertices = None
     if variables['vertices'] is not None:

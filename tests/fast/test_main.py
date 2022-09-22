@@ -6,12 +6,13 @@ import unittest
 from filecmp import cmp
 from typing import List
 
+import numpy as np
 from numpy import array
 
 from theseus import main
 from theseus.help_functions import readableState
 from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
-    setup_for_target, setup_for_fockbasis
+    setup_for_target, setup_for_fockbasis, optimize_graph, run_main
 
 
 class TestMainModule(unittest.TestCase):
@@ -139,9 +140,22 @@ class TestMainModule(unittest.TestCase):
         actual = setup_for_fockbasis(cnfg)
         self.assertEqual([((0, 0), (0, 0), (0, 0), (2, 0)), ((1, 0), (1, 0), (1, 0), (2, 0))], actual[0].kets)
         self.assertEqual([1, 1.4142135623730951], actual[0].amplitudes)
-        self.assertEqual([1,1,1], actual[1])
+        self.assertEqual([1, 1, 1], actual[1])
         self.assertIsNone(actual[2])
-        self.assertEqual([(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (1, 1, 0, 0), (1, 2, 0, 0), (2, 2, 0, 0)], actual[3].edges)
+        self.assertEqual([(0, 0, 0, 0), (0, 1, 0, 0), (0, 2, 0, 0), (1, 1, 0, 0), (1, 2, 0, 0), (2, 2, 0, 0)],
+                         actual[3].edges)
         self.assertTrue(all(actual[3].weights))
 
-
+    def test_optimize_graph(self):
+        cnfg, filename = read_config(is_example=True, filename='werner.json')
+        dimension = [2, 2, 5, 1]
+        exp_output = {(0, 1, 1, 1): -0.4115376348306805, (1, 2, 0, 1): 0.43097397912168994,
+                      (1, 2, 1, 2): 0.4309739796322021, (0, 2, 1, 3): 0.44939847729263027,
+                      (1, 3, 0, 0): -0.8812150910946458, (0, 3, 0, 0): -0.9185771000730444,
+                      (1, 2, 1, 0): 0.9592641504673297, (2, 3, 4, 0): 0.962075654675881, (0, 2, 1, 0): 1.0}
+        t_state = setup_for_target(cnfg)
+        np.random.seed(0)
+        actual = optimize_graph(cnfg, dimension, filename, build_starting_graph(cnfg, dimension), None, t_state[0])
+        self.assertEqual([5,5,5,1], actual.dimensions)
+        self.assertEqual(9, len(actual))
+        self.assertEqual(exp_output, actual.graph)

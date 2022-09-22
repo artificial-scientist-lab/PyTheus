@@ -80,7 +80,7 @@ class topological_opti:
         Raises
         ------
         ValueError
-            if imaginary is not defined correctly in congig file
+            if imaginary is not defined correctly in config file
 
         Returns
         -------

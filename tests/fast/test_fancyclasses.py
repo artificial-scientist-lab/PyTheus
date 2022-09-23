@@ -26,7 +26,6 @@ class TestFancyClassesModule(unittest.TestCase):
 
 
 class TestGraph(unittest.TestCase):
-
     def test_init_graph_edges_given_not_imaginary_rest_default(self):
         graph = Graph(BELL['edges'], imaginary=False)
 
@@ -37,20 +36,5 @@ class TestGraph(unittest.TestCase):
             ((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]
         }, graph.state_catalog)
 
-    def test_graphStarter(self):
-        cnfg, filename = read_config(is_example=True, filename='cnot_22.json')
-        input = {(0, 1, 0, 0): True, (0, 1, 0, 1): True, (0, 1, 1, 0): True,
-                 (0, 1, 1, 1): True, (0, 2, 0, 0): True, (0, 2, 0, 1): True,
-                 (0, 2, 1, 0): True, (0, 2, 1, 1): True, (0, 3, 0, 0): True,
-                 (0, 3, 0, 1): True, (0, 3, 1, 0): True, (0, 3, 1, 1): True,
-                 (1, 2, 0, 0): True, (1, 2, 0, 1): True, (1, 2, 1, 0): True,
-                 (1, 2, 1, 1): True, (1, 3, 0, 0): True, (1, 3, 0, 1): True,
-                 (1, 3, 1, 0): True, (1, 3, 1, 1): True, (2, 3, 0, 0): True,
-                 (2, 3, 0, 1): True, (2, 3, 1, 0): True, (2, 3, 1, 1): True}
-        expected_sorted_edge = [(0, 1, 0, 0), (0, 1, 1, 1), (0, 1, 2, 2), (0, 1, 3, 3), (0, 2, 0, 0), (0, 2, 1, 1),
-                                (0, 2, 2, 2), (0, 2, 3, 3), (0, 3, 0, 0), (0, 4, 0, 0), (0, 5, 0, 0), (1, 2, 0, 0),
-                                (1, 2, 1, 1), (1, 2, 2, 2), (1, 2, 3, 3), (1, 3, 0, 0), (1, 4, 0, 0), (1, 5, 0, 0),
-                                (2, 3, 0, 0), (2, 4, 0, 0), (2, 5, 0, 0), (3, 4, 0, 0), (3, 5, 0, 0), (4, 5, 0, 0)]
-        #actual = Graph.graphStarter(self,expected_sorted_edge,len(expected_sorted_edge))
-        #print(actual)
-        input_val = [(0, 1, 0, 0), (0, 1, 1, 1)]
+
+

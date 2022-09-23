@@ -1,9 +1,13 @@
 import unittest
+from random import random
+
+import numpy as np
+from numpy.random import RandomState
 
 from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
-    stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph
+    stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach
 
 
 class TestTheseusModule(unittest.TestCase):
@@ -56,55 +60,18 @@ class TestTheseusModule(unittest.TestCase):
         self.assertEqual(value, actual[key])
 
     def test_stringEdges_withImaginary_False(self):
-        actual = stringEdges(GHZ_346['edges'], imaginary = False)
-        exp = ['w_0_1_0_0', 'w_0_1_0_1', 'w_0_1_0_2', 'w_0_1_0_3', 'w_0_1_1_0', 'w_0_1_1_1', 'w_0_1_1_2', 'w_0_1_1_3',
-               'w_0_1_2_0', 'w_0_1_2_1', 'w_0_1_2_2', 'w_0_1_2_3', 'w_0_1_3_0', 'w_0_1_3_1', 'w_0_1_3_2', 'w_0_1_3_3',
-               'w_0_2_0_0', 'w_0_2_0_1', 'w_0_2_0_2', 'w_0_2_0_3', 'w_0_2_1_0', 'w_0_2_1_1', 'w_0_2_1_2', 'w_0_2_1_3',
-               'w_0_2_2_0', 'w_0_2_2_1', 'w_0_2_2_2', 'w_0_2_2_3', 'w_0_2_3_0', 'w_0_2_3_1', 'w_0_2_3_2', 'w_0_2_3_3',
-               'w_0_3_0_0', 'w_0_3_1_0', 'w_0_3_2_0', 'w_0_3_3_0', 'w_0_4_0_0', 'w_0_4_1_0', 'w_0_4_2_0', 'w_0_4_3_0',
-               'w_0_5_0_0', 'w_0_5_1_0', 'w_0_5_2_0', 'w_0_5_3_0', 'w_1_2_0_0', 'w_1_2_0_1', 'w_1_2_0_2', 'w_1_2_0_3',
-               'w_1_2_1_0', 'w_1_2_1_1', 'w_1_2_1_2', 'w_1_2_1_3', 'w_1_2_2_0', 'w_1_2_2_1', 'w_1_2_2_2', 'w_1_2_2_3',
-               'w_1_2_3_0', 'w_1_2_3_1', 'w_1_2_3_2', 'w_1_2_3_3', 'w_1_3_0_0', 'w_1_3_1_0', 'w_1_3_2_0', 'w_1_3_3_0',
-               'w_1_4_0_0', 'w_1_4_1_0', 'w_1_4_2_0', 'w_1_4_3_0', 'w_1_5_0_0', 'w_1_5_1_0', 'w_1_5_2_0', 'w_1_5_3_0',
-               'w_2_3_0_0', 'w_2_3_1_0', 'w_2_3_2_0', 'w_2_3_3_0', 'w_2_4_0_0', 'w_2_4_1_0', 'w_2_4_2_0', 'w_2_4_3_0',
-               'w_2_5_0_0', 'w_2_5_1_0', 'w_2_5_2_0', 'w_2_5_3_0', 'w_3_4_0_0', 'w_3_5_0_0', 'w_4_5_0_0']
-        self.assertEqual(exp,actual)
+        actual = stringEdges(GHZ_346['edges'], imaginary=False)
+        self.assertIn('w_0_3_2_0', actual)
+        self.assertEqual('w_4_5_0_0', actual[86])
         self.assertEqual(87, len(actual))
 
     def test_stringEdges_withImaginary_True(self):
         actual = stringEdges(GHZ_346['edges'], imaginary=True)
-        exp_out = ['r_0_1_0_0', 'r_0_1_0_1', 'r_0_1_0_2', 'r_0_1_0_3', 'r_0_1_1_0', 'r_0_1_1_1', 'r_0_1_1_2',
-                    'r_0_1_1_3', 'r_0_1_2_0', 'r_0_1_2_1', 'r_0_1_2_2', 'r_0_1_2_3', 'r_0_1_3_0', 'r_0_1_3_1',
-                    'r_0_1_3_2', 'r_0_1_3_3', 'r_0_2_0_0', 'r_0_2_0_1', 'r_0_2_0_2', 'r_0_2_0_3', 'r_0_2_1_0',
-                    'r_0_2_1_1', 'r_0_2_1_2', 'r_0_2_1_3', 'r_0_2_2_0', 'r_0_2_2_1', 'r_0_2_2_2', 'r_0_2_2_3',
-                    'r_0_2_3_0', 'r_0_2_3_1', 'r_0_2_3_2', 'r_0_2_3_3', 'r_0_3_0_0', 'r_0_3_1_0', 'r_0_3_2_0',
-                    'r_0_3_3_0', 'r_0_4_0_0', 'r_0_4_1_0', 'r_0_4_2_0', 'r_0_4_3_0', 'r_0_5_0_0', 'r_0_5_1_0',
-                    'r_0_5_2_0', 'r_0_5_3_0', 'r_1_2_0_0', 'r_1_2_0_1', 'r_1_2_0_2', 'r_1_2_0_3', 'r_1_2_1_0',
-                    'r_1_2_1_1', 'r_1_2_1_2', 'r_1_2_1_3', 'r_1_2_2_0', 'r_1_2_2_1', 'r_1_2_2_2', 'r_1_2_2_3',
-                    'r_1_2_3_0', 'r_1_2_3_1', 'r_1_2_3_2', 'r_1_2_3_3', 'r_1_3_0_0', 'r_1_3_1_0', 'r_1_3_2_0',
-                    'r_1_3_3_0', 'r_1_4_0_0', 'r_1_4_1_0', 'r_1_4_2_0', 'r_1_4_3_0', 'r_1_5_0_0', 'r_1_5_1_0',
-                    'r_1_5_2_0', 'r_1_5_3_0', 'r_2_3_0_0', 'r_2_3_1_0', 'r_2_3_2_0', 'r_2_3_3_0', 'r_2_4_0_0',
-                    'r_2_4_1_0', 'r_2_4_2_0', 'r_2_4_3_0', 'r_2_5_0_0', 'r_2_5_1_0', 'r_2_5_2_0', 'r_2_5_3_0',
-                    'r_3_4_0_0', 'r_3_5_0_0', 'r_4_5_0_0', 'th_0_1_0_0', 'th_0_1_0_1', 'th_0_1_0_2', 'th_0_1_0_3',
-                    'th_0_1_1_0', 'th_0_1_1_1', 'th_0_1_1_2', 'th_0_1_1_3', 'th_0_1_2_0', 'th_0_1_2_1', 'th_0_1_2_2',
-                    'th_0_1_2_3', 'th_0_1_3_0', 'th_0_1_3_1', 'th_0_1_3_2', 'th_0_1_3_3', 'th_0_2_0_0', 'th_0_2_0_1',
-                    'th_0_2_0_2', 'th_0_2_0_3', 'th_0_2_1_0', 'th_0_2_1_1', 'th_0_2_1_2', 'th_0_2_1_3', 'th_0_2_2_0',
-                    'th_0_2_2_1', 'th_0_2_2_2', 'th_0_2_2_3', 'th_0_2_3_0', 'th_0_2_3_1', 'th_0_2_3_2', 'th_0_2_3_3',
-                    'th_0_3_0_0', 'th_0_3_1_0', 'th_0_3_2_0', 'th_0_3_3_0', 'th_0_4_0_0', 'th_0_4_1_0', 'th_0_4_2_0',
-                    'th_0_4_3_0', 'th_0_5_0_0', 'th_0_5_1_0', 'th_0_5_2_0', 'th_0_5_3_0', 'th_1_2_0_0', 'th_1_2_0_1',
-                    'th_1_2_0_2', 'th_1_2_0_3', 'th_1_2_1_0', 'th_1_2_1_1', 'th_1_2_1_2', 'th_1_2_1_3', 'th_1_2_2_0',
-                    'th_1_2_2_1', 'th_1_2_2_2', 'th_1_2_2_3', 'th_1_2_3_0', 'th_1_2_3_1', 'th_1_2_3_2', 'th_1_2_3_3',
-                    'th_1_3_0_0', 'th_1_3_1_0', 'th_1_3_2_0', 'th_1_3_3_0', 'th_1_4_0_0', 'th_1_4_1_0', 'th_1_4_2_0',
-                    'th_1_4_3_0', 'th_1_5_0_0', 'th_1_5_1_0', 'th_1_5_2_0', 'th_1_5_3_0', 'th_2_3_0_0', 'th_2_3_1_0',
-                    'th_2_3_2_0', 'th_2_3_3_0', 'th_2_4_0_0', 'th_2_4_1_0', 'th_2_4_2_0', 'th_2_4_3_0', 'th_2_5_0_0',
-                    'th_2_5_1_0', 'th_2_5_2_0', 'th_2_5_3_0', 'th_3_4_0_0', 'th_3_5_0_0', 'th_4_5_0_0']
         self.assertIn('r_0_1_0_1', actual)
         self.assertEqual('r_4_5_0_0', actual[86])
         self.assertIn('th_0_1_0_0', actual)
         self.assertEqual('th_4_5_0_0', actual[173])
-        self.assertEqual(exp_out, actual)
         self.assertEqual(174, len(actual))
-
 
     def test_allPerfectMatchings(self):
         actual = allPerfectMatchings([4, 4, 4, 1, 1, 1])
@@ -118,7 +85,7 @@ class TestTheseusModule(unittest.TestCase):
                      ((0, 5, 0, 0), (1, 4, 0, 0), (2, 3, 0, 0))]
         self.assertIn(((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)), actual.keys())
         self.assertIn(((0, 3), (1, 3), (2, 2), (3, 0), (4, 0), (5, 0)), actual.keys())
-        self.assertIn(exp_value,actual.values())
+        self.assertIn(exp_value, actual.values())
         self.assertEqual(64, len(actual))
 
     def test_allEdgeCovers(self):
@@ -129,10 +96,39 @@ class TestTheseusModule(unittest.TestCase):
         self.assertEqual(list(val.values()), list(actual.values()))
 
     def test_allColorGraphs_Falseloop(self):
-        actual = allColorGraphs([(0,0),(0,1),(1,1),(1,1)], loops = False)
+        actual = allColorGraphs([(0, 0), (0, 1), (1, 1), (1, 1)], loops=False)
         self.assertEqual([((0, 1, 0, 1), (0, 1, 1, 1))], actual)
 
     def test_allColorGraphs_Trueloop(self):
         actual = allColorGraphs([(0, 0), (0, 1), (1, 1), (1, 1)], loops=True)
         self.assertEqual(((0, 0, 0, 1), (1, 1, 1, 1)), actual[0])
         self.assertEqual(((0, 1, 0, 1), (0, 1, 1, 1)), actual[1])
+
+    def test_buildRandomGraph(self):
+        dim = [4, 4, 4, 1, 1, 1]
+        np.random.seed(0)
+        actual = buildRandomGraph(dim, 87)
+        self.assertIn((2, 4, 1, 0), actual)
+        self.assertEqual(87, len(actual))
+        self.assertEqual((0, 1, 1, 0), actual[4])
+        self.assertEqual((0, 1, 3, 3), actual[15])
+
+    def test_nodeDegrees(self):
+        actual = nodeDegrees([(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)])
+        self.assertEqual([(0, 3), (1, 3), (2, 3), (3, 3)], actual)
+        self.assertEqual(4, len(actual))
+
+    def test_edgeBleach(self):
+        input = [(0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 1, 0), (0, 1, 1, 1), (0, 2, 0, 0), (0, 2, 0, 1), (0, 2, 0, 2),
+                 (0, 2, 0, 3), (0, 2, 0, 4), (0, 2, 1, 0), (0, 2, 1, 1), (0, 2, 1, 2), (0, 2, 1, 3), (0, 2, 1, 4),
+                 (0, 3, 0, 0), (0, 3, 1, 0), (1, 2, 0, 0), (1, 2, 0, 1), (1, 2, 0, 2), (1, 2, 0, 3), (1, 2, 0, 4),
+                 (1, 2, 1, 0), (1, 2, 1, 1), (1, 2, 1, 2), (1, 2, 1, 3), (1, 2, 1, 4), (1, 3, 0, 0), (1, 3, 1, 0),
+                 (2, 3, 0, 0), (2, 3, 1, 0), (2, 3, 2, 0), (2, 3, 3, 0), (2, 3, 4, 0)]
+        exp_out = {(0, 1): [(0, 0), (0, 1), (1, 0), (1, 1)],
+                   (0, 2): [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (1, 0), (1, 1), (1, 2), (1, 3), (1, 4)],
+                   (0, 3): [(0, 0), (1, 0)],
+                   (1, 2): [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (1, 0), (1, 1), (1, 2), (1, 3), (1, 4)],
+                   (1, 3): [(0, 0), (1, 0)], (2, 3): [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]}
+        actual = edgeBleach(input)
+        self.assertEqual(exp_out, actual)
+        self.assertEqual(6, len(actual))

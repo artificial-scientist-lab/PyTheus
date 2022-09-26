@@ -183,6 +183,7 @@ class saver:
         
         safe_dic = {'graph': self.convert_graph_keys_in_str(topo_obj.graph.graph),
                     'loss': topo_obj.loss_val,
+                    'seed': self.config['seed'],
                     'history': topo_obj.history}
 
         try:

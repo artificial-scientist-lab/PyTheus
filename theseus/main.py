@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pkg_resources
 import logging
+
 log = logging.getLogger(__name__)
 
 import theseus
@@ -23,6 +24,7 @@ from theseus.optimizer import topological_opti
 import itertools
 import numpy as np
 import random
+
 
 def run_main(filename, example):
     """Run the Theseus algorithm on a given input file.
@@ -47,33 +49,31 @@ def run_main(filename, example):
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 
-    random.seed(cnfg['seed'])
-    np.random.seed(seed=cnfg['seed'])
     sys.setrecursionlimit(1000000000)
 
     # step 2: build up target and starting graph
     if cnfg['loss_func'] == 'ent':  # optimization for entanglement requires specific setup
         dimensions, sys_dict, start_graph = setup_for_ent(cnfg)
         target_state = None
-    elif cnfg['loss_func'] == 'lff': #optimization of a custom loss function
+    elif cnfg['loss_func'] == 'lff':  # optimization of a custom loss function
         edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg['imaginary'])
         print(f'start graph has {len(edge_list)} edges.')
         start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
         dimensions = cnfg["dimensions"]
         target_state = None
         sys_dict = None
-    elif cnfg['loss_func'] in ['fockcr','fockfid']:
-        #ADD SETUP FOR FOCK OPTIMIZATION HERE
-        #start_graph, target_state, dimensions = setup_for_fockbasis()
+    elif cnfg['loss_func'] in ['fockcr', 'fockfid']:
+        # ADD SETUP FOR FOCK OPTIMIZATION HERE
+        # start_graph, target_state, dimensions = setup_for_fockbasis()
         sys_dict = None
         target_state, dimensions, sys_dict, start_graph = setup_for_fockbasis(cnfg)
 
-    else: #optimization for target given in config
-        #read out target and starting graph from cnfg
-        #modifies cnfg to incorporate topological constraints
+    else:  # optimization for target given in config
+        # read out target and starting graph from cnfg
+        # modifies cnfg to incorporate topological constraints
         target_state, start_graph, cnfg = setup_for_target(cnfg)
-        #target_state is state object
-        #start_graph is graph object
+        # target_state is state object
+        # start_graph is graph object
         dimensions = cnfg["dimensions"]
         sys_dict = None
 
@@ -102,6 +102,16 @@ def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_sta
     sv = saver.saver(config=cnfg, name_config_file=filename, dim=dimensions)
     # iterate over number samples
     for i in range(cnfg['samples']):
+        if i == 0:
+            seed = cnfg['seed']
+        else:
+            random.seed()
+            seed = random.randrange(1, 2 ** 32 - 1)
+
+        random.seed(seed)
+        np.random.seed(seed=seed)
+        cnfg['seed'] = seed
+
         # initialize optimizer object, do preoptimization on complete graph, truncate graph according to bulk_thr
         optimizer = topological_opti(start_graph, sv, ent_dic=sys_dict, target_state=target_state, config=cnfg)
         if cnfg['topopt']:
@@ -120,7 +130,6 @@ def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_sta
 
 
 def setup_for_fockbasis(cnfg):
-    
     try:
         if cnfg["amplitudes"]:
             print('amplitudes = ', cnfg["amplitudes"])
@@ -138,35 +147,35 @@ def setup_for_fockbasis(cnfg):
     except KeyError:
         print('imaginary not given, assuming real numbers.')
         cnfg["imaginary"] = False
-        
+
     sys_dict = None
 
-    #term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
+    # term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
     term_list = []
     for term in cnfg["target_state"]:
         ket = []
         for ii, tt in enumerate(term):
-            ket += [(ii,0)]*tt
-        #ket = [ for ii, tt in enumerate(term)]
+            ket += [(ii, 0)] * tt
+        # ket = [ for ii, tt in enumerate(term)]
         for ii in range(cnfg['num_anc']):
             ket.append((len(term) + ii, 0))
         term_list.append(tuple(ket))
-    #print(np.shape(term_list))
-            
+    # print(np.shape(term_list))
+
     # not the corrected target_state but has been modified in the loss function
     # this can be changed afterwards
     target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
-   
-    #print(hf.readableState(target_state)) 
-    num_mode_particle = len(cnfg["target_state"][0]) 
-    dimensions = [1]*(num_mode_particle +cnfg['num_anc']) # only one dimension at the moment
-    
-    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg["imaginary"],loops=cnfg["loops"])
+
+    # print(hf.readableState(target_state))
+    num_mode_particle = len(cnfg["target_state"][0])
+    dimensions = [1] * (num_mode_particle + cnfg['num_anc'])  # only one dimension at the moment
+
+    edge_list = th.buildAllEdges(dimensions, imaginary=cnfg["imaginary"], loops=cnfg["loops"])
     edge_list = hf.prepEdgeList(edge_list, cnfg)
     print(f'start graph has {len(edge_list)} edges.')
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
- 
-    return target_state, dimensions, sys_dict, start_graph  
+
+    return target_state, dimensions, sys_dict, start_graph
 
 
 def setup_for_ent(cnfg):
@@ -327,7 +336,7 @@ def setup_for_target(cnfg):
     disjoint_nodes = cnfg["single_emitters"] + cnfg["in_nodes"]
     removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
     edge_list = hf.removeConnections(edge_list, removed_connections)
-    #apply unicolor simplification
+    # apply unicolor simplification
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
         edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
@@ -405,7 +414,7 @@ def read_config(is_example, filename):
     if 'topopt' not in cnfg:
         cnfg['topopt'] = True
     if 'seed' not in cnfg:
-        cnfg['seed'] = random.randrange(sys.maxsize)
+        cnfg['seed'] = random.randrange(1, 2 ** 32 - 1)
     if not cnfg['topopt']:
         cnfg['bulk_thr'] = 0
     return cnfg, filename

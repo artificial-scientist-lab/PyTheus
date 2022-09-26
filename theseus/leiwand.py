@@ -28,6 +28,7 @@ variables = {
     "col3": "{RGB}{255, 165, 0}",
     "col4": "{RGB}{128,0,128}",
     "col5": "{RGB}{255, 255, 0}",
+    "col6": "{RGB}{102, 0, 102}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
     "angle": 0,
@@ -36,17 +37,17 @@ variables = {
 }
 
 
-def leiwand(data):
+def leiwand(data,name='graph'):
     poly = {}
-    output = "graph"
-    numcolors = 6
+    output = name
+    numcolors = 7
 
     external_vertices = None
     if variables['vertices'] is not None:
         external_vertices = variables["vertices"].split(' ')
         # reverse order (drawing is counter-clockwise)
         external_vertices = list(reversed(external_vertices))
-        print("got vertices: ", external_vertices)
+        #print("got vertices: ", external_vertices)
 
     whitespace = None
     if variables["whitespace"] is not None:
@@ -55,70 +56,46 @@ def leiwand(data):
         optionmap = {tuple([c1, c2, True]): f"bicolor={{col{c1}}}{{col{c2}}}" for c1, c2 in
                      itertools.permutations(range(numcolors), 2)}
         for ii in range(numcolors):
-            optionmap[(ii, ii, True)] = f"color = col{ii}"
-        optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c1}}}{{col{c2}}}" for c1, c2 in
-                     itertools.product(range(numcolors), repeat=2)})
-        print(optionmap)
+            optionmap[(ii, ii, True)] = f"bicolor={{col{ii}}}{{col{ii}}}"
+        optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c2}}}{{col{c1}}}" for c1, c2 in
+                     itertools.product(range(numcolors), repeat=2)}) 
+        # if use f"bicolor_neg={{col{c1}}}{{col{c2}}}" will inverse the color for the negitive edges, don't know why; 
+        #print(optionmap)
         if whitespace is not None:
             print("\documentclass[border={}]{}".format(whitespace, r"{standalone}"), file=outf)
         else:
             print(r"\documentclass{standalone}", file=outf)
         print(r"""
-
-        \usepackage{tikz}
-        \usepackage{verbatim}
-
-        \usetikzlibrary{decorations.markings}
-        \usetikzlibrary{positioning,shapes.geometric} 
-
-        \begin{document}
-        \pagestyle{empty}
-    """, file=outf)
+        
+         \usepackage{tikz}
+         \usetikzlibrary{decorations.markings, shapes.geometric} 
+         
+        """, file=outf)
+ 
         colors = r"\definecolor{vertexcol}" + variables["vertexcolor"]
         for ii in range(numcolors):
             colors += f"\definecolor{{col{ii}}}" + variables[f"col{ii}"]
         colors += r"\definecolor{fontcolor}" + variables["fontcolor"]
         print(colors, file=outf)
+       
         print(r"""
-        \newlength\mylen
-        % check https://tex.stackexchange.com/questions/270001/tikz-coloring-edge-segments-with-different-colors
+        \begin{document}
+      
         \tikzset{
-        bicolor/.style n args={2}{
-          decoration={
-            markings,
-            mark=at position 0.5 with {
-              \node[draw=none,inner sep=0pt,fill=none,text width=0pt,minimum size=0pt] {\global\setlength\mylen{\pgfdecoratedpathlength}};
+            bicolor/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
             },
-          },
-          draw=#1,
-          dash pattern=on 0.5\mylen off 1.0\mylen,
-          preaction={decorate},
-          postaction={
-            draw=#2,
-            dash pattern=on 0.5\mylen off 0.5\mylen,dash phase=0.5\mylen
-          },
-          }
-        }
-        \tikzset{
-        bicolor_neg/.style n args={2}{
-          decoration={
-            markings,
-            mark=at position 0.5 with {
-              \node[diamond, draw,minimum width=10pt]{\global\setlength\mylen{\pgfdecoratedpathlength}};
+            bicolor_neg/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={decoration={markings, mark=at position 0.5 with {\node[diamond, fill=white, aspect=0.7,draw, thin, minimum width=10pt,opacity=1] {};}}, decorate},
             },
-          },
-          draw=#1,
-          dash pattern=on 0.5\mylen off 1.0\mylen,
-          preaction={decorate},
-          postaction={
-            draw=#2,
-            dash pattern=on 0.5\mylen off 0.5\mylen,dash phase=0.5\mylen
-          },
-          }
+            vertex/.style={circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt},
         }
 
         \begin{tikzpicture}
-          \tikzstyle{vertex}=[circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt]\textbf{}
+        
         """, file=outf)
 
         vertices = []
@@ -153,7 +130,9 @@ def leiwand(data):
                                                                              i] + "}", x=coord[0], y=coord[1]),
                   file=outf)
 
-        edge_string = r"\path ({v1}) edge[{options}, opacity={opacity}] ({v2});"
+        #edge_string = r"\path ({v1}) edge[{options}, opacity={opacity}] ({v2});"
+        edge_string = r"\path[{options}, opacity={opacity}] ({v1}) to ({v2});"
+        
         for d in data:
             assert (len(d) == 6)
             weight = d[0]
@@ -214,3 +193,5 @@ if __name__ == "__main__":
 
     print("calling with: ", sys.argv)
     leiwand(sys.argv)
+
+

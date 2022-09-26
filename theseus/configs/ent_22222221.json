@@ -1,6 +1,6 @@
 {
   "description": "Maximizing entanglement in all bi-partitions for seven qubits.",
-  "K": 'all',
+  "K": "all",
   "dim": 22222221,
   "ftol": 1e-05,
   "loss_func": "ent",

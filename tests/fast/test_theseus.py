@@ -7,7 +7,8 @@ from numpy.random import RandomState
 from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
-    stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach
+    stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach, \
+    targetEdges, removeNodes, recursiveEdgeCover, findEdgeCovers
 
 
 class TestTheseusModule(unittest.TestCase):
@@ -48,7 +49,7 @@ class TestTheseusModule(unittest.TestCase):
         actual = stateCatalog(graph_list)
         self.assertEqual(64, len(actual))
         key = ((0, 0), (1, 0), (2, 3), (3, 0), (4, 0), (5, 0))
-        value = [((0, 1, 0, 0), (2, 3, 3, 0), (4, 5, 0, 0)), ((0, 1, 0, 0), (2, 4, 3, 0), (3, 5, 0, 0)),
+        exp_value = [((0, 1, 0, 0), (2, 3, 3, 0), (4, 5, 0, 0)), ((0, 1, 0, 0), (2, 4, 3, 0), (3, 5, 0, 0)),
                  ((0, 1, 0, 0), (2, 5, 3, 0), (3, 4, 0, 0)), ((0, 2, 0, 3), (1, 3, 0, 0), (4, 5, 0, 0)),
                  ((0, 2, 0, 3), (1, 4, 0, 0), (3, 5, 0, 0)), ((0, 2, 0, 3), (1, 5, 0, 0), (3, 4, 0, 0)),
                  ((0, 3, 0, 0), (1, 2, 0, 3), (4, 5, 0, 0)), ((0, 3, 0, 0), (1, 4, 0, 0), (2, 5, 3, 0)),
@@ -57,7 +58,7 @@ class TestTheseusModule(unittest.TestCase):
                  ((0, 5, 0, 0), (1, 2, 0, 3), (3, 4, 0, 0)), ((0, 5, 0, 0), (1, 3, 0, 0), (2, 4, 3, 0)),
                  ((0, 5, 0, 0), (1, 4, 0, 0), (2, 3, 3, 0))]
         self.assertIn(key, actual)
-        self.assertEqual(value, actual[key])
+        self.assertEqual(exp_value, actual[key])
 
     def test_stringEdges_withImaginary_False(self):
         actual = stringEdges(GHZ_346['edges'], imaginary=False)
@@ -132,3 +133,37 @@ class TestTheseusModule(unittest.TestCase):
         actual = edgeBleach(input)
         self.assertEqual(exp_out, actual)
         self.assertEqual(6, len(actual))
+
+    def test_targetEdges(self):
+        input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+        actual = targetEdges([0],input)
+        print(actual)
+        print(len(actual))
+        self.assertEqual([(0, 1), (0, 2), (0, 3)], actual)
+        self.assertEqual(3, len(actual))
+
+    def test_removeNodes(self):
+        node = (0, 2)
+        graph_input = [(0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5),
+                       (3, 4), (3, 5), (4, 5)]
+        actual = removeNodes(node,graph_input)
+        self.assertEqual([(1, 3), (1, 4), (1, 5), (3, 4), (3, 5), (4, 5)], actual)
+        self.assertEqual(6, len(actual))
+
+    def test_recursiveEdgeCover(self):
+        graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+        possible_edge_covers = []
+        actual = recursiveEdgeCover(graph_input, possible_edge_covers)
+        self.assertIn([(0, 3), (1, 2), (1, 2)], possible_edge_covers )
+        self.assertEqual([(0, 1), (0, 2), (1, 3)], possible_edge_covers[2])
+        self.assertEqual([(0, 2), (1, 2), (1, 3)], possible_edge_covers[12])
+        self.assertEqual(22, len(possible_edge_covers))
+
+    def test_findEdgeCovers(self):
+        graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+        #(graph, edges_left=None, nodes_left=[], order=1, loops=False)
+        actual = findEdgeCovers(graph_input)
+        self.assertIn([(0, 3), (1, 2), (1, 2)], actual)
+        self.assertEqual([(0, 1), (0, 2), (1, 3)], actual[2])
+        self.assertEqual([(0, 2), (0, 3), (1, 3)], actual[12])
+        self.assertEqual(22, len(actual))

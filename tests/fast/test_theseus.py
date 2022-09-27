@@ -1,3 +1,4 @@
+import json
 import unittest
 from random import random
 
@@ -8,7 +9,8 @@ from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
 from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
     stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach, \
-    targetEdges, removeNodes, recursiveEdgeCover, findEdgeCovers
+    targetEdges, removeNodes, recursiveEdgeCover, findEdgeCovers, edgeWeight, weightProduct, writeNorm, targetEquation, \
+    compute_entanglement, buildLossString
 
 
 class TestTheseusModule(unittest.TestCase):
@@ -50,13 +52,13 @@ class TestTheseusModule(unittest.TestCase):
         self.assertEqual(64, len(actual))
         key = ((0, 0), (1, 0), (2, 3), (3, 0), (4, 0), (5, 0))
         exp_value = [((0, 1, 0, 0), (2, 3, 3, 0), (4, 5, 0, 0)), ((0, 1, 0, 0), (2, 4, 3, 0), (3, 5, 0, 0)),
-                 ((0, 1, 0, 0), (2, 5, 3, 0), (3, 4, 0, 0)), ((0, 2, 0, 3), (1, 3, 0, 0), (4, 5, 0, 0)),
-                 ((0, 2, 0, 3), (1, 4, 0, 0), (3, 5, 0, 0)), ((0, 2, 0, 3), (1, 5, 0, 0), (3, 4, 0, 0)),
-                 ((0, 3, 0, 0), (1, 2, 0, 3), (4, 5, 0, 0)), ((0, 3, 0, 0), (1, 4, 0, 0), (2, 5, 3, 0)),
-                 ((0, 3, 0, 0), (1, 5, 0, 0), (2, 4, 3, 0)), ((0, 4, 0, 0), (1, 2, 0, 3), (3, 5, 0, 0)),
-                 ((0, 4, 0, 0), (1, 3, 0, 0), (2, 5, 3, 0)), ((0, 4, 0, 0), (1, 5, 0, 0), (2, 3, 3, 0)),
-                 ((0, 5, 0, 0), (1, 2, 0, 3), (3, 4, 0, 0)), ((0, 5, 0, 0), (1, 3, 0, 0), (2, 4, 3, 0)),
-                 ((0, 5, 0, 0), (1, 4, 0, 0), (2, 3, 3, 0))]
+                     ((0, 1, 0, 0), (2, 5, 3, 0), (3, 4, 0, 0)), ((0, 2, 0, 3), (1, 3, 0, 0), (4, 5, 0, 0)),
+                     ((0, 2, 0, 3), (1, 4, 0, 0), (3, 5, 0, 0)), ((0, 2, 0, 3), (1, 5, 0, 0), (3, 4, 0, 0)),
+                     ((0, 3, 0, 0), (1, 2, 0, 3), (4, 5, 0, 0)), ((0, 3, 0, 0), (1, 4, 0, 0), (2, 5, 3, 0)),
+                     ((0, 3, 0, 0), (1, 5, 0, 0), (2, 4, 3, 0)), ((0, 4, 0, 0), (1, 2, 0, 3), (3, 5, 0, 0)),
+                     ((0, 4, 0, 0), (1, 3, 0, 0), (2, 5, 3, 0)), ((0, 4, 0, 0), (1, 5, 0, 0), (2, 3, 3, 0)),
+                     ((0, 5, 0, 0), (1, 2, 0, 3), (3, 4, 0, 0)), ((0, 5, 0, 0), (1, 3, 0, 0), (2, 4, 3, 0)),
+                     ((0, 5, 0, 0), (1, 4, 0, 0), (2, 3, 3, 0))]
         self.assertIn(key, actual)
         self.assertEqual(exp_value, actual[key])
 
@@ -136,7 +138,7 @@ class TestTheseusModule(unittest.TestCase):
 
     def test_targetEdges(self):
         input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
-        actual = targetEdges([0],input)
+        actual = targetEdges([0], input)
         print(actual)
         print(len(actual))
         self.assertEqual([(0, 1), (0, 2), (0, 3)], actual)
@@ -146,7 +148,7 @@ class TestTheseusModule(unittest.TestCase):
         node = (0, 2)
         graph_input = [(0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5),
                        (3, 4), (3, 5), (4, 5)]
-        actual = removeNodes(node,graph_input)
+        actual = removeNodes(node, graph_input)
         self.assertEqual([(1, 3), (1, 4), (1, 5), (3, 4), (3, 5), (4, 5)], actual)
         self.assertEqual(6, len(actual))
 
@@ -154,16 +156,82 @@ class TestTheseusModule(unittest.TestCase):
         graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
         possible_edge_covers = []
         actual = recursiveEdgeCover(graph_input, possible_edge_covers)
-        self.assertIn([(0, 3), (1, 2), (1, 2)], possible_edge_covers )
+        self.assertIn([(0, 3), (1, 2), (1, 2)], possible_edge_covers)
         self.assertEqual([(0, 1), (0, 2), (1, 3)], possible_edge_covers[2])
         self.assertEqual([(0, 2), (1, 2), (1, 3)], possible_edge_covers[12])
         self.assertEqual(22, len(possible_edge_covers))
 
     def test_findEdgeCovers(self):
         graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
-        #(graph, edges_left=None, nodes_left=[], order=1, loops=False)
-        actual = findEdgeCovers(graph_input)
+        actual = findEdgeCovers(graph_input, order=1)
         self.assertIn([(0, 3), (1, 2), (1, 2)], actual)
         self.assertEqual([(0, 1), (0, 2), (1, 3)], actual[2])
         self.assertEqual([(0, 2), (0, 3), (1, 3)], actual[12])
         self.assertEqual(22, len(actual))
+
+    def test_edgeWeight_withimaginary_false(self):
+        actual = edgeWeight(((0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 1, 0), (0, 1, 1, 1)), imaginary=False)
+        self.assertIn('(0, 1, 1, 0)', actual)
+        self.assertIn('w_(0, 1, 0, 0)', actual)
+
+    def test_edgeWeight_withimaginary_cartesian(self):
+        actual = edgeWeight(((0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 1, 0), (0, 1, 1, 1)), imaginary='cartesian')
+        self.assertIn('r_(0, 1, 0, 0)', actual)
+        self.assertIn('(0, 1, 1, 1)+1j*th_(0, 1, 0, 0)', actual)
+
+    def test_edgeWeight_withimaginary_polar(self):
+        actual = edgeWeight(((0, 1, 0, 0), (0, 1, 0, 1), (0, 1, 1, 0), (0, 1, 1, 1)), imaginary='polar')
+        self.assertIn('r_(0, 1, 0, 0)', actual)
+        self.assertIn('(0, 1, 1, 1)*np.exp(1j*th_(0, 1, 0, 0)', actual)
+
+    def test_weightProduct_withimaginary_false(self):
+        actual = weightProduct(((0, 3, 0, 0), (1, 2, 0, 1)), imaginary=False)
+        self.assertEqual('w_0_3_0_0*w_1_2_0_1', actual)
+
+    def test_weightProduct_withimaginary_polar(self):
+        actual = weightProduct(((0, 3, 0, 0), (1, 2, 0, 1)), imaginary='polar')
+        self.assertEqual('r_0_3_0_0*np.exp(1j*th_0_3_0_0)*r_1_2_0_1*np.exp(1j*th_1_2_0_1)', actual)
+
+    def test_weightProduct_withimaginary_cartesian(self):
+        actual = weightProduct(((0, 3, 0, 0), (1, 2, 0, 1)), imaginary='cartesian')
+        self.assertEqual('(r_0_3_0_0+1j*th_0_3_0_0)*(r_1_2_0_1+1j*th_1_2_0_1)', actual)
+
+    def test_writeNorm_withimaginary_false(self):
+        actual = writeNorm({((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]}, imaginary=False)
+        exp_out = '1*((w_0_1_0_0)**2) + ((w_0_1_1_1)**2)'
+        self.assertEqual(exp_out, actual)
+
+    def test_writeNorm_withimaginary_cartesian(self):
+        actual = writeNorm({((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]},
+                           imaginary='cartesian')
+        exp_out = '1*(abs((r_0_1_0_0+1j*th_0_1_0_0))**2) + (abs((r_0_1_1_1+1j*th_0_1_1_1))**2)'
+        self.assertEqual(exp_out, actual)
+
+    def test_writeNorm_withimaginary_polar(self):
+        actual = writeNorm({((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]},
+                           imaginary='polar')
+        exp_out = '1*(abs(r_0_1_0_0*np.exp(1j*th_0_1_0_0))**2) + (abs(r_0_1_1_1*np.exp(1j*th_0_1_1_1))**2)'
+        self.assertEqual(exp_out, actual)
+
+    def test_targetEquation_withimaginary_false(self):
+        ket_input = [((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)), ((0, 0), (1, 1), (2, 0), (3, 1), (4, 0), (5, 0)),
+                     ((0, 1), (1, 0), (2, 1), (3, 1), (4, 0), (5, 0)), ((0, 1), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0))]
+        amp = [True, True, True, True]
+        actual = targetEquation(ket_input, imaginary=False)
+        self.assertIn('w_0_1_0_0*w_2_5_0_0*w_3_4_0_0', actual)
+        self.assertIn('w_0_1_1_0*w_2_4_1_0*w_3_5_1_0', actual)
+        self.assertIn('w_0_5_1_0*w_1_4_1_0*w_2_3_1_0))**2)/4', actual)
+        self.assertEqual(1934, len(actual))
+        print(actual)
+        print(len(actual))
+        print(type(actual))
+
+    def test_targetEquation_withimaginary_cartesian(self):
+        ket_input = [((0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)), ((0, 0), (1, 1), (2, 0), (3, 1), (4, 0), (5, 0)),
+                     ((0, 1), (1, 0), (2, 1), (3, 1), (4, 0), (5, 0)), ((0, 1), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0))]
+        actual = targetEquation(ket_input, None, state_catalog=None, imaginary='cartesian')
+        self.assertIn('(abs(((r_0_1_0_0+1j*th_0_1_0_0)*(r_2_3_0_0+1j*th_2_3_0_0)*(r_4_5_0_0+1j*th_4_5_0_0)', actual)
+        self.assertIn('(r_0_3_1_1+1j*th_0_3_1_1)*(r_1_5_0_0+1j*th_1_5_0_0)*(r_2_4_1_0+1j*th_2_4_1_0)', actual)
+        self.assertIn('(r_0_5_1_0+1j*th_0_5_1_0)*(r_1_4_1_0+1j*th_1_4_1_0)*(r_2_3_1_0+1j*th_2_3_1_0)))**2)/4', actual)
+        self.assertEqual(4817, len(actual))
+

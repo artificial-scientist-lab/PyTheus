@@ -144,7 +144,7 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     return fig
 
 
-def leiwandPlot(graph,name='graph'):
+def leiwandPlot(graph, name='graph'):
     data = []
     edge_dict = th.edgeBleach(graph.edges)
     for uc_edge in edge_dict.keys():
@@ -154,15 +154,36 @@ def leiwandPlot(graph,name='graph'):
             edge = tuple(uc_edge + coloring)
             weight = graph[edge]
             if loop:
-                loose = 10 + 5*ii
+                loose = 10 + 5 * ii
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
             else:
                 bend = -22.5 + (ii + 0.5) * 45 / mult
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
-    theseus.leiwand.leiwand(data,name)
+    theseus.leiwand.leiwand(data, name)
 
 
-def plotFromFile(filename, number_nodes=True, outfile = ""):
+def leiwandPlotBulk(graph, cnfg, root):
+    # if graph is imaginary, just take absolute value as weight for now
+    if graph.imaginary:
+        graph.absolute()
+    data = []
+    edge_dict = th.edgeBleach(graph.edges)
+    for uc_edge in edge_dict.keys():
+        mult = len(edge_dict[uc_edge])
+        loop = (uc_edge[0] == uc_edge[1])
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            edge = tuple(uc_edge + coloring)
+            weight = graph[edge]
+            if loop:
+                loose = 10 + 5 * ii
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
+            else:
+                bend = -22.5 + (ii + 0.5) * 45 / mult
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
+    theseus.leiwand.leiwandBulk(data, cnfg, root=root)
+
+
+def plotFromFile(filename, number_nodes=True, outfile=""):
     if not os.path.exists(filename) or os.path.isdir(filename):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:

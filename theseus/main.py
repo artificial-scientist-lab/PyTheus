@@ -26,7 +26,7 @@ import numpy as np
 import random
 
 
-def run_main(filename, example):
+def run_main(filename, example, run_opt = True):
     """Run the Theseus algorithm on a given input file.
 
     Parameters
@@ -78,7 +78,10 @@ def run_main(filename, example):
         sys_dict = None
 
     # step 3: start optimization
-    optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
+    if run_opt:
+        optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
+    else:
+        return cnfg
 
 
 def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state):
@@ -174,7 +177,7 @@ def setup_for_fockbasis(cnfg):
     edge_list = hf.prepEdgeList(edge_list, cnfg)
     print(f'start graph has {len(edge_list)} edges.')
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
-
+    print(dimensions)
     return target_state, dimensions, sys_dict, start_graph
 
 
@@ -182,6 +185,7 @@ def setup_for_ent(cnfg):
     # concurrence optimization
     # define local dimensions
     dimensions = [int(ii) for ii in str(cnfg['dim'])]
+    cnfg['dimensions'] = dimensions
     if len(dimensions) % 2 != 0:
         dimensions.append(1)
     target_state = None

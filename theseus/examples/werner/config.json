@@ -1,0 +1,37 @@
+{
+    "description": "Werner state (mixed state)",
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "werner",
+    "ftol": 1e-06,
+    "loss_func": "fid",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "010",
+        "100",
+        "001",
+        "012",
+        "103",
+        "114"
+    ],
+    "amplitudes": [
+        0.69,
+        0.69,
+        0.31,
+        0.31,
+        0.31,
+        0.31
+    ],
+    "thresholds": [
+        0.05,
+        1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

@@ -1,0 +1,31 @@
+{
+  "description": "Measurment for three particle three-dimensional GHZ state. Two ancillary particles",
+  "bulk_thr": 0.01,
+  "edges_tried": 30,
+  "foldername": "ghz_analyzer_3d",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "000",
+    "111",
+    "222"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

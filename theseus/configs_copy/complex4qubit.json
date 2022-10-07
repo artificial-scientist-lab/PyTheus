@@ -1,0 +1,29 @@
+{
+  "description": "A state with real number coefficients that can only be realized with a complex valued graph",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "complex4qubit",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": "polar",
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+    "0011",
+    "0100",
+    "0111",
+    "1000",
+    "1100",
+    "1101",
+    "1110"
+  ],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

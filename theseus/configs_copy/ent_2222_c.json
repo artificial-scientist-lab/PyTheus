@@ -1,0 +1,17 @@
+{
+  "description": "Maximizing entanglement in k=2 bi-partitions for four qubits with complex weights.",
+  "K": 2,
+  "dim": 2222,
+  "ftol": 1e-9,
+  "loss_func": "ent",
+  "min_edge": 4,
+  "num_pre": 5,
+  "optimizer": "SLSQP",
+  "imaginary": "polar",
+  "samples": 50,
+  "thresholds": [
+    0.0000001
+  ],
+  "tries_per_edge": 5,
+  "var_factor": 2
+}

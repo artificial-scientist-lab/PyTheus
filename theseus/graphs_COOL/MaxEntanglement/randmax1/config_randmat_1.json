@@ -1,0 +1,49 @@
+{
+  "description": "Creation of random matrix state 1 from https://iopscience.iop.org/article/10.1088/1742-6596/698/1/012003/pdf",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "randmat_1",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": "polar",
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+    "000",
+    "100",
+    "010",
+    "001",
+    "111"
+  ],
+  "amplitudes": [
+    [
+      0.27,
+      0.0
+    ],
+    [
+      0.377,
+      0.0
+    ],
+    [
+      0.326,
+      0.0
+    ],
+    [
+      0.363,
+      0.0
+    ],
+    [
+      0.74,
+      -2.4818581963359367
+    ]
+  ],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

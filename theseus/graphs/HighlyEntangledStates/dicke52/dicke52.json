@@ -1,0 +1,32 @@
+{
+  "description": "Creation of symmetric state for five qubits",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "symmetric52",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+    "00011",
+    "00101",
+    "00110",
+    "01001",
+    "01010",
+    "01100",
+    "10001",
+    "10010",
+    "10100",
+    "11000"
+  ],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

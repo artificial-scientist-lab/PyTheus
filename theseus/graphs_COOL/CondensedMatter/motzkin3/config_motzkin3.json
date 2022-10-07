@@ -1,0 +1,26 @@
+{
+  "description": "Finding a setup for the creation of the three-particle Motzkin state",
+  "bulk_thr": 0.01,
+  "edges_tried": 20,
+  "foldername": "motzkin3",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "000",
+    "120",
+    "102",
+    "012"
+  ],
+  "thresholds": [
+    0.25,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

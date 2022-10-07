@@ -1,0 +1,38 @@
+{
+    "description": "Condensed matter state Haldane C of three particles",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "haldaneC_3",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 3,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [
+        "021",  
+        "012",
+        "201",
+        "222",
+        "210",
+        "102",
+        "120"
+    ],
+    "amplitudes": [
+        0.5,
+        0.5,
+        0.5,
+        2,
+        0.5,
+        0.5,
+        0.5
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

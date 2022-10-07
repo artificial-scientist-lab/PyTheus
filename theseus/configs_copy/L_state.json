@@ -1,0 +1,74 @@
+{
+    "description": "Creation of L-state. Four ancillary particles. https://iopscience.iop.org/article/10.1088/1742-6596/698/1/012003/pdf",
+    "bulk_thr": 0,
+    "edges_tried": 30,
+    "foldername": "L_state",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 4,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": "polar",
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [
+        "0000",
+        "1111",
+        "0011",
+        "1100",
+        "0101",
+        "0110",
+        "1001",
+        "1010"
+    ],
+    "amplitudes": [
+        [
+            1.0000000000000002,
+            1.0471975511965976
+        ],
+        [
+            1.0000000000000002,
+            1.0471975511965976
+        ],
+        [
+            1.7320508075688772,
+            -0.523598775598299
+        ],
+        [
+            1.7320508075688772,
+            -0.523598775598299
+        ],
+        [
+            1.0,
+            -2.094395102393196
+        ],
+        [
+            1.0,
+            -2.094395102393196
+        ],
+        [
+            1.0,
+            -2.094395102393196
+        ],
+        [
+            1.0,
+            -2.094395102393196
+        ]
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 10,
+    "unicolor": false,
+    "dimensions": [
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+    ]
+}

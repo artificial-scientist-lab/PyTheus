@@ -1,10 +1,10 @@
 {
     "description": "Onsager scar of six particles.",
     "bulk_thr": 0.01,
-    "edges_tried": 10,
-    "foldername": "onsager_cr",
+    "edges_tried": 40,
+    "foldername": "onsager_fid",
     "ftol": 1e-05,
-    "loss_func": "cr",
+    "loss_func": "fid",
     "num_anc": 0,
     "num_pre": 1,
     "optimizer": "L-BFGS-B",
@@ -24,9 +24,9 @@
         0.5, -0.5, 0.5, 0.5
     ],
     "thresholds": [
-        0.1,
-        0.01
+        0.0001,
+        0.07
     ],
-    "tries_per_edge": 5,
+    "tries_per_edge": 3,
     "unicolor": false
 }

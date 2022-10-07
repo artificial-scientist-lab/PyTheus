@@ -1,0 +1,31 @@
+{
+  "description": "Creation of a product state of two three particle W states. No ancillary particles.",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "W3W3",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 100,
+  "target_state": [
+    "001001",
+    "001010",
+    "001100",
+    "010001",
+    "010010",
+    "010100",
+    "100001",
+    "100010",
+    "100100"
+  ],
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

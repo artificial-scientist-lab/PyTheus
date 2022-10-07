@@ -1,0 +1,28 @@
+{
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "ghz_3612",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 9,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "000",
+        "111",
+        "222",
+        "333",
+        "444",
+        "555"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

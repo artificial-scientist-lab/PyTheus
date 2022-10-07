@@ -1,0 +1,25 @@
+{
+  "description": "Low countrate creation of six particle three-dimensional GHZ state. No ancillary particles",
+  "bulk_thr": 0.01,
+  "edges_tried": 10,
+  "foldername": "f-6-3-6",
+  "ftol": 1e-05,
+  "loss_func": "fid",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "000000",
+    "111111",
+    "222222"
+  ],
+  "thresholds": [
+    0.1,
+    1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": true
+}

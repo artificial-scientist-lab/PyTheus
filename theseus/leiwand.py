@@ -195,7 +195,7 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
     output = name
     numcolors = 7
     # defining shapes for different kinds of vertices
-    shape_dict = {'in': 'regular polygon,regular polygon sides=3', 'out': "circle", "anc": "rectangle", 'sps': 'square',
+    shape_dict = {'in': 'inner sep=0.1em, regular polygon,regular polygon sides=3', 'out': "circle", "anc": "rectangle", 'sps': 'inner sep=0.1em,regular polygon,regular polygon sides=3',
                   'mix': 'star,star points=10'}
 
     external_vertices = None

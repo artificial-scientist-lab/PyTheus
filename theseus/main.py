@@ -26,7 +26,7 @@ import numpy as np
 import random
 
 
-def run_main(filename, example, run_opt = True):
+def run_main(filename, example, run_opt=True, state_cat=True):
     """Run the Theseus algorithm on a given input file.
 
     Parameters
@@ -71,7 +71,7 @@ def run_main(filename, example, run_opt = True):
     else:  # optimization for target given in config
         # read out target and starting graph from cnfg
         # modifies cnfg to incorporate topological constraints
-        target_state, start_graph, cnfg = setup_for_target(cnfg)
+        target_state, start_graph, cnfg = setup_for_target(cnfg, state_cat=state_cat)
         # target_state is state object
         # start_graph is graph object
         dimensions = cnfg["dimensions"]
@@ -199,7 +199,7 @@ def setup_for_ent(cnfg):
     return dimensions, sys_dict, start_graph
 
 
-def setup_for_target(cnfg):
+def setup_for_target(cnfg, state_cat=True):
     # default values
     try:
         cnfg["in_nodes"]
@@ -351,8 +351,7 @@ def setup_for_target(cnfg):
                              ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
 
     # turn edge list into graph
-    graph = Graph(edge_list)
-    graph.imaginary = cnfg["imaginary"]
+    graph = Graph(edge_list, imaginary=cnfg["imaginary"], state_cat=state_cat)
 
     return target_state, graph, cnfg
 

@@ -162,7 +162,7 @@ def leiwandPlot(graph, name='graph'):
     theseus.leiwand.leiwand(data, name)
 
 
-def leiwandPlotBulk(graph, cnfg, root):
+def leiwandPlotBulk(graph, cnfg, root, name = 'graph'):
     # if graph is imaginary, just take absolute value as weight for now
     if graph.imaginary:
         graph.absolute()
@@ -180,7 +180,7 @@ def leiwandPlotBulk(graph, cnfg, root):
             else:
                 bend = -22.5 + (ii + 0.5) * 45 / mult
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
-    theseus.leiwand.leiwandBulk(data, cnfg, root=root)
+    theseus.leiwand.leiwandBulk(data, cnfg, root=root, name=name)
 
 
 def plotFromFile(filename, number_nodes=True, outfile=""):

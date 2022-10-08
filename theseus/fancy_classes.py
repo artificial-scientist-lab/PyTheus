@@ -33,6 +33,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                  imaginary=False,  # 'cartesian' or 'polar'
                  norm=False,  # For the sake of perfomance, compute
                  state=False,  # norm and state only when needed.
+                 state_cat=True
                  ):
         self.dimensions = dimensions
         self.imaginary = imaginary
@@ -41,7 +42,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         self.graph = self.graphStarter(edges, weights)  # MAIN PROPERTY
         # This may not be elegant, but it works
         self.state_catalog = None
-        if self.state_catalog == None: self.getStateCatalog()
+        if self.state_catalog == None and state_cat: self.getStateCatalog()
         self.norm = DEFAULT_NORM
         if norm: self.getNorm()
         self.state = DEFAULT_STATE
@@ -310,6 +311,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         self.state = State(kets, amplitudes, self.imaginary)
 
         # This could also be defined as __abs__, but what do you give back? The dictionary?
+
     def __abs__(self):
         return_weights = len(self.graph) * [0]
         if self.is_weighted:
@@ -323,9 +325,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 raise ValueError(WRONG_IMAGINARY)
             return return_weights
         else:
-               ValueError('emtpy weights')     
+            ValueError('emtpy weights')
 
-    
     def absolute(self):
         if self.is_weighted:
             if self.imaginary in [False, 'cartesian']:
@@ -399,8 +400,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             n_th_smallest = args[0]  # takes nth given
         else:
             n_th_smallest = slice(*args)
-        
-        if self.imaginary in [False,'cartesian']:
+
+        if self.imaginary in [False, 'cartesian']:
             idx = np.argsort(abs(np.array(self.weights)))
         elif self.imaginary == 'polar':
             idx = np.argsort(abs(np.array([rr[0] for rr in self.weights])))

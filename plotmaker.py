@@ -6,16 +6,47 @@ import os
 import json
 from IPython.utils import io
 
-walk = os.walk('examples')
+foldername = 'graphs_cool'
+walk = os.walk(foldername)
 base = os.getcwd()
 # go through all subdirectories of example folder
+
+ccount = 0
+pcount = 0
+bcount = 0
+ocount = 0
+
+# skip = ['cluster_4',  # inconsistency plot needs more ancillas than given by config
+#       'cnot22_sp',  # inconsistency plot needs more ancillas than given by config
+#      'cnot23_sp',  # inconsistency plot needs more ancillas than given by config
+##    ]
+skip = []
+startingcount = 0  # set this to a number to skip previous directories
+directorycount = 0
 for root, dirs, files in walk:
+    directorycount += 1
     base = os.getcwd()
-    if 'config.json' in files and 'plot.json' in files:
-        print('example', root)
-        filename = root + '/config.json'
-        with io.capture_output() as captured: # doing this to prevent print spam from run_main
-            cnfg = run_main(filename, False, run_opt=False)
+    config = False
+    plot = False
+    for file in files:
+        if file.startswith('config'):
+            config = True
+            configname = file
+            ccount += 1
+        if file.startswith('plot'):
+            plot = True
+            plotname = file
+            pcount += 1
+    if config or plot:
+        ocount += 1
+    name = root.split('/')[-1]
+    if config and plot and (name not in skip) and (directorycount >= startingcount):
+        bcount += 1
+        print(name)
+        print('directorycount', directorycount)
+        filename = root + '/' + configname
+        with io.capture_output() as captured:  # doing this to prevent print spam from run_main
+            cnfg = run_main(filename, False, run_opt=False, state_cat=False)
         if cnfg["loss_func"] in ["cr", "fid"]:
             # define ancilla nodes
             nonanc = cnfg["out_nodes"] + cnfg["in_nodes"] + cnfg["single_emitters"]
@@ -35,10 +66,10 @@ for root, dirs, files in walk:
                 vert_types[mixind] = 'mix'
             cnfg['vert_types'] = vert_types
             # load graph
-            with open(root + '/plot.json') as input_file:
+            with open(root + '/' + plotname) as input_file:
                 sol_dict = json.load(input_file)
             graph = Graph(sol_dict['graph'], imaginary=cnfg['imaginary'])
-            leiwandPlotBulk(graph, cnfg, root)
+            leiwandPlotBulk(graph, cnfg, root, name='graph_' + name)
         elif cnfg["loss_func"] == 'ent':
             cnfg["vert_types"] = {}
             for ii, dim in enumerate(cnfg["dimensions"]):
@@ -47,13 +78,15 @@ for root, dirs, files in walk:
                 else:
                     verttype = 'anc'
                 cnfg["vert_types"][ii] = verttype
-            with open(root + '/plot.json') as input_file:
+            with open(root + '/' + plotname) as input_file:
                 sol_dict = json.load(input_file)
             graph = Graph(sol_dict['graph'], imaginary=cnfg['imaginary'])
-            leiwandPlotBulk(graph, cnfg, root)
+            leiwandPlotBulk(graph, cnfg, root, name='graph_' + name)
         elif cnfg["loss_func"] == 'fockcr':
-            #TODO: implement (missing graph json atm)
+            # TODO: implement (missing graph json atm)
             print('not implemented yet')
         else:
             print('skipped')
-    os.chdir(base) # moving back to directory to continue walk
+    # print(ccount, pcount, bcount, ocount)
+    os.chdir(base)  # moving back to directory to continue walk
+print('finished')

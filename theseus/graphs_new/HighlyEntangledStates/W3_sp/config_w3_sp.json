@@ -1,0 +1,29 @@
+{
+  "description": "Creation of three particle W state with tree single photon emitters",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "w_sp",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "001",
+    "010",
+    "100"
+  ],
+  "single_emitters": [
+    3,4,5
+  ],
+  "thresholds": [
+    0.35,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

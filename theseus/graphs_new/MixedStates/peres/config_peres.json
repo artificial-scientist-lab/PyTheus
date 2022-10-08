@@ -1,0 +1,53 @@
+{
+  "description": "Mixed state contradicting peres conjecture. https://www.nature.com/articles/ncomms6297.pdf",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "peres",
+  "ftol": 1e-12,
+  "loss_func": "fid",
+  "num_anc": 1,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "000",
+    "110",
+    "011",
+    "101",
+    "021",
+    "211",
+    "002",
+    "112",
+    "122",
+    "202",
+    "013",
+    "103",
+    "223"
+  ],
+  "amplitudes":
+    [
+      0.3345506662296027,
+      0.3345506662296027,
+      0.17948328582600473,
+      0.17948328582600473,
+      0.004435405771838079,
+      -0.07983730389308541,
+      0.1763482065976029,
+      -0.1763482065976029,
+      0.004357931435212086,
+      0.07844276583381755,
+      -0.002264447598506667,
+      0.002264447598506667,
+      0.002264447598506667
+    ]
+  ,
+  "thresholds": [
+    0.001,
+    1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

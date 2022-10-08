@@ -1,0 +1,36 @@
+{
+    "description": "Condensed matter state Majumdar Gosh of four particles. Two ancillary particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "maj_4",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0011",
+        "0101",
+        "0110",
+        "1001",
+        "1010",
+        "1100"
+    ],
+    "amplitudes": [
+        -0.5,
+        1.0,
+        -0.5,
+        -0.5,
+        1.0,
+        -0.5
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

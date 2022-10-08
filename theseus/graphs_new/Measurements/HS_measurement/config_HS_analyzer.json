@@ -1,0 +1,58 @@
+{
+  "description": "Measurement for Higuchi Sudbery state.",
+  "bulk_thr": 0.01,
+  "edges_tried": 30,
+  "foldername": "HS_analyzer",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": "polar",
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0011",
+    "1100",
+    "1010",
+    "0101",
+    "1001",
+    "0110"
+  ],
+  "in_nodes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "amplitudes": [
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      2.09439510239
+    ],
+    [
+      1,
+      2.09439510239
+    ],
+    [
+      1,
+      4.18879020479
+    ],
+    [
+      1,
+      4.18879020479
+    ]
+  ],
+  "thresholds": [
+    0.3,
+    0.1
+  ],
+  "tries_per_edge": 5
+}

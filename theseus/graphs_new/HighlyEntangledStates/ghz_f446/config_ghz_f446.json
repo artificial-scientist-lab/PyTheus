@@ -1,0 +1,26 @@
+{
+  "description": "Low countrate creation of four particle four-dimensional GHZ state. Two ancillary particles",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "f-4-4-6",
+  "ftol": 1e-10,
+  "loss_func": "fid",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "1111",
+    "2222",
+    "3333"
+  ],
+  "thresholds": [
+    0.05,
+    1
+  ],
+  "tries_per_edge": 10,
+  "unicolor": false
+}

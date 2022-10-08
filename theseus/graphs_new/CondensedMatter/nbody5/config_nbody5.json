@@ -1,0 +1,46 @@
+{
+    "description": "Condensed Matter n-body state of five particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "nbody_5",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "00000",
+        "00001",
+        "00010",
+        "00100",
+        "00101",
+        "01000",
+        "01001",
+        "01010",
+        "10000",
+        "10010",
+        "10100"
+    ],
+    "amplitudes": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

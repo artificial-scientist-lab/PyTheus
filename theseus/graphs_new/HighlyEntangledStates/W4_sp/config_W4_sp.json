@@ -1,0 +1,30 @@
+{
+  "description": "Four particle W state from four single photon sources",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "w4_sp",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 0,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0001",
+    "0010",
+    "0100",
+    "1000"
+  ],
+  "single_emitters": [
+    4,5,6,7
+  ],
+  "thresholds": [
+    0.35,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

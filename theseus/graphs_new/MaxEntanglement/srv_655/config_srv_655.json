@@ -1,0 +1,29 @@
+{
+    "description": "Creation of state with Schmidt rank vector (6,5,5). Five ancillary particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "srv_655",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 5,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "000",
+        "111",
+        "222",
+        "334",
+        "443",
+        "544"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

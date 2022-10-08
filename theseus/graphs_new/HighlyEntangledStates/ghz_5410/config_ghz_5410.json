@@ -1,0 +1,39 @@
+{
+    
+    "description": "Creation of the five-particle four-dimensional GHZ state. Five ancillary particles",
+    "bulk_thr": 0,
+    "edges_tried": 40,
+    "foldername": "ghz_5410",
+    "loss_func": "cr",
+    "num_anc": 5,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "00000",
+        "11111",
+        "22222",
+        "33333"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 10,
+    "unicolor": true,
+    "dimensions": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        1,
+        1,
+        1,
+        1,
+        1
+    ]
+}

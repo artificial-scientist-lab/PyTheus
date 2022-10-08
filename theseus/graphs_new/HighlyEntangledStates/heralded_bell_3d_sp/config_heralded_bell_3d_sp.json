@@ -1,0 +1,38 @@
+{
+  "description": "heralded_bell_3d_sp",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "heralded_bell_3d_sp",
+  "ftol": 1e-09,
+  "loss_func": "cr",
+  "num_anc": 4,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "00",
+    "11",
+    "22"
+  ],
+  "out_nodes": [
+    0,
+    1
+  ],
+  "single_emitters": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "heralding_out": true,
+  "number_resolving": true,
+  "brutal_covers": true,
+  "thresholds": [
+    0.5,
+    0.1
+  ],
+  "tries_per_edge": 5
+}

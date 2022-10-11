@@ -1,0 +1,51 @@
+{
+    "description": "Cube state in Fock basis.",
+    "bulk_thr": 0.01,
+    "edges_tried": 20,
+    "foldername": "noon_2_8_anc6_cube_cr",
+    "ftol": 1e-05,
+    "loss_func": "fockcr",
+    "num_anc": 6,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        [
+            8,
+            0
+        ],
+        [
+            4,
+            4
+        ],
+        [
+            0,
+            8
+        ]
+    ],
+    "amplitudes": [
+        0.45643546458763845,
+        0.7637626158259733,
+        0.45643546458763845
+    ],
+    "thresholds": [
+        0.1,
+        0.001
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false,
+    "loops": true,
+    "topopt": true,
+    "dimensions": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    ]
+}

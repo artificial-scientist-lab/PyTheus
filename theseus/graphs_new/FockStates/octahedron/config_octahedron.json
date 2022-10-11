@@ -1,0 +1,22 @@
+{
+    "description": "Octahedron state in Fock basis. More info: polarization.markus-grassl.de",
+    "bulk_thr": 0.1,
+    "edges_tried": 20,
+    "foldername": "fock_2_4_anc4octa_cr",
+    "ftol": 1e-05,
+    "loss_func": "fockcr",
+    "num_anc": 4,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [[1,5],[5,1]],
+    "amplitudes": [1,-1],
+    "thresholds": [0.1,0.001],
+    "tries_per_edge": 1,
+    "unicolor": false,
+    "loops":true
+  }
+   
+  

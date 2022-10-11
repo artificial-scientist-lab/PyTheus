@@ -168,7 +168,7 @@ class saver:
     
     def get_dictonary_storing_in_json(self,topo_obj):
         """
-        converts the topologival optimizer object to a dict 
+        converts the topological optimizer object to a dict
 
         Parameters
         ----------

@@ -73,3 +73,18 @@ class FunctionalTests(unittest.TestCase):
         assert result.exit_code == 0
         assert os.path.exists('output/conc_4-3/try/best.json')
         assert os.path.exists('output/conc_4-3/try/summary.json')
+
+    def test_input_with_json_ending_from_example_director_removeConnections(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'cnot_22.json'])
+        assert result.exit_code == 0
+
+    def test_input_with_json_ending_from_example_director_startinggraph(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'spin3plus_3.json'])
+        assert result.exit_code == 0
+
+    def test_input_with_json_ending_from_example1_director(self):
+        runner = CliRunner()
+        result = runner.invoke(run, ['--example', 'werner.json'])
+        assert result.exit_code == 0

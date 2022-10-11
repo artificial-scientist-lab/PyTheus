@@ -1,7 +1,9 @@
 import unittest
+from pathlib import Path
 
 from tests.fast.config import GHZ_346, BELL
 from theseus.fancy_classes import Graph, defaultValues
+from theseus.main import run_main, read_config
 
 
 class TestFancyClassesModule(unittest.TestCase):
@@ -24,7 +26,6 @@ class TestFancyClassesModule(unittest.TestCase):
 
 
 class TestGraph(unittest.TestCase):
-
     def test_init_graph_edges_given_not_imaginary_rest_default(self):
         graph = Graph(BELL['edges'], imaginary=False)
 
@@ -34,3 +35,6 @@ class TestGraph(unittest.TestCase):
         self.assertEqual({
             ((0, 0), (1, 0)): [((0, 1, 0, 0),)], ((0, 1), (1, 1)): [((0, 1, 1, 1),)]
         }, graph.state_catalog)
+
+
+

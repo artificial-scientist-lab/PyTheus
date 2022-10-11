@@ -109,6 +109,7 @@ def prepEdgeList(edge_list, cnfg):
 
 
 def get_all_bi_partions(num_par: int, lenght=None):
+
     """
     returns all bi-partions as a generator for a given number of particles:
 

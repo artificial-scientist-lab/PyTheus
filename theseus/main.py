@@ -164,6 +164,11 @@ def setup_for_fockbasis(cnfg):
             ket.append((len(term) + ii, 0))
         term_list.append(tuple(ket))
     # print(np.shape(term_list))
+    num_out = len(cnfg["target_state"][0])
+    cnfg["out_nodes"] = list(range(num_out))
+    cnfg["in_nodes"] = []
+    cnfg["single_emitters"] = []
+    cnfg["verts"] = list(range(num_out + cnfg["num_anc"]))
 
     # not the corrected target_state but has been modified in the loss function
     # this can be changed afterwards

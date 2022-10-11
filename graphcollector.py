@@ -7,7 +7,7 @@ import json
 from IPython.utils import io
 import shutil
 
-foldername = 'theseus/graphs_cool'
+foldername = 'theseus/graphs_new'
 walk = os.walk(foldername)
 theseusbase = os.getcwd()
 print(theseusbase)
@@ -18,5 +18,5 @@ for root, dirs, files in walk:
     if not root.endswith('plots'):
         for file in files:
             if file.startswith('graph') and file.endswith('pdf'):
-                shutil.copy(root+'/'+file, theseusbase +'/theseus/graphs_cool/plots/'+ file)
+                shutil.copy(root + '/' + file, theseusbase + '/' + foldername + '/plots/' + file)
     os.chdir(base)  # moving back to directory to continue walk

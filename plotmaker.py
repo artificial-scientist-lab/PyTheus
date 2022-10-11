@@ -6,7 +6,7 @@ import os
 import json
 from IPython.utils import io
 
-foldername = 'graphs_cool'
+foldername = 'graphs_new/FockStates'
 walk = os.walk(foldername)
 base = os.getcwd()
 # go through all subdirectories of example folder
@@ -28,6 +28,8 @@ for root, dirs, files in walk:
     base = os.getcwd()
     config = False
     plot = False
+    print(root)
+    print(files)
     for file in files:
         if file.startswith('config'):
             config = True
@@ -40,6 +42,7 @@ for root, dirs, files in walk:
     if config or plot:
         ocount += 1
     name = root.split('/')[-1]
+    print(config, plot, directorycount, startingcount)
     if config and plot and (name not in skip) and (directorycount >= startingcount):
         bcount += 1
         print(name)
@@ -47,7 +50,7 @@ for root, dirs, files in walk:
         filename = root + '/' + configname
         with io.capture_output() as captured:  # doing this to prevent print spam from run_main
             cnfg = run_main(filename, False, run_opt=False, state_cat=False)
-        if cnfg["loss_func"] in ["cr", "fid"]:
+        if cnfg["loss_func"] in ["cr", "fid", "fockcr", "fockfid "]:
             # define ancilla nodes
             nonanc = cnfg["out_nodes"] + cnfg["in_nodes"] + cnfg["single_emitters"]
             cnfg["anc_nodes"] = [vert for vert in cnfg["verts"] if vert not in nonanc]

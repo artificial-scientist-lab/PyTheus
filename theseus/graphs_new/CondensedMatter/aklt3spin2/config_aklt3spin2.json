@@ -1,0 +1,22 @@
+{
+    "description": "Creation of AKLT state of three particles with spin 2.",
+    "bulk_thr": 0.01,
+    "edges_tried": 20,
+    "foldername": "AKLT3spin2big",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 5,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": ["024", "033", "042", "114", "123", "132", "141", "204", "213", "222", "231", "240", "303", "312", "321", "330", "402", "411", "420"],
+    "amplitudes": [0.19, -0.232, 0.19, -0.232, 0.095, 0.095, -0.232, 0.19, 0.095, -0.19, 0.095, 0.19, -0.232, 0.095, 0.095, -0.232, 0.19, -0.232, 0.19],
+    "thresholds": [
+        0.15,
+        0.05
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

@@ -410,7 +410,7 @@ def read_config(is_example, filename):
         filename += '.json'
     # option for running files from example folder
     if is_example:
-        examples_dir = pkg_resources.resource_filename(pytheus.__name__, "configs")
+        examples_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
         filename = Path(examples_dir) / filename
     # error if file does not exist
     if not os.path.exists(filename) or os.path.isdir(filename):

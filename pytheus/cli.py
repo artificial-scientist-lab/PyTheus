@@ -84,7 +84,7 @@ def analyze(which_directory, all_weights_plus_minus_one,
 @cli.command()
 def list():
     """List all included examples."""
-    configs_dir = pkg_resources.resource_filename(pytheus.__name__, 'configs')
+    configs_dir = pkg_resources.resource_filename(pytheus.__name__, 'graphs')
     files = sorted(os.listdir(configs_dir))
     for file in files:
         click.echo(file.replace('.json', ''))

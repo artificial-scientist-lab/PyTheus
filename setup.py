@@ -7,12 +7,12 @@ import re
 from setuptools import setup, find_packages
 
 author = 'artificial-scientist-lab'
-email = ''  # TODO: insert email
+email = 'cruizgo@proton.me, soeren.arlt@mpl.mpg.de, mario.krenn@mpl.mpg.de'
 description = 'Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments'
 dist_name = 'pytheus'
 package_name = 'pytheus'
 year = '2022'
-url = 'https://github.com/artificial-scientist-lab/Theseus'  # TODO: insert public repo URL
+url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 
 def get_version():

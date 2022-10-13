@@ -1,0 +1,38 @@
+{
+    "description": "Condensed Matter n-body state of four particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "nbody_4",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 0,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000",
+        "0001",
+        "0010",
+        "0100",
+        "0101",
+        "1000",
+        "1010"
+    ],
+    "amplitudes": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

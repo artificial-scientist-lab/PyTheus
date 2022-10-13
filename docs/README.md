@@ -2,7 +2,13 @@
 
 ## Install sphinx and dependencies
 
-In `./docs` do
+In project root directory install Theseus in development mode:
+
+```
+python setup.py develop
+```
+
+Then, in `./docs` do
 
 ```
 pip install -r requirements

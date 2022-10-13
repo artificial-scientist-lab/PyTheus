@@ -13,7 +13,6 @@ A highly-efficient inverse-design algorithm for quantum optical experiments.
    :caption: Contents:
 
    usage
-   develop
    api
 
 Indices and tables

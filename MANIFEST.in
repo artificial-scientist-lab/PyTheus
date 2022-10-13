@@ -1,1 +1,1 @@
-include theseus/configs/*
+include theseus/graphs/*

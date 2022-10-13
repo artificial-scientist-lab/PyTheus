@@ -1,9 +1,10 @@
-Usage
-=====
+Getting Started
+===============
 
 Bla bla bla
 
 .. code-block::
+
     theseus run --example ghz_346
 
 Some subsection

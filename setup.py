@@ -9,8 +9,8 @@ from setuptools import setup, find_packages
 author = 'artificial-scientist-lab'
 email = ''  # TODO: insert email
 description = 'Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments'
-dist_name = 'theseuslab'
-package_name = 'theseus'
+dist_name = 'pytheus'
+package_name = 'pytheus'
 year = '2022'
 url = 'https://github.com/artificial-scientist-lab/Theseus'  # TODO: insert public repo URL
 
@@ -48,7 +48,7 @@ setup(
     py_modules=[package_name],
     entry_points={
         'console_scripts': [
-            'theseus = theseus.cli:cli',
+            'pytheus = pytheus.cli:cli',
         ],
     }
 )

@@ -1,13 +1,13 @@
-import theseus
-from theseus.main import run_main
-from theseus.fancy_classes import Graph
-from theseus.graphplot import leiwandPlotBulk
+import pytheus
+from pytheus.main import run_main
+from pytheus.fancy_classes import Graph
+from pytheus.graphplot import leiwandPlotBulk
 import os
 import json
 from IPython.utils import io
 import shutil
 
-foldername = 'theseus/graphs_new'
+foldername = 'pytheus/graphs_new'
 walk = os.walk(foldername)
 theseusbase = os.getcwd()
 print(theseusbase)

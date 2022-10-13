@@ -2,8 +2,8 @@ import unittest
 from pathlib import Path
 
 from tests.fast.config import GHZ_346, BELL
-from theseus.fancy_classes import Graph, defaultValues
-from theseus.main import run_main, read_config
+from pytheus.fancy_classes import Graph, defaultValues
+from pytheus.main import run_main, read_config
 
 
 class TestFancyClassesModule(unittest.TestCase):

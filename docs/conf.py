@@ -1,11 +1,11 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 import sys
-from theseus import __version__
+from pytheus import __version__
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.join(os.path.abspath('..'), 'theseus'))
+sys.path.insert(0, os.path.join(os.path.abspath('..'), 'pytheus'))
 
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.abspath('..'), 'theseus'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'theseus'
+project = 'pytheus'
 copyright = '2022, Artificial Scientist Lab'
 author = 'Artificial Scientist Lab'
 

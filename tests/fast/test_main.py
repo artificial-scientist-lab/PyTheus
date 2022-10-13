@@ -9,9 +9,9 @@ from typing import List
 import numpy as np
 from numpy import array
 
-from theseus import main
-from theseus.help_functions import readableState
-from theseus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
+from pytheus import main
+from pytheus.help_functions import readableState
+from pytheus.main import read_config, get_dimensions_and_target_state, build_starting_graph, setup_for_ent, \
     setup_for_target, setup_for_fockbasis, optimize_graph, run_main
 
 

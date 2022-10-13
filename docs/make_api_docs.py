@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-package = 'theseus'
+package = 'pytheus'
 
 package_dir = Path.cwd().parent / package
 assert os.path.exists(package_dir)

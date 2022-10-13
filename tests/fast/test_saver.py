@@ -1,6 +1,6 @@
 import unittest
 
-from theseus.saver import saver
+from pytheus.saver import saver
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):

@@ -405,13 +405,21 @@ def read_config(is_example, filename):
     ''''
     read config json and output cnfg dict
     '''
-    # check if filename ends in json, add extension if needed
-    if not filename.endswith('.json'):
-        filename += '.json'
+
     # option for running files from example folder
     if is_example:
         examples_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
-        filename = Path(examples_dir) / filename
+        for root, subdirs, files in os.walk(examples_dir):
+            if root.split('/')[-1] == filename:
+                for file in files:
+                    if file.startswith('config'):
+                        filename = root+'/'+file
+                        break
+
+    # check if filename ends in json, add extension if needed
+    if not filename.endswith('.json'):
+        filename += '.json'
+
     # error if file does not exist
     if not os.path.exists(filename) or os.path.isdir(filename):
         raise IOError(f'File does not exist: {filename}')

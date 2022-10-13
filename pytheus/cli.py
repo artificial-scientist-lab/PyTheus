@@ -43,28 +43,29 @@ def run(filename, example):
         click.echo('ERROR:' + str(e))
         sys.exit(1)
 
+
 @cli.command()
 @click.argument('filename')
 @click.option('--pdf', default="", help='save output to pdf')
 def plot(filename, pdf):
     """Plot a solution file."""
     try:
-        plotFromFile(filename, outfile = pdf)
+        plotFromFile(filename, outfile=pdf)
     except IOError as e:
         click.echo('ERROR:' + str(e))
         sys.exit(1)
 
 
 @cli.command()
-@click.option('-d', '--which-directory',default = None,
+@click.option('-d', '--which-directory', default=None,
               help='choose folder to analyze')
-@click.option('-one', '--all-weights-plus-minus-one', is_flag=True, 
+@click.option('-one', '--all-weights-plus-minus-one', is_flag=True,
               show_default=True,
               help='map all weights to plus minus one')
 @click.option('-pm', '--create-perfect-machting-pdf', is_flag=True,
               show_default=True,
               help='bool if create pdf with all pms')
-@click.option('-i', '--which-infos', default = ['norm', 'ent', 'k'],
+@click.option('-i', '--which-infos', default=['norm', 'ent', 'k'],
               multiple=True,
               show_default=True,
               help='list of which infos appear in info plot')
@@ -75,7 +76,7 @@ def analyze(which_directory, all_weights_plus_minus_one,
         get_analyse(which_directory,
                     all_weights_plus_minus_one=all_weights_plus_minus_one,
                     create_perfect_machting_pdf=create_perfect_machting_pdf,
-                    which_infos= which_infos)
+                    which_infos=which_infos)
     except IOError as e:
         click.echo('ERROR:' + str(e))
         sys.exit(1)
@@ -86,5 +87,10 @@ def list():
     """List all included examples."""
     configs_dir = pkg_resources.resource_filename(pytheus.__name__, 'graphs')
     files = sorted(os.listdir(configs_dir))
-    for file in files:
-        click.echo(file.replace('.json', ''))
+
+    walk = os.walk(configs_dir)
+    for root, dirs, files in walk:
+        for file in files:
+            if file.startswith('config'):
+                click.echo(
+                print(root.split('/')[-1]))

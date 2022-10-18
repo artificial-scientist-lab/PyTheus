@@ -21,11 +21,11 @@
     "thresholds": [
         99999
     ],
-    "topopt": False,
+    "topopt": false,
     "edges_tried": 30,
     "tries_per_edge": 5,
-    "unicolor": False,
-    "imaginary": False,
+    "unicolor": false,
+    "imaginary": false,
     "num_pre": 1,
     "bulk_thr": 0
 }

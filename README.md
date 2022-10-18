@@ -18,16 +18,16 @@ To run one of the included examples, type e.g.
 pytheus run --example ghz_346
 ```
 
+NOTE: currently there is an issue in some installations where examples are not by the above command. You can also run config json files by referring to them by their path in the package resources. they can be found in the directory `pytheus/graphs`
+
+```
+pytheus run PATH_TO_YOUR_INPUT_FILE
+```
+
 To list all examples, type
 
 ```
 pytheus list
-```
-
-To run your own input file, type
-
-```
-pytheus run PATH_TO_YOUR_INPUT_FILE
 ```
 
 Output of optimization is saved to a directory called `output`. Names of the subdirectories are specified by the name

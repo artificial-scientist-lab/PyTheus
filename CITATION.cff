@@ -11,6 +11,8 @@ authors:
   given-names: "Xuemei"
 - family-names: "Krenn"
   given-names: "Mario"
+- family-names: "Baer"
+  given-names: "Matthias"
 title: "PyTheus"
 version: 1.2.3
 date-released: 2022-10-18

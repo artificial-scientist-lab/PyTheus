@@ -11,16 +11,16 @@ python setup.py install
 
 ## Running PyTheus
 
-To list the included examples, type
-
-```
-pytheus list
-```
-
-To run one of the included examples, type e.g.
+To run PyTheus on one of the examples, type e.g.
 
 ```
 pytheus run --example ghz_346
+```
+
+To list all examples, type
+
+```
+pytheus list
 ```
 
 To run your own input file, type
@@ -38,7 +38,7 @@ To plot the graph corresponding to one result saved as a json file, execute
 pytheus plot PATH_TO_RESULT_FILE
 ```
 
-##Analysing PyTheus Results
+## Analysing PyTheus Results
 
 To analyze a subdirectory corresponding to one run, type
 

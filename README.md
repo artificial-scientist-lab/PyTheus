@@ -6,8 +6,9 @@ PyTheus, a highly-efficient inverse-design algorithm for quantum optical experim
 The package can be installed with
 
 ```
-pip install pytheus
+pip install pytheusQ
 ```
+NOTE: do not use `pip install pytheus` (it will install a different package)
 
 ## Running PyTheus
 

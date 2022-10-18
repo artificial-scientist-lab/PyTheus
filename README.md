@@ -38,6 +38,29 @@ To plot the graph corresponding to one result saved as a json file, execute
 pytheus plot PATH_TO_RESULT_FILE
 ```
 
+To analyze a subdirectory corresponding to one run, type
+
+```
+pytheus analyze -d outputs/ghz_346/ghz_346 
+```
+or just 
+```
+pytheus analyze  
+```
+then an overview of all available folders that can be selected is given.
+After that one can choose which run (if there exists different run-folders having different
+summary files) one wants to analyze. When you have decided on a state, an overview plot is created
+that shows the graph, the development of the loss function and various properties 
+that can be declared via ```-i```. With ```-pm``` a pdf can be created that shows all perfect matchings. 
+When one wants to set all weights to plus minus one one can choose the option ```-one```.
+Everthing together:
+```
+pytheus analyze -d your/directory -one -pm -i 'norm' -i 'ent' -i 'k'  
+```
+```norm``` shows the normalization of the state, ```ent``` gives information about entanglement for 
+the different bipartitions and ```k``` gives information if there is a k-uniform state and which
+ bipartitions are maximally entangled (=1) or separable (=0).
+
 To get help, add the `--help` option to any command. For instance
 
 ```

@@ -38,6 +38,8 @@ To plot the graph corresponding to one result saved as a json file, execute
 pytheus plot PATH_TO_RESULT_FILE
 ```
 
+##Analysing PyTheus Results
+
 To analyze a subdirectory corresponding to one run, type
 
 ```

@@ -5,8 +5,13 @@ authors:
   given-names: "Carlos"
 - family-names: "Arlt"
   given-names: "Soeren"
+- family-names: "Patermann"
+  given-names: "Jan"
+- family-names: "Gu"
+  given-names: "Xuemei"
+- family-names: "Krenn"
+  given-names: "Mario"
 title: "PyTheus"
-version: 0.0.0
-doi: 10.5281/zenodo.1234
-date-released: 2022-10-13
+version: 1.2.3
+date-released: 2022-10-18
 url: "https://github.com/artificial-scientist-lab/PyTheus"

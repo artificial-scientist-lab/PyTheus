@@ -12,16 +12,16 @@ NOTE: do not use `pip install pytheus` (it will install a different package)
 
 ## Running PyTheus
 
-To list the included examples, type
-
-```
-pytheus list
-```
-
 To run one of the included examples, type e.g.
 
 ```
 pytheus run --example ghz_346
+```
+
+To list all examples, type
+
+```
+pytheus list
 ```
 
 To run your own input file, type
@@ -32,6 +32,8 @@ pytheus run PATH_TO_YOUR_INPUT_FILE
 
 Output of optimization is saved to a directory called `output`. Names of the subdirectories are specified by the name
 and content of the config file.
+
+## Analysing PyTheus results
 
 To plot the graph corresponding to one result saved as a json file, execute 
 

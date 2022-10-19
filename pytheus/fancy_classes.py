@@ -412,7 +412,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             lenght_graph = len(self.graph)
             max_given_n = max(args)
             raise ValueError(
-                f'Given n_th is to large (n starts 0): {max_given_n+1=} > {lenght_graph=}')
+                f'Given n_th is to large (n starts 0): {max_given_n+1} >= {lenght_graph}')
 
         if type(delind) is np.int64:  # makes sure that we can iterate by return
             return self.edges[delind]

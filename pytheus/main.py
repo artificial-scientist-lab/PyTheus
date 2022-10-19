@@ -408,9 +408,10 @@ def read_config(is_example, filename):
 
     # option for running files from example folder
     if is_example:
-        examples_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
-        for root, subdirs, files in os.walk(examples_dir):
-            if os.path.basename(os.path.normpath(root)) == filename:
+        configs_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
+        walk = os.walk(configs_dir)
+        for root, dirs, files in walk:
+            if os.path.basename(root) == filename:
                 for file in files:
                     if file.startswith('config'):
                         filename = os.path.join(root, file)

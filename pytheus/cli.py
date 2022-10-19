@@ -86,11 +86,9 @@ def analyze(which_directory, all_weights_plus_minus_one,
 def list():
     """List all included examples."""
     configs_dir = pkg_resources.resource_filename(pytheus.__name__, 'graphs')
-    files = sorted(os.listdir(configs_dir))
-
     walk = os.walk(configs_dir)
     for root, dirs, files in walk:
         for file in files:
             if file.startswith('config'):
                 click.echo(
-                print(root.split('/')[-1]))
+                print(os.path.basename(root)))

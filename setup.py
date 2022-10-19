@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 author = 'artificial-scientist-lab'
 email = 'cruizgo@proton.me, soeren.arlt@mpl.mpg.de, mario.krenn@mpl.mpg.de'
-description = 'Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments'
+description = 'PyTheus, a highly-efficient inverse-design algorithm for quantum optical experiments'
 dist_name = 'pytheusQ'
 package_name = 'pytheus'
 year = '2022'
@@ -17,8 +17,7 @@ url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    return "1.2.4"
-    raise Exception('Cannot extract version string.')
+    return "1.2.5"
 
 
 setup(

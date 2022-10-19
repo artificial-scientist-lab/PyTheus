@@ -410,10 +410,10 @@ def read_config(is_example, filename):
     if is_example:
         examples_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
         for root, subdirs, files in os.walk(examples_dir):
-            if root.split('/')[-1] == filename:
+            if os.path.basename(os.path.normpath(root)) == filename:
                 for file in files:
                     if file.startswith('config'):
-                        filename = root+'/'+file
+                        filename = os.path.join(root, file)
                         break
 
     # check if filename ends in json, add extension if needed

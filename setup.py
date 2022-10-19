@@ -17,7 +17,7 @@ url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    return "1.2.3"
+    return "1.2.4"
     raise Exception('Cannot extract version string.')
 
 

@@ -17,7 +17,7 @@ url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    return "1.2.5"
+    return "1.2.6"
 
 
 setup(
@@ -36,7 +36,7 @@ setup(
     install_requires=[
         'sphinx', 'numpy', 'scipy', 'matplotlib', 'termcolor', 'Click'
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     classifiers=['Operating System :: OS Independent',
                  'Programming Language :: Python :: 3',
                  ],

@@ -1,10 +1,10 @@
 import unittest
 from tokenize import String
 
-from theseus.fancy_classes import State
-from theseus.help_functions import readableState, prepEdgeList, removeConnections, makeUnicolor, flatten_lists, \
+from pytheus.fancy_classes import State
+from pytheus.help_functions import readableState, prepEdgeList, removeConnections, makeUnicolor, flatten_lists, \
     get_all_kets_for_given_dim, makeState, stringToTerm
-from theseus.main import run_main, read_config
+from pytheus.main import run_main, read_config
 
 
 class TestHelpFunctionsModule(unittest.TestCase):

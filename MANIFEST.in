@@ -1,1 +1,1 @@
-include theseus/configs/*
+graft pytheus/graphs/*

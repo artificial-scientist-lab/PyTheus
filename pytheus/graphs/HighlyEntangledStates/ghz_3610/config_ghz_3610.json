@@ -1,0 +1,41 @@
+{
+    "description": "Creation of the three-particle six-dimensional GHZ state. Seven ancillary particles",
+    "bulk_thr": 0,
+    "edges_tried": 40,
+    "foldername": "ghz_3610",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 7,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "000",
+        "111",
+        "222",
+        "333",
+        "444",
+        "555"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 10,
+    "unicolor": false,
+    "dimensions": [
+        6,
+        6,
+        6,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    ]
+}

@@ -1,0 +1,30 @@
+{
+    "description": "Steane code.",
+    "bulk_thr": 1e-4,
+    "edges_tried": 20,
+    "foldername": "steane_cr",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 3,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000000",
+        "1010101",
+        "0110011",
+        "1100110",
+        "0001111",
+        "1011010",
+        "0111100",
+        "1101001"
+    ],
+    "thresholds": [
+        0.1,
+        0.01
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false
+}

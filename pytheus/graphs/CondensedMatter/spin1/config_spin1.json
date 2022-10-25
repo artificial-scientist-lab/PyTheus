@@ -1,0 +1,38 @@
+{
+    "description": "Condensed matter Spin One state with three particles",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "spinone_3",
+    "ftol": 1e-05,
+    "loss_func": "fid",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "012",
+        "021",
+        "102",
+        "111",
+        "120",
+        "201",
+        "210"
+    ],
+    "amplitudes": [
+        -0.3,
+        0.15,
+        0.15,
+        0.875,
+        -0.3,
+        -0.3,
+        0.15
+    ],
+    "thresholds": [
+        0.1,
+        1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from theseus.cli import run
+from pytheus.cli import run
 
 
 class FunctionalTests(unittest.TestCase):
@@ -21,21 +21,13 @@ class FunctionalTests(unittest.TestCase):
     def tearDown(self):
         self.directory.cleanup()
 
-    def test_input_with_json_ending_from_example_dir(self):
-        runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'ghz_346.json'])
-        assert result.exit_code == 0
-        assert "{'|000000>': True, '|111000>': True, '|222000>': True, '|333000>': True}" in result.output
-        assert os.path.exists('output/ghz_346/ghz_346/best.json')
-        assert os.path.exists('output/ghz_346/ghz_346/summary.json')
-
     def test_input_without_json_ending_from_example_dir(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'ghz_346'])
         assert result.exit_code == 0
         assert "{'|000000>': True, '|111000>': True, '|222000>': True, '|333000>': True}" in result.output
-        assert os.path.exists('output/ghz_346/ghz_346/best.json')
-        assert os.path.exists('output/ghz_346/ghz_346/summary.json')
+        assert os.path.exists('output/config_ghz_346/ghz_346/best.json')
+        assert os.path.exists('output/config_ghz_346/ghz_346/summary.json')
 
     def test_input_with_json_ending_from_custom_dir(self):
         input_file = Path(__file__).parent / 'fixtures' / 'ghz_346.json'
@@ -69,21 +61,22 @@ class FunctionalTests(unittest.TestCase):
 
     def test_lossfunc_ent(self):
         runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'conc_4-3'])
+        result = runner.invoke(run, ['--example', 'k2maximal4qubitsREAL'])
         assert result.exit_code == 0
-        assert os.path.exists('output/conc_4-3/try/best.json')
-        assert os.path.exists('output/conc_4-3/try/summary.json')
+        assert os.path.exists('output/config_k2maximal4qubitreal/try/best.json')
+        assert os.path.exists('output/config_k2maximal4qubitreal/try/summary.json')
 
-    def test_input_with_json_ending_from_example_director_removeConnections(self):
+    def test_input_without_json_ending_from_example_director_removeConnections(self):
         runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'cnot_22.json'])
+        result = runner.invoke(run, ['--example', 'toffoli_post'])
         assert result.exit_code == 0
 
-    def test_input_with_json_ending_from_example_director_startinggraph(self):
+    def test_input_without_json_ending_from_example_director_startinggraph(self):
         runner = CliRunner()
-        result = runner.invoke(run, ['--example', 'spin3plus_3.json'])
+        result = runner.invoke(run, ['--example', 'nbody3'])
         assert result.exit_code == 0
 
+    @unittest.skip #does not exist anymore
     def test_input_with_json_ending_from_example1_director(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'werner.json'])

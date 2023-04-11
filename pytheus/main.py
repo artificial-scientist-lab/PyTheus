@@ -312,6 +312,11 @@ def setup_for_target(cnfg, state_cat=True):
         cnfg["brutal_covers"] = False
 
     try:
+        cnfg["bipartite"]
+    except KeyError:
+        cnfg["bipartite"] = False
+
+    try:
         cnfg["bulk_thr"]
     except KeyError:
         cnfg["bulk_thr"] = 0
@@ -337,13 +342,18 @@ def setup_for_target(cnfg, state_cat=True):
     cnfg["dimensions"] = th.stateDimensions(target_state.kets)
     # get complete starting graph according to local dimensions
     edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg["imaginary"])
-
+    cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
+    cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
+                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
     # introduce topological constraints
     # start with explicitly removed connections
     removed_connections = cnfg["removed_connections"]
     # add other restrictions imposed by specific kinds of nodes
     disjoint_nodes = cnfg["single_emitters"] + cnfg["in_nodes"]
     removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
+    if cnfg['bipartite']:
+        disjoint_nodes = cnfg["out_nodes"] + cnfg['anc_detectors']
+        removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
     edge_list = hf.removeConnections(edge_list, removed_connections)
     # apply unicolor simplification
     if cnfg['unicolor']:
@@ -351,13 +361,8 @@ def setup_for_target(cnfg, state_cat=True):
         edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
     print(f'start graph has {len(edge_list)} edges.')
 
-    cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
-    cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
-                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
-
     # turn edge list into graph
-    graph = Graph(edge_list, imaginary=cnfg["imaginary"], state_cat=state_cat)
-
+    graph = Graph(edge_list, imaginary=cnfg["imaginary"])  # , state_cat=state_cat)
     return target_state, graph, cnfg
 
 

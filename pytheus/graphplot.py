@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
 import pytheus.theseus as th
-import pytheus.analyzer as anal
+# import pytheus.analyzer as anal
 import matplotlib.patheffects as pe
-from pytheus.fancy_classes import Graph
+# from pytheus.fancy_classes import Graph
 import json
 import os
 import pytheus.leiwand
@@ -43,19 +43,19 @@ def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
     ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw, alpha=transparency)
     ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw, alpha=transparency)
 
-    if show_val:
+#     if show_val:
 
-        if transparency > 0.5 and col1 == "blue":
-            font_col = 'white'
-        else:
-            font_col = 'black'
-        latex_weight = '${}$'.format(anal.num_in_str(edge[4]))
-        if latex_weight == '$$':
-            latex_weight = str(edge[4])
-        ax.text(np.mean([0.9 * vert1[0], hp[0]]), np.mean([0.9 * vert1[1], hp[1]]),
-                latex_weight,
-                bbox={'facecolor': col1, 'alpha': transparency, 'edgecolor': col2, 'pad': 1}, c=font_col,
-                ha='center', va='center', rotation=0, fontweight='heavy', fontsize=fs)
+#         if transparency > 0.5 and col1 == "blue":
+#             font_col = 'white'
+#         else:
+#             font_col = 'black'
+#         latex_weight = '${}$'.format(anal.num_in_str(edge[4]))
+#         if latex_weight == '$$':
+#             latex_weight = str(edge[4])
+#         ax.text(np.mean([0.9 * vert1[0], hp[0]]), np.mean([0.9 * vert1[1], hp[1]]),
+#                 latex_weight,
+#                 bbox={'facecolor': col1, 'alpha': transparency, 'edgecolor': col2, 'pad': 1}, c=font_col,
+#                 ha='center', va='center', rotation=0, fontweight='heavy', fontsize=fs)
     try:
         if edge[4] < 0:
             ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="3", markeredgecolor="black",
@@ -67,10 +67,29 @@ def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
 def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig=(), add_title='',
               show_value_for_each_edge=False, fontsize=30, zorder=11,
-              markersize=25, number_nodes=True, filename=''):
-    edge_dict = th.edgeBleach(graph.edges)
+              markersize=25, number_nodes=True, filename='',figsize=10):
+    '''
+    Introducing a list/tuple of edges or a dictionary {edge:weight}, 
+    this function plots the corresponding graph.
+    
+    Parameters
+    ----------
+    graph : list, tuple or dictionary
+        List/tuple of all colored edges: [(node1, node2, color1, color2), ...]
+        or dictionary with weights: {(node1, node2, color1, color2):weight1, ...}
+    
+    TODO 
+    '''
+    if type(graph) != dict:
+        graph = {edge:1 for edge in graph}
+        edge_list = list(graph.keys())
+        weight_list = list(graph.values())
+    edge_list = list(graph.keys())
+    weight_list = list(graph.values())
+        
+    edge_dict = th.edgeBleach(edge_list)
 
-    num_vertices = len(np.unique(np.array(graph.edges)[:, :2]))
+    num_vertices = len(np.unique(np.array(edge_list)[:, :2]))
 
     angles = np.linspace(0, 2 * np.pi * (num_vertices - 1) / num_vertices, num_vertices)
 
@@ -85,15 +104,15 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     verts = dict(zip(vertnums, vertcoords))
 
     if scaled_weights:
-        try:
-            scale_max = np.max(np.abs(np.array(graph.edges)[:, 4]))
+        try: # I think this doesn't work anymore
+            scale_max = np.max(np.abs(np.array(edge_list)[:, 4]))
         except:
             scale_max = None
     else:
         scale_max = None
 
     if len(ax_fig) == 0:
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=(figsize,)*2)
     else:
         fig, ax = ax_fig
 
@@ -122,13 +141,13 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     ax.set_ylim([-1.1, 1.1])
     ax.axis('off')
 
-    if weight_product:
-        total_weight = np.product(graph.weights)
+#     if weight_product:
+#         total_weight = np.product(weight_list)
 
-        wp = '${}$'.format(anal.num_in_str(total_weight))
-        if wp == '$$':
-            wp = str(total_weight)
-        ax.set_title(wp + str(add_title), fontsize=fontsize)
+#         wp = '${}$'.format(anal.num_in_str(total_weight))
+#         if wp == '$$':
+#             wp = str(total_weight)
+#         ax.set_title(wp + str(add_title), fontsize=fontsize)
 
     if add_title != '' and weight_product is False:
         ax.set_title(str(add_title), fontsize=fontsize)
@@ -188,5 +207,6 @@ def plotFromFile(filename, number_nodes=True, outfile=""):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:
         sol_dict = json.load(input_file)
-    graph = Graph(sol_dict['graph'])
-    graphPlot(graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    # graph = Graph(sol_dict['graph'])
+    # graphPlot(graph.graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    graphPlot(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)

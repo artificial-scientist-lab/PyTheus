@@ -1,12 +1,16 @@
+import itertools
 import numpy as np
 import pytheus.theseus as th
+from pytheus.graphplot import graphPlot
 from copy import deepcopy
 
 # +
-DEFAULT_NORM = 'Not stored yet. You have to run getNorm().'
-DEFAULT_STATE = 'Not stored yet. You have to run getState().'
 WRONG_IMAGINARY = 'The property `imaginary` is NOT defined correctly.'
 
+
+def propertyDefined(property_name):
+    return f'The property `{property_name}` has been defined and stored.'
+    
 
 def invalidInput(input_name):
     return f'Introduce a valid input `{input_name}`.'
@@ -28,28 +32,24 @@ def defaultValues(length, imaginary):
 class Graph():  # should this be an overpowered dictionary? NOPE
     def __init__(self,
                  edges,  # list/tuple of edges, dictionary with weights, 'full' or 'empty'
-                 dimensions=[],
-                 weights=[],  # list of values or tuples encoding imaginary values
-                 imaginary=False,  # 'cartesian' or 'polar'
-                 norm=False,  # For the sake of perfomance, compute
-                 state=False,  # norm and state only when needed.
-                 state_cat=True
+                 dimensions = None,
+                 weights = [],  # list of values or tuples encoding imaginary values
+                 imaginary = False,  # Alternatively:'cartesian' or 'polar'
+                 order = 0, # order of the graph terms, if 0 we compute perfect matchings
+                 loops = False
                  ):
-        self.dimensions = dimensions
         self.imaginary = imaginary
-        self.full = True if edges == 'full' else False
+        self.order = order
         # The next line may redefine previous properties
-        self.graph = self.graphStarter(edges, weights)  # MAIN PROPERTY
-        # This may not be elegant, but it works
-        self.state_catalog = None
-        if self.state_catalog == None and state_cat: self.getStateCatalog()
-        self.norm = DEFAULT_NORM
-        if norm: self.getNorm()
-        self.state = DEFAULT_STATE
-        if state: self.getState()
+        self.graph = self.graphStarter(edges, weights, loops, dimensions)  # MAIN PROPERTY
+        # The following properties are long to compute and not always needed.
+        # We set them as None, defining them only when they are called (without the _)
+        self._state_catalog = None
+        self._state = None
+        self._norm = None
 
     # Long, cumbersome, and very necessary function.
-    def graphStarter(self, edges, weights):
+    def graphStarter(self, edges, weights, loops, dimensions):
         '''
         To facilitate the use of the library, this function transforms different kinds of graph
         inputs into a suitable Graph instance, redefining the properties if needed.
@@ -57,10 +57,10 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         Once the edges and weights are correct, it returns an property graph.
         '''
         if edges == 'full':  # If True, dimensions must be defined.
-            if len(self.dimensions) == 0:
+            if dimensions is None:
                 raise ValueError('Introduce the dimensions to get a fully connected graph')
             else:
-                edges = th.buildAllEdges(self.dimensions)
+                edges = th.buildAllEdges(dimensions,loops=loops)
                 if len(weights) == 0:
                     weights = defaultValues(len(edges), self.imaginary)
                 else:
@@ -107,18 +107,30 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                     if self.imaginary == 'cartesian':
                         weights = [val[0] + 1j * val[1] for val in weights]
                     elif self.imaginary == 'polar':
-                        weights = [tuple(val) for val in weights]
+                        weights = [list(val) for val in weights]
                     else:
                         raise ValueError(invalidInput('imaginary'))
                 else:
                     raise ValueError('Introduce valid weights.')
             else:
                 raise ValueError('Introduce valid weights.')
-
-        if len(self.dimensions) == 0:
-            self.dimensions = th.graphDimensions(edges)  # a nice function should be defined here
         # Once edges and weights are properly defined, we return a graph
         return {ed: val for ed, val in zip(edges, weights)}
+
+    def __abs__(self):
+        return_weights = len(self.graph) * [0]
+        if self.is_weighted:
+            if self.imaginary in [False, 'cartesian']:
+                for idx, vv in enumerate(self.graph.values()):
+                    return_weights[idx] = abs(vv)
+            elif self.imaginary == 'polar':
+                for idx, vv in enumerate(self.graph.values()):
+                    return_weights[idx] = abs(vv[0])
+            else:
+                raise ValueError(WRONG_IMAGINARY)
+            return return_weights
+        else:
+            ValueError('emtpy weights')
 
     def __repr__(self):
         '''
@@ -139,7 +151,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         if isinstance(edge, (tuple, list)) and len(edge) == 4:
             if isinstance(weight, (int, float, complex)):
                 if self.imaginary == 'polar':
-                    self.graph[tuple(edge)] = (abs(weight), np.angle(weight))
+                    self.graph[tuple(edge)] = [abs(weight), np.angle(weight)]
                     print('Weight stored in polar notation.')
                 else:
                     self.graph[tuple(edge)] = weight
@@ -147,7 +159,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                         self.imaginary = 'cartesian'
             elif isinstance(weight, (tuple, list)) and len(weight) == 2:
                 if self.imaginary == 'polar':
-                    self.graph[edge] = tuple(weight)
+                    self.graph[edge] = list(weight)
                 else:
                     self.graph[edge] = weight[0] * np.exp(1j * weight[1])
                     self.imaginary = 'cartesian'
@@ -167,87 +179,176 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 self[edge] = round(self[edge].real, ndigits) + 1j * round(self[edge].imag, ndigits)
         elif self.imaginary == 'polar':
             for edge in self.edges:
-                self[edge] = (round(self[edge][0], ndigits), self[edge][1])
+                self[edge] = [round(self[edge][0], ndigits), self[edge][1]]
         else:
             raise ValueError(WRONG_IMAGINARY)
         return self
-
-    # this should be __del__ but then you would have to do: del self.graph[] etc
-    def remove(self, edge, update=True):
-        del self.graph[edge]
-        if update:
-            remove_ket_list = []
-            for ket, pm_list in self.state_catalog.items():
-                if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
-                    self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
-                    if len(self.state_catalog[ket]) == 0:
-                        remove_ket_list.append(ket)
-            for ket in remove_ket_list:
-                del self.state_catalog[ket]
-        # if update:
-        #    if self.norm != DEFAULT_NORM: self.getNorm()
-        #    if self.state != DEFAULT_STATE: self.getState()
-
-    def purge(self, threshold=1e-4, update=True):
+    
+    def __imul__(self, constant):
+        self.rescale(constant)
+        return self
+    
+    def __matmul__(self, other):
         '''
-        It removes all edges whose weights, in absolute value, are below `threshold`.
+        Braket operation, the inner product between the stored state. 
+        It can be used with @.
         '''
-        remove_edges = []
-        if self.imaginary == 'polar':
-            for edge, weight in self.graph.items():
-                if abs(weight[0]) < threshold:
-                    remove_edges.append(edge)
-        else:
-            for edge, weight in self.graph.items():
-                if abs(weight) < threshold:
-                    remove_edges.append(edge)
-        for edge in remove_edges:
-            del self.graph[edge]
-        if update:
-            remove_ket_list = []
-            for ket, pm_list in self.state_catalog.items():
-                for edge in remove_edges:
-                    if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
-                        self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
-            for ket, pm_list in self.state_catalog.items():
-                if len(pm_list) == 0:
-                    remove_ket_list.append(ket)
-            for ket in remove_ket_list:
-                del self.state_catalog[ket]
+        return self.state @ other
 
     # DEFINE GET, SET AND DEL ITEM
-
+    
+    # imaginary could be redefined as one of these properties
     @property
     def edges(self):
         return list(self.graph.keys())
+    
+    @property
+    def full(self):
+        total_edges = 0
+        # there may be an equation to handle this 
+        for link in itertools.combinations(self.dimensions,r=2):
+            total_edges += link[0] * link[1]
+        return total_edges == len(self)
+    
+    @property
+    def str_edges(self):
+        if self.imaginary == False:
+            return [th.edgeWeight(edge) for edge in self.edges]
+        else:
+            return (['r_{}_{}_{}_{}'.format(*edge) for edge in self.edges] +
+                    ['th_{}_{}_{}_{}'.format(*edge) for edge in self.edges])
 
     @property
     def weights(self):
         return list(self.graph.values())
+    
+    @property
+    def creators(self):
+        '''
+        List of all creators operators used in the graph.
+        '''
+        return th.creatorList(self.edges)
 
     @property
     def num_nodes(self):
-        return len(self.dimensions)
+        return int(1 + np.max(np.array(self.edges)[:,:2]))
+
+    @property
+    def dimensions(self):
+        return th.graphDimensions(self.edges)
 
     @property
     def perfect_matchings(self):
         return sum(self.state_catalog.values(), [])
+    
+    @property
+    def kets(self):
+        return self.state.kets
 
     @property
     def is_weighted(self):
-        if all(isinstance(val, tuple) for val in self.weights):
-            return not all(isinstance(val, bool) for val in sum(self.weights, ()))
+        if all(isinstance(val, list) for val in self.weights):
+            return not all(isinstance(val, bool) for val in sum(self.weights, []))
         elif all(isinstance(val, bool) for val in self.weights):
             return False
         elif all(isinstance(val, (int, float, complex)) for val in self.weights):
             return True
         else:
             raise ValueError('The weights are NOT defined correctly.')
+    
+    @property
+    def loops(self):
+        return any(edge[0]==edge[1] for edge in self.edges)
+    
+    @property
+    def state_catalog(self):
+        if self._state_catalog is None:
+            self.getStateCatalog()
+            # annoying #print(propertyDefined('state_catalog'))
+        return self._state_catalog
 
     # imaginary could be redefined as one of these properties
+    def getStateCatalog(self, order=None):
+        if order is None: order = self.order
+        if type(order) in [list,tuple]:
+            self._state_catalog = dict()
+            for integer in order:
+                if self.full:
+                    self._state_catalog.update(th.allEdgeCovers(self.dimensions,
+                                                    order=integer, loops=self.loops))
+                else:
+                    self._state_catalog.update(th.stateCatalog(th.findEdgeCovers(self.edges,
+                                                    order=integer, loops=self.loops)))
+        elif order==0:
+            if self.full:
+                self._state_catalog = th.allPerfectMatchings(self.dimensions)
+            else:
+                self._state_catalog = th.stateCatalog(th.findPerfectMatchings(self.edges))
+        else:
+            if self.full:
+                self._state_catalog = th.allEdgeCovers(self.dimensions, 
+                                                        order=order, loops=self.loops)
+            else:
+                self._state_catalog = th.stateCatalog(th.findEdgeCovers(self.edges, 
+                                                        order=order, loops=self.loops))
+        
+    @property
+    def state(self):
+        if self._state is None:
+            self.getState()
+            # annoying #print(propertyDefined('state'))
+        return self._state
+    
+    def getState(self, order=None, normalize=True):
+        if order is None: order = self.order
+        kets = list(self.state_catalog.keys())
+        if self.is_weighted:
+            amplitudes = []
+            conversion = self.imaginary == 'polar'
+            if conversion:
+                self.toCartesian()
+            if order == 0:
+                for kt in kets:
+                    term = 0
+                    for subgraph in self.state_catalog[kt]:
+                        term += np.prod([self.graph[edge] for edge in subgraph])
+                    amplitudes.append(term)
+            else:
+                for kt in kets:
+                    term = 0
+                    for subgraph in self.state_catalog[kt]:
+                        term += np.prod([self.graph[edge] for 
+                                         edge in subgraph])/th.factorialProduct(subgraph)
+                    amplitudes.append(term * (th.factorialProduct(kt)**.5))
+            if conversion:
+                self.toPolar()
+        else:
+            amplitudes = []
+        self._state = State(kets, amplitudes, self.imaginary,normalize=normalize)
+    
+    @property
+    def norm(self):
+        if self._norm is None:
+            self.getNorm()
+            # annoying #print(propertyDefined('norm'))
+        return self._norm
+    
+    # the employed norm function is simplified (only pm) and uses the new imaginary notation
+    def getNorm(self, hot=None):
+        if hot is None: hot = (self.order!=0)
+        self._norm = th.writeNorm(self.state_catalog, imaginary=self.imaginary, hot=hot)
 
     def copy(self):
         return deepcopy(self)
+    
+    # there may be a more clever way to do this
+    def fullUpdate(self, catalog=True, state=True, norm=True):
+        if (self._state_catalog is not None) and catalog:
+            self.getStateCatalog()
+        if (self._state is not None) and state: 
+            self.getState()
+        if (self._norm is not None) and norm:
+            self.getNorm()
 
     def addEdge(self, edge, weight=None, update=True):
         if len(edge) == 4 and all(isinstance(val, int) for val in edge):
@@ -274,58 +375,53 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 self.state_catalog[ket] = sorted(self.state_catalog[ket])
         #     if self.norm != DEFAULT_NORM: self.getNorm()
         # if self.state != DEFAULT_STATE: self.getState()
+    
+    # this should be __del__ but then you would have to do: del self.graph[] etc
+    def remove(self, edge, update=True):
+        del self.graph[edge]
+        if update:
+            for ket, pm_list in list(self.state_catalog.items()):
+                if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                    self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
+                    if len(self.state_catalog[ket]) == 0:
+                        del self.state_catalog[ket]
+
+    def purge(self, threshold=1e-4, update=True):
+        '''
+        It removes all edges whose weights, in absolute value, are below `threshold`.
+        It also erase the contributions of the purged edges from the state_catalog.
+        '''
+        remove_edges = []
+        if self.imaginary == 'polar':
+            for edge, weight in self.graph.items():
+                if abs(weight[0]) < threshold:
+                    remove_edges.append(edge)
+        else:
+            for edge, weight in self.graph.items():
+                if abs(weight) < threshold:
+                    remove_edges.append(edge)
+        for edge in remove_edges:
+            del self.graph[edge]
+        if update:
+            remove_ket_list = []
+            for ket, pm_list in self.state_catalog.items():
+                for edge in remove_edges:
+                    if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                        self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
+            for ket, pm_list in self.state_catalog.items():
+                if len(pm_list) == 0:
+                    remove_ket_list.append(ket)
+            for ket in remove_ket_list:
+                del self.state_catalog[ket]
 
     # This could be also a property, but then we cannot introduce arguments
     def node_degrees(self, ascending=False):  #
         '''
         Degree of each node of the graph.
         '''
-        return th.nodeDegrees(self.edges, rising=ascending)
-
-    def getStateCatalog(self):
-        if self.full:
-            self.state_catalog = th.allPerfectMatchings(self.dimensions)
-        else:
-            self.state_catalog = th.stateCatalog(th.findPerfectMatchings(self.edges))
-
-    # the employed norm function is simplified (only pm) and uses the new imaginary notation
-    def getNorm(self):
-        self.norm = th.writeNorm(self.state_catalog, imaginary=self.imaginary)
-
-    def getState(self):
-        kets = list(self.state_catalog.keys())
-        if self.is_weighted:
-            amplitudes = []
-            conversion = self.imaginary == 'polar'
-            if conversion:
-                self.toCartesian()
-            for kt in kets:
-                term = 0
-                for pm in self.state_catalog[kt]:
-                    term += np.prod([self.graph[edge] for edge in pm])
-                amplitudes.append(term)
-            if conversion:
-                self.toPolar()
-        else:
-            amplitudes = []
-        self.state = State(kets, amplitudes, self.imaginary)
+        return th.nodeDegrees(self.edges, increasing=ascending)
 
         # This could also be defined as __abs__, but what do you give back? The dictionary?
-
-    def __abs__(self):
-        return_weights = len(self.graph) * [0]
-        if self.is_weighted:
-            if self.imaginary in [False, 'cartesian']:
-                for idx, vv in enumerate(self.graph.values()):
-                    return_weights[idx] = abs(vv)
-            elif self.imaginary == 'polar':
-                for idx, vv in enumerate(self.graph.values()):
-                    return_weights[idx] = abs(vv[0])
-            else:
-                raise ValueError(WRONG_IMAGINARY)
-            return return_weights
-        else:
-            ValueError('emtpy weights')
 
     def absolute(self):
         if self.is_weighted:
@@ -348,8 +444,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             return None
         if self.is_weighted:
             if self.imaginary == False:
-                for kk, vv in self.graph.items():
-                    self.graph[kk] = (vv, 0)
+                pass # Nothing to do here
             elif self.imaginary == 'polar':
                 for kk, vv in self.graph.items():
                     self.graph[kk] = vv[0] * np.exp(1j * vv[1])
@@ -367,15 +462,15 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         if self.is_weighted:
             if self.imaginary == False:
                 for kk, vv in self.graph.items():
-                    self.graph[kk] = (vv, 0)
+                    self.graph[kk] = [vv, 0]
             elif self.imaginary == 'cartesian':
                 for kk, vv in self.graph.items():
-                    self.graph[kk] = (abs(vv), np.angle(vv))
+                    self.graph[kk] = [abs(vv), np.angle(vv)]
             else:
                 raise ValueError('The propery `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.graph.items():
-                self.graph[kk] = (True, False)
+                self.graph[kk] = [True, False]
         self.imaginary = 'polar'
 
     def rescale(self, constant):
@@ -427,6 +522,134 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 self.graph[edge] = max(minimum, min(weight, maximum))
         else:
             raise ValueError('Introduce a positive maximum.')
+    
+    def flipNode(self, node):
+        for edge in self.graph:
+            if node in edge[:2]:
+                self[edge] *= -1
+    
+    def permuteNodes(self, nodeA, nodeB, update=True):
+        assert isinstance(nodeA, int) and isinstance(nodeB, int) 
+        old_edges = []
+        new_edges_dict = dict()
+        for edge in list(self.edges):
+            if not ((nodeA in edge[:2]) or (nodeB in edge[:2])):
+                pass # nothing to do here
+            else:
+                old_edges.append(edge)
+                if(nodeA in edge[:2]) and (nodeB in edge[:2]):
+                    new_edge = edge[:2] + edge[3:1:-1]
+                else: # this could be more compact, but now it's readable
+                    if edge[0] in [nodeA, nodeB]:
+                        change = 0
+                        keep = 1
+                    else:
+                        change = 1
+                        keep = 0
+                    if nodeA == edge[change]:
+                        new_node = nodeB
+                    else:
+                        new_node = nodeA
+                    new_edge = sorted([(new_node, edge[change+2]),
+                                      (edge[keep], edge[keep+2])])
+                    new_edge = (new_edge[0][0],new_edge[1][0],
+                                new_edge[0][1],new_edge[1][1])
+                new_edges_dict[new_edge] = self.graph[edge]
+        for edge in old_edges:
+            del self.graph[edge]
+        self.graph.update(new_edges_dict)
+        if update: 
+            self.fullUpdate()
+        
+    def switchColors(self, node, colorA, colorB, update=True):
+        assert isinstance(node, int) 
+        assert isinstance(colorA, int) 
+        assert isinstance(colorB, int) 
+        assert colorA != colorB
+        old_edges = []
+        new_edges_dict = dict()
+        for edge in list(self.edges):
+            if node in edge[:2]:
+                if edge[0] == edge[1]: # loop case
+                    first = edge[2] in [colorA, colorB]
+                    second = edge[3] in [colorA, colorB]
+                    if first or second:
+                        old_edges.append(edge)
+                        new_edge = list(edge)
+                        if first:
+                            new_edge[2] = colorB if edge[2]==colorA else colorA
+                        if second:
+                            new_edge[3] = colorB if edge[3]==colorA else colorA
+                        new_edges_dict[tuple(new_edge)] = self.graph[edge]
+                    else:
+                        pass # neither colorA nor colorB are on this loop
+                else:
+                    idx = (edge[:2]).index(node)
+                    if edge[2 + idx] in [colorA, colorB]:
+                        old_edges.append(edge)
+                        new_edge = list(edge)
+                        new_edge[2 + idx] = colorB if colorA == edge[2 + idx] else colorA
+                        new_edges_dict[tuple(new_edge)] = self.graph[edge]
+                    else:
+                        pass # neither colorA nor colorB are on this edge
+        for edge in old_edges:
+            del self.graph[edge]
+        self.graph.update(new_edges_dict)
+        if update: 
+            self.fullUpdate()
+    
+    def addNode(self, dimension=1, linked2=None, position=-1, update=True):
+        '''
+        New node, with final position which is connected, by default, with all the others.
+        
+        The position could be especified in a future, but not yet.
+        '''
+        if linked2 is None:
+            linked2 = list(range(self.num_nodes))
+        else:
+            linked2 = sorted(linked2)
+            assert max(linked2) < self.num_nodes
+        new_node = self.num_nodes
+        for node in linked2:
+            for dim_combo in itertools.product(range(self.dimensions[node]),range(dimension)):
+                self.addEdge((node,new_node)+dim_combo,update=False)
+        if position== -1:
+            pass # the node is at the end
+        else:
+            assert position < new_node
+            for node in range(new_node,position,-1):
+                self.permuteNodes(node-1, node, update=False)
+        if update: 
+            self.fullUpdate()
+    
+    def removeNode(self, node, update=True):
+        # old_edges = []
+        new_edges_dict = dict()
+        for edge in list(self.edges):
+            if node in edge[:2]:
+                del self.graph[edge]
+            else:
+                first = edge[0] > node
+                second = edge[1] > node
+                if first or second:
+                    new_edge = (edge[0]-first, edge[1]-second, edge[2], edge[3])
+                    new_edges_dict[new_edge] = self.graph[edge]
+                    del self.graph[edge]
+        # for edge in old_edges:
+        #     del self.graph[edge]
+        self.graph.update(new_edges_dict)
+        if update: 
+            self.fullUpdate()
+        
+        
+    def plot(self, scaled_weights=False, show=False, max_thickness=10,
+             weight_product=False, ax_fig=(), add_title='',show_value_for_each_edge=False, 
+             fontsize=30, zorder=11, markersize=25, number_nodes=True, filename='',figsize=10):
+        graphPlot(self.graph, scaled_weights=scaled_weights, show=show, 
+                 max_thickness=max_thickness, weight_product=weight_product, ax_fig=ax_fig,
+                 add_title=add_title, show_value_for_each_edge=show_value_for_each_edge, 
+                 fontsize=fontsize, zorder=zorder, markersize=markersize, 
+                 number_nodes=number_nodes, filename=filename, figsize=figsize)
 
 
 # # The State class
@@ -437,7 +660,7 @@ class State():
                  kets,
                  amplitudes=[],  # list of values or tuples encoding imaginary values
                  imaginary=False,  # 'cartesian' or 'polar'
-                 normalize=False,
+                 normalize=True,
                  ):
 
         self.imaginary = imaginary
@@ -449,23 +672,18 @@ class State():
         Function to initiate a State instance with different inputs.
         This version is not so flexible with the input format as the analogous from Graph.
         '''
+        # Verification of appropiate kets
         if type(kets) == dict:
             amplitudes = [kets[key] for key in sorted(kets.keys())]
             kets = sorted(kets.keys())
-        # Here, introducing the amplitudes after the kets in a list/tuple doesn't work
-        elif type(kets) in [list, tuple]:
-            pass  # seems legit
+        elif all(isinstance(kt, str) for kt in kets):
+            kets = [tuple((ii, int(dim)) for ii, dim in enumerate(kt)) for kt in kets]
+        elif all(len(node)==2 for node in sum(kets,())):
+            # this verifies the kets are properly stored as list (or tuple) of tuples
+            # with the creator operators stored as (node, dim) 
+            pass
         else:
             raise ValueError(invalidInput('kets'))
-
-        # Verification of appropiate kets            
-        kets_shape = np.shape(kets)
-        if all(isinstance(kt, str) for kt in kets):
-            kets = [tuple((ii, int(dim)) for ii, dim in enumerate(kt)) for kt in kets]
-        elif kets_shape[2] == 2:
-            pass  # The third component must have 2 dimensions: (node, dim)
-        else:
-            raise ValueError('Introduce valid input `kets`.')
 
         # Verification and setting of appropiate amplitudes
         if len(amplitudes) == 0:  # The default option True behaves (mostly) as 1
@@ -482,7 +700,7 @@ class State():
                     if self.imaginary == 'cartesian':
                         amplitudes = [val[0] + 1j * val[1] for val in amplitudes]
                     elif self.imaginary == 'polar':
-                        amplitudes = [tuple([val[0], val[1]]) for val in amplitudes]
+                        amplitudes = [[val[0], val[1]] for val in amplitudes]
                     else:
                         raise ValueError(invalidInput('imaginary'))
                 else:
@@ -522,7 +740,7 @@ class State():
 
         if isinstance(amplitude, (int, float, complex)):
             if self.imaginary == 'polar':
-                self.state[tuple(ket)] = (abs(amplitude), np.angle(amplitude))
+                self.state[tuple(ket)] = [abs(amplitude), np.angle(amplitude)]
                 print('Amplitude stored in polar notation.')
             else:
                 self.state[tuple(ket)] = amplitude
@@ -530,13 +748,55 @@ class State():
                     self.imaginary = 'cartesian'
         elif isinstance(amplitude, (tuple, list)) and len(amplitude) == 2:
             if self.imaginary == 'polar':
-                self.state[ket] = tuple(amplitude)
+                self.state[ket] = list(amplitude)
             else:
                 self.state[ket] = amplitude[0] * np.exp(1j * amplitude[1])
                 self.imaginary = 'cartesian'
                 print('Amplitude stored in cartesian notation.')
         else:
             raise ValueError(invalidInput('amplitude'))
+
+    def __add__(self, other):
+        conversion_a = self.imaginary == 'polar'
+        if conversion_a:
+            self.toCartesian()
+        conversion_b = other.imaginary == 'polar'
+        if conversion_b:
+            other.toCartesian()
+        new_state = {ket:0 for ket in set(self.kets + other.kets)}
+        for ket in new_state:
+            try:
+                new_state[ket] += self.state[ket] + other.state[ket]
+            except KeyError:
+                try:
+                    new_state[ket] += self.state[ket]
+                except KeyError:
+                    new_state[ket] += other.state[ket]
+        if conversion_a:
+            self.toPolar()
+        if conversion_b:
+            other.toPolar()
+        return State(new_state,normalize=False)
+    
+    def __iadd__(self, other):
+        conversion_a = self.imaginary == 'polar'
+        if conversion_a:
+            self.toCartesian()
+        conversion_b = other.imaginary == 'polar'
+        if conversion_b:
+            other.toCartesian()
+            
+        for ket in other.state:
+            try:
+                self.state[ket] += other.state[ket]
+            except KeyError:
+                self.state[ket] = other.state[ket]
+        
+        if conversion_a:
+            self.toPolar()
+        if conversion_b:
+            other.toPolar()
+        return self
 
     def __matmul__(self, other):
         '''
@@ -566,6 +826,10 @@ class State():
             other.toPolar()
         # turning into array the second term is redundant, but somehow faster
         return np.conjugate(amplitudes_a) @ np.array(amplitudes_b)
+    
+    def __imul__(self, constant):
+        self.rescale(constant)
+        return self
 
     # The method __round__ for the class State is almost the same, could it be reformat?
     def __round__(self, ndigits=0):
@@ -577,7 +841,7 @@ class State():
                 self[ket] = round(self[ket].real, ndigits) + 1j * round(self[ket].imag, ndigits)
         elif self.imaginary == 'polar':
             for ket in self.kets:
-                self[ket] = (round(self[ket][0], ndigits), self[ket][1])
+                self[ket] = [round(self[ket][0], ndigits), self[ket][1]]
         else:
             raise ValueError(WRONG_IMAGINARY)
         return self
@@ -612,14 +876,18 @@ class State():
 
     @property
     def is_weighted(self):
-        if all(isinstance(val, tuple) for val in self.amplitudes):
-            return not all(isinstance(val, bool) for val in sum(self.amplitudes, ()))
+        if all(isinstance(val, list) for val in self.amplitudes):
+            return not all(isinstance(val, bool) for val in sum(self.amplitudes, []))
         elif all(isinstance(val, bool) for val in self.amplitudes):
             return False
         elif all(isinstance(val, (int, float, complex)) for val in self.amplitudes):
             return True
         else:
             raise ValueError('The amplitudes are NOT defined correctly.')
+    
+    @property
+    def dimensions(self):
+        return th.stateDimensions(self.kets)
 
     # imaginary could be redefined as one of these properties
 
@@ -648,8 +916,7 @@ class State():
             return None
         if self.is_weighted:
             if self.imaginary == False:
-                for kk, vv in self.state.items():
-                    self.state[kk] = (vv, 0)
+                pass
             elif self.imaginary == 'polar':
                 for kk, vv in self.state.items():
                     self.state[kk] = vv[0] * np.exp(1j * vv[1])
@@ -667,15 +934,15 @@ class State():
         if self.is_weighted:
             if self.imaginary == False:
                 for kk, vv in self.state.items():
-                    self.state[kk] = (vv, 0)
+                    self.state[kk] = [vv, 0]
             elif self.imaginary == 'cartesian':
                 for kk, vv in self.state.items():
-                    self.state[kk] = (abs(vv), np.angle(vv))
+                    self.state[kk] = [abs(vv), np.angle(vv)]
             else:
                 raise ValueError('The propery `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.state.items():
-                self.state[kk] = (True, False)
+                self.state[kk] = [True, False]
         self.imaginary = 'polar'
 
     def rescale(self, constant):
@@ -697,7 +964,7 @@ class State():
             raise ValueError('Introduce a positive maximum.')
 
     def normalize(self):
-        self.rescale(constant=1 / self.norm)
+        self.rescale(constant = 1 / self.norm)
 
     def targetEquation(self, state_catalog=None, imaginary=None):
         if imaginary is None:

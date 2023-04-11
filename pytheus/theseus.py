@@ -3,11 +3,11 @@
 """
 @author: cruizgo, soerenarlt, janpe
 """
-import itertools
+import itertools, numbers, random
 from math import factorial
 from collections import Counter
-import random
 import numpy as np
+import warnings
 
 
 # # Auxiliary Functions
@@ -30,7 +30,7 @@ def allPairSplits(lst):
     From selfgatoatigrado: https://stackoverflow.com/a/13020502
     '''
     N = len(lst)
-    choice_indices = itertools.product(*[range(k) for k in reversed(range(1, N, 2))])
+    choice_indices = itertools.product(*[range(k) for k in range(N-1, 0, -2)])
 
     for choice in choice_indices:
         # calculate the list corresponding to the choices
@@ -41,11 +41,14 @@ def allPairSplits(lst):
         yield result  # use yield and then turn it into a list is faster than append
 
 
-def targetEdges(nodes, graph):
+def targetEdges(nodes, graph, isolate=False):
     '''
     Returns all graph's edges which connect to the input nodes.
     '''
-    return [edge for edge in graph if (edge[0] in nodes) or (edge[1] in nodes)]
+    if isolate:
+        return [edge for edge in graph if (edge[0] in nodes) and (edge[1] in nodes)]
+    else:
+        return [edge for edge in graph if (edge[0] in nodes) or (edge[1] in nodes)]
 
 
 def removeNodes(nodes, graph):
@@ -88,6 +91,34 @@ def edgeBleach(color_edges):
     return bleached_edges
 
 
+def edgePainting(graph_list, avail_colors):
+    '''
+    Takes a list of uncolored graphs and 'paint them' with the
+    dictionary of `avail_colors`.
+    
+    Parameters
+    ----------
+    graph_list : list of tuples
+        List of subgraphs: perfect matchings, edge covers... 
+        The colors of the edges, if any, are ignored.
+    avail_colors : dictionary
+        Dictionary with the color combinations available for each edge (see edgeBleach).
+        {(node1, node2): [(color1, color2), ...], (node1, node3): [(color2, color1), ...], ...}
+
+    Returns
+    -------
+    colored_graphs : list of tuples
+        List of graphs with all possible color combinations.
+    '''
+    graph_list = np.unique(np.array(graph_list)[:,:,:2],axis=0)
+    painted_subgraphs = []
+    for subgraph in graph_list:
+        for coloring in itertools.product(*[avail_colors[tuple(edge)] for edge in subgraph]):
+            color_subgraph = [tuple(edge) + color for edge, color in zip(subgraph, coloring)]
+            painted_subgraphs.append(sorted(color_subgraph))
+    return [tuple(map(tuple,graph)) for graph in np.unique(painted_subgraphs, axis=0)]
+
+
 def allColorGraphs(color_nodes, loops=False):
     '''
     Given a list of colored nodes, i.e., an state. It uses AllPairSplits to generate all graphs that
@@ -117,8 +148,7 @@ def allColorGraphs(color_nodes, loops=False):
         color_graph = [[[nd[0][0], nd[1][0], nd[0][1], nd[1][1]] for nd in graph
                         if nd[0][0] != nd[1][0]] for graph in color_graph]
         color_graph = [graph for graph in color_graph if len(graph) == len(color_nodes) / 2]
-    return [tuple(tuple(ed) for ed in graph) for graph in np.unique(color_graph, axis=0)]
-
+    return [tuple(map(tuple,graph)) for graph in np.unique(color_graph, axis=0)]
 
 
 # # Informative Functions
@@ -155,6 +185,18 @@ def nodeDegrees(edge_list, nodes_list=[], increasing=True):
         return [(k, v) for k, v in links.items()]
 
 
+def creatorList(edge_list, allow_rep = False):
+    '''
+    From a list of edges, returns a list of the employed creator operators.
+    '''
+    creator_list = []
+    for ed in edge_list: creator_list += [(ed[0], ed[2]), (ed[1], ed[3])]
+    if allow_rep:
+        return sorted(creator_list)
+    else:
+        return sorted(set(creator_list))
+
+
 def graphDimensions(edge_list):
     '''
     Estimate the dimensions of a graph based on its edges.
@@ -172,19 +214,9 @@ def graphDimensions(edge_list):
     dimensions : list
         List with the dimensions accessible to each node in decreasing order. 
     '''
-    color_nodes = set()
-    for edge in edge_list:
-        color_nodes.add((edge[0], edge[2]))
-        color_nodes.add((edge[1], edge[3]))
-    color_nodes = sorted(color_nodes, reverse=True)
-    max_node = color_nodes[0][0]
-    max_dim = color_nodes[0][1]
-    dimensions = np.array([max_dim + 1] * (max_node + 1))
-    for node in color_nodes:
-        if node[1] > max_dim:
-            max_dim = node[1]
-            dimensions[:(node[0] + 1)] = max_dim + 1
-    return list(dimensions)
+    color_nodes = np.array(creatorList(edge_list))
+    num_nodes = color_nodes[-1,0] + 1
+    return [1 + color_nodes[color_nodes[:,0]==ii,1].max() for ii in range(num_nodes)]
 
 
 def stateDimensions(ket_list):
@@ -237,6 +269,34 @@ def stateCatalog(graph_list):
         except KeyError:
             state_catalog[coloring] = [graph]
     return state_catalog
+
+
+def mixedCatalog(traced_nodes, state_catalog):
+    '''
+    Given a catalog of states, it groups them based on the state on the traced nodes.
+    This function helps in the computation of mixed states.
+    
+    Parameters
+    ----------
+    traced_nodes : list of integers
+        List of the nodes which are traced out.
+    state_catalog : dictionary, optional
+        Dictionary with all the kets created by each graph as keys. If more than one graph leads to
+        the same state, they are listed together in the corresponding entrance of the dictionary.
+    
+    Returns
+    -------
+    mixed_catalog : dictionary
+        Dictionary of state_catalogs grouped by the state of the traced nodes.
+    '''
+    mixed_catalog = dict()
+    for ket, graph_list in state_catalog.items():
+        traced_ket = tuple(node for node in ket if node[0] in traced_nodes)
+        try:
+            mixed_catalog[traced_ket][ket] = graph_list
+        except KeyError:
+            mixed_catalog[traced_ket] = {ket:graph_list}
+    return mixed_catalog   
 
 
 def buildAllEdges(dimensions, string=False, imaginary=False, loops=False):
@@ -436,11 +496,60 @@ def allEdgeCovers(dimensions, order=0, loops=False): # This function should repl
     return color_dict
 
 
+def allFockStates(photons_per_modes, ancillas=None): 
+    '''
+    Generation of all possible Fock states. Loops are allowed.
+
+    Parameters
+    ----------
+    photons_per_modes : list of lists of integers
+        List of the photons to create in different modes:
+        [[N1 ph, M1 modes], [N2 ph, M2 modes], [N3 ph, M3 modes], ...]
+    ancillas : int, optional
+        Ancilla detectors reached by one photon each.
+
+    Returns
+    -------
+    fock_dict : dictionary
+        Dictionary of available Fock states. For each or state, the dictionary 
+        stores a list of all possible graphs that produce such state.
+        The notation employed for the nodes is: (node, color/dimension).
+        The notation employed for the edges is: (node1, node2, color1, color2).
+        Node2 cannot be lower than Node1.
+        We keep the notation of other dictionaries, but the color is always 0.
+    '''
+    assert all(isinstance(num,numbers.Integral) for num in sum(photons_per_modes, []))
+    total_photons = sum(pair[0] for pair in photons_per_modes)
+    total_modes = sum(pair[1] for pair in photons_per_modes)
+    if ancillas is None:
+        ancillas = total_photons % 2
+    elif (total_photons + ancillas) % 2 == 0:
+        pass # all good
+    else:
+        raise ValueError('The total number of photons must be even. Modify photons/ancillas.')
+    ancilla_nodes = tuple(range(total_modes,total_modes + ancillas))
+    ancilla_nodes_long = tuple((anc,0) for anc in ancilla_nodes)
+    
+    prod_states = []
+    mode_count = 0
+    for photons, modes in photons_per_modes:
+        prod_states.append(list(itertools.combinations_with_replacement(range(mode_count,mode_count+modes), photons)))
+        mode_count += modes
+        
+    fock_dict = dict()
+    for prod in itertools.product(*prod_states):
+        state = sum(prod,())
+        terms = sorted(sorted(graph) for graph in allPairSplits(list(state+ancilla_nodes)))
+        terms = [tuple(tuple(edge)+(0,0) for edge in graph) for graph in np.unique(terms,axis=0)]
+        fock_dict[tuple((node,0) for node in state) + ancilla_nodes_long] = terms
+    return fock_dict
+
+
 def recursivePerfectMatchings(graph, store, matches=[], edges_left=None):
     '''
     The heavy lifting of findPerfectMatchings.
     '''
-    if edges_left == None: edges_left = len(np.unique(np.array(graph)[:, :2])) / 2
+    if edges_left is None: edges_left = len(np.unique(np.array(graph)[:, :2])) / 2
     if len(graph) > 0:
         for edge in targetEdges([nodeDegrees(graph)[0][0]], graph):
             recursivePerfectMatchings(removeNodes(edge[:2], graph), store,
@@ -479,70 +588,7 @@ def findPerfectMatchings(graph):
     return painted_matchings
 
 
-def recursiveEdgeCover(graph, store, matches=[], edges_left=None, nodes_left=[], order=1, loops=False):
-    '''
-    Pseudorecursive function that append all possible edge covers of a
-    graph in a given list 'store'.
-    It does the heavy lifting of findEdgeCovers.
-
-    Parameters
-    ----------
-    graph : list
-        List of all available edges.
-    store : list
-        List to store the edge covers.
-    matches : list, optional
-        List of edges to build a perfect matching. If it fulfils all
-        requirements it will end up in store
-    edges_left : int, optional
-        Total number of edges of each edge cover. If None, this is computed
-        as the minimum edges required to cover all nodes plus the order.
-    nodes_left : list, optional
-        List of all nodes to be covered. By default, the list is obtained
-        from the nodes covered in graph but it can be set to target
-        specific nodes.
-    order : int, optional
-        Orders above the minimum required to cover all nodes. If 0, the
-        output are only perfect machings, with all nodes having degree 1.
-    loops : boolean, optional
-        Allow edges to connect twice the same node. These cannot appear for
-        perfect matchings.
-
-    Returns
-    -------
-    None, but now the input list 'store' contains all possible edge covers.
-    '''
-    if len(nodes_left) == 0: nodes_left = np.unique(np.array(graph)[:, :2])
-    if edges_left == None: edges_left = order + len(nodes_left) / 2
-    case = 2 * edges_left - len(nodes_left)
-    if case > 1:
-        for edge in graph:
-            recursiveEdgeCover(graph, store, matches + [edge], edges_left - 1,
-                               [node for node in nodes_left if node not in edge[:2]], loops=loops)
-    elif case == 1:
-        for edge in targetEdges(nodes_left, graph):
-            if edges_left > 1:
-                new_nodes_left = [node for node in nodes_left if node not in edge[:2]]
-                recursiveEdgeCover(targetEdges(new_nodes_left, graph), store,
-                                   matches + [edge], edges_left - 1, new_nodes_left, loops=loops)
-            if edges_left == 1 and not (sorted(matches + [edge]) in store):
-                store.append(sorted(matches + [edge]))
-    elif case == 0:  # We are in the perfect matching situation
-        subgraph = [ed for ed in graph if (ed[0] in nodes_left) & (ed[1] in nodes_left)]
-        if loops: subgraph = [edge for edge in subgraph if edge[0] != edge[1]]
-        perfect_matchings = []
-        recursivePerfectMatchings(subgraph, perfect_matchings, edges_left=edges_left)
-        for pm in perfect_matchings:
-            if not (sorted(matches + pm) in store):
-                store.append(sorted(matches + pm))
-    else:
-        pass
-
-
-# for large orders we could compute a first pack of edges at once using itertools
-
-
-def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
+def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False):
     '''
     Given a list of edges, returns all possible edge covers, up to a certain
     order or using a certain number of edges.
@@ -554,14 +600,14 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
     edges_left : int, optional
         Total number of edges of each edge cover. If None, this is computed
         as the minimum edges required to cover all nodes plus the order.
-    nodes_left : list, optional
+    nodes_left : iterable of int, optional
         List of all nodes to be covered. By default, the list is obtained
         from the nodes covered in graph but it can be set to target
         specific nodes.
     order : int, optional
         Orders above the minimum required to cover all nodes. If 0, the
         output are only perfect machings, with all nodes having degree 1.
-    loops : boolean, optional
+    loops : boolean, optional NOT USED ANYMORE
         Allow edges to connect twice the same node. These cannot appear for
         perfect matchings.
 
@@ -570,16 +616,28 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=[], order=1, loops=False):
     covers : list
         List of graphs with all nodes having, at least, degree 1.
     '''
+    # We ignore the edge colors until the very end
     avail_colors = edgeBleach(graph)
-    raw_covers = []
-    recursiveEdgeCover(list(avail_colors.keys()), raw_covers, edges_left=edges_left,
-                       nodes_left=nodes_left, order=order, loops=loops)
+    raw_edges = sorted(avail_colors.keys())
+    
+    if nodes_left is None: 
+        nodes_left = set(np.array(raw_edges)[:, :2].flat)
+    if edges_left is None: 
+        edges_left = order + (len(nodes_left) // 2)
+
+    # Create a set of all possible subsets of edges
+    raw_covers = set()
+    for subgraph in itertools.combinations_with_replacement(raw_edges, edges_left):
+        nodes_covered = set(sum(subgraph, ()))
+        if all(node in nodes_covered for node in nodes_left):
+            raw_covers.add(subgraph)
+    
     painted_covers = []
-    for cover in raw_covers:
+    for cover in sorted(raw_covers):
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
             color_cover = [edge + color for edge, color in zip(cover, coloring)]
             painted_covers.append(sorted(color_cover))
-    return [[tuple(ed) for ed in graph] for graph in np.unique(painted_covers, axis=0)]
+    return [tuple(map(tuple,graph)) for graph in np.unique(painted_covers, axis=0)]
 
 
 # # String Expressions
@@ -633,9 +691,9 @@ def weightProduct(edge_list, imaginary=False):
 
 
 # This expression could also be UNlambdified so we add some check for the Counter
-factProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
+factorialProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
 
-def writeNorm(state_catalog, imaginary=False):
+def writeNorm(state_catalog, imaginary=False, hot=False):
     '''
     Write a normalization function with all the states of a dictionary.
     
@@ -644,10 +702,11 @@ def writeNorm(state_catalog, imaginary=False):
     state_catalog : dictionary
         Dictionary with all the kets created by each graph as keys. If more than one graph leads to
         the same state, they are listed together in the corresponding entrance of the dictionary.
-    
     imaginary : boolean, str ('cartesian' or 'polar'), optional
         If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
         are complex values written in the corresponding notation.
+    hot : boolean, optional
+        Higher Order Terms. If True, it computes the coefficients derived from edge/node repetition.
         
     Returns
     -------
@@ -655,38 +714,45 @@ def writeNorm(state_catalog, imaginary=False):
         Norm string with the contributions of each perfect matching to their corresponding ket.
     '''
     norm_sum = []
-    for key, values in state_catalog.items():
-        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
-        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in values]
-        term_sum = ' + '.join(term_sum)
-        if imaginary == False:
-            # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
-            # The factor should be squared or, in this case, left outside the square
-            norm_sum.append(f'{factProduct(key)}*(({term_sum})**2)')
-        else:
-            norm_sum.append(f'{factProduct(key)}*(abs({term_sum})**2)')
-    return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('+ 1*', '+ ')
+    if hot:
+        for key, values in state_catalog.items():
+            # The division with factorialProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+            term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in values]
+            term_sum = ' + '.join(term_sum)
+            if imaginary == False:
+                # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
+                # The factor should be squared or, in this case, left outside the square
+                norm_sum.append(f'{factorialProduct(key)}*(({term_sum})**2)')
+            else:
+                norm_sum.append(f'{factorialProduct(key)}*(abs({term_sum})**2)')
+        return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('+ 1*', '+ ')
+    else:
+        for key, values in state_catalog.items():
+            term_sum = ' + '.join([f'{weightProduct(graph, imaginary)}' for graph in values])
+            if imaginary == False:
+                # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
+                # The factor should be squared or, in this case, left outside the square
+                norm_sum.append(f'(({term_sum})**2)')
+            else:
+                norm_sum.append(f'(abs({term_sum})**2)')
+        return ' + '.join(norm_sum)
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
     '''
-    Introducing the amplitudes for each ket, it writes a non-normalized fidelity function with all 
-    the ways the state can be build stored in state_catalog.
+    Given a list of target kets, it writes a non-normalized fidelity function.
     
     If no state_catalog is introduced it builds all possible graphs that generate the desired kets.
     
     Parameters
     ----------
     ket_list : list of tuples
-        List of kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].
-        
+        List of target kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].   
     amplitudes : list, optional
         List of the amplitudes we aim for each ket. If None, all will be the same.
-        
     state_catalog : dictionary, optional
         Dictionary with all the kets created by each graph as keys. If more than one graph leads to
         the same state, they are listed together in the corresponding entrance of the dictionary.
-    
     imaginary : boolean, str ('cartesian' or 'polar'), optional
         If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
         are complex values written in the corresponding notation.
@@ -696,35 +762,85 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     str
         Non-normalized fidelity string with all the contributing weights.
     '''
-    if amplitudes == None:
+    if amplitudes is None:
         amplitudes = [1] * len(ket_list)
     else:
         if len(amplitudes) != len(ket_list):
-            raise ValueError('The number of amplitudes and states should be the same')
+            raise ValueError('The number of amplitudes and kets should be the same')
     if imaginary == 'polar':
         amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
-    if norm2 != 1: # Is this useless? I think so (Carlos)
-        norm2 = str(norm2)
-    if state_catalog == None:
+    # if norm2 != 1: # Is this useless? I think so (Carlos)
+    #     norm2 = str(norm2)
+    if state_catalog is None:
         state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     equation_sum = []
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):
-        # The division with factProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
-        term_sum = [f'{weightProduct(graph, imaginary)}/{factProduct(graph)}' for graph in state_catalog[tuple(ket)]]
-        term_sum = ' + '.join(term_sum)
-        # The multiplication with factProduct from creator operators: wikipedia.org/wiki/Creation_operators
-        creation_term = factProduct(ket)
-        if (creation_term**.5) % 1 == 0:
-            creation_term = int(creation_term**.5)
-        else:
-            creation_term = f'{creation_term}**.5'
-        equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
-    equation_sum = ' + '.join(equation_sum)
-    if imaginary == False:
+        try:
+            # The division with factorialProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+            term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in state_catalog[tuple(ket)]]
+            term_sum = ' + '.join(term_sum)
+            # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
+            creation_term = factorialProduct(ket)
+            if (creation_term**.5) % 1 == 0:
+                creation_term = int(creation_term**.5)
+            else:
+                creation_term = f'{creation_term}**.5'
+            equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
+        except KeyError:
+            equation_sum.append('0')
+            warnings.warn(f'The ket {tuple(ket)} was not available in the state catalog')
+    # equation_sum = ' + '.join(equation_sum).replace('0 + ','').replace(' + 0','')
+    # if equation_sum == '0':
+    equation_sum = ' + '.join(term for term in equation_sum if term != '0')
+    if equation_sum == '':
+        return '0'
+    elif imaginary == False:
         return f'(({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
     else:
-        return f'(abs({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
+        return f'(abs({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '') 
+
+
+def mixedTarget(ket_list, mixed_catalog, amplitudes=None, imaginary=False, target_dict=False):
+    '''
+    Given a list of target kets which were NOT traced out in the mixed catalog. It produces the 
+    target equation for the different possible states which were traced.
+    
+    Parameters
+    ----------
+    ket_list : list of tuples
+        List of target kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].
+        The kets must include ALL nodes which are NOT traced out.
+    mixed_catalog : dictionary
+        Dictionary of state_catalogs that produce the kets from ket_list. The catalogs are splitted by 
+        the ancilla creators, which are the keys of the mixed_catalog. 
+        It can be obtained from the input `state_catalog`.  
+    amplitudes : list, optional
+        List of the amplitudes we aim for each ket. If None, all will be the same.
+    imaginary : boolean, str ('cartesian' or 'polar'), optional
+        If False, the final expression uses only real weights. If 'cartesian' or 'polar', the weights 
+        are complex values written in the corresponding notation.
+    target_dict : boolean, optional
+        If True, it returns a dictionary with target equations as values. Else, it returns one str.
+    
+    Returns
+    -------
+    str (if target_dict False)
+        Non-normalized fidelity string with all the contributions from the reduced density matrix.
+    dictinary of str (if target_dict True)
+        Dictionary whose values are non-normalized fidelity string with all the contributions from the 
+        reduced density matrix.
+    
+    '''
+    mixed_target = dict()
+    for traced_ket, catalog in mixed_catalog.items():
+        full_kets = [tuple(sorted(ket+traced_ket)) for ket in ket_list]
+        mixed_target[traced_ket] = targetEquation(full_kets, amplitudes=amplitudes, 
+                                                  state_catalog=catalog, imaginary=imaginary)
+    if target_dict:
+        return mixed_target
+    else:
+        return '  +  '.join(target for target in mixed_target.values() if target != '0')
 
 
 def buildLossString(loss_function, variables):
@@ -732,6 +848,18 @@ def buildLossString(loss_function, variables):
     loss_string = f'func = lambda inputs: ({loss_string})(*inputs) '
     exec(loss_string, globals())
     return func, loss_string  # we can keep the second as a security check
+
+
+def stringFunction(str_function, variables):
+    '''
+    Turn a string into a function, given a list of variables (strings).
+    
+    It does the same than buildLossString.
+    '''
+    func_string = 'lambda ' + ', '.join(variables) + f': {str_function}'
+    func_string = f'func = lambda inputs: ({func_string})(*inputs) '
+    exec(func_string, globals())
+    return func
 
 
 # # String Expressions

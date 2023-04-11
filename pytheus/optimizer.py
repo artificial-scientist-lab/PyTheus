@@ -10,9 +10,12 @@ from .saver import saver
 from .lossfunctions import loss_dic
 import numpy as np
 from scipy import optimize
+import json
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class topological_opti:
 
@@ -57,7 +60,7 @@ class topological_opti:
             # uncomment to see where checks fail
             # print(result.fun, self.config['thresholds'][0])
             if result.fun > self.config['thresholds'][0]:
-                #if check fails return false
+                # if check fails return false
                 return False
             # check if all loss functions are under the corresponding threshold
             for ii in range(1, len(lossfunctions)):
@@ -88,10 +91,10 @@ class topological_opti:
             ordered list according to imaginary
 
         """
-        if self.imaginary ==  'cartesian':
+        if self.imaginary == 'cartesian':
 
             if len(weights) % 2 == 0:
-                ll2 = int(len(weights)/2)
+                ll2 = int(len(weights) / 2)
             else:
                 raise ValueError(
                     'odd number of weights for complex optimization')
@@ -102,7 +105,7 @@ class topological_opti:
         elif self.imaginary == 'polar':
 
             if len(weights) % 2 == 0:
-                ll2 = int(len(weights)/2)
+                ll2 = int(len(weights) / 2)
             else:
                 raise ValueError(
                     'odd number of weights for complex optimization')
@@ -142,13 +145,13 @@ class topological_opti:
                           'cnfg': self.config}
 
         # fock basis
-        elif self.config['loss_func'] in ['fockcr','fockfid']:
-            #loss_specs = {'target_state': self.target,
+        elif self.config['loss_func'] in ['fockcr', 'fockfid']:
+            # loss_specs = {'target_state': self.target,
             #              'cnfg': self.config}
             loss_specs = {'target_state': self.target,
-                        'num_anc':self.config['num_anc'],
-                        'amplitudes':self.config['amplitudes'],
-                        'imaginary': self.imaginary}
+                          'num_anc': self.config['num_anc'],
+                          'amplitudes': self.config['amplitudes'],
+                          'imaginary': self.imaginary}
 
         # custom loss functions
         elif self.config['loss_func'] == 'lff':
@@ -193,7 +196,9 @@ class topological_opti:
         """
         # losses is a list of callable lossfunctions, e.g. [countrate(x), fidelity(x)], where x is a vector of edge weights
         # that can be given to scipy.optimize
+        log.info('loading losses')
         losses = self.get_loss_functions(graph)
+        log.info('losses done')
         valid = False
         counter = 0
         # repeat optimization of complete graph until a good solution is found (which satifies self.check())
@@ -201,15 +206,17 @@ class topological_opti:
             # prepare optimizer
             initial_values, bounds = self.prepOptimizer(len(graph))
             # optimization with scipy
+            log.info('begin preopt')
             best_result = optimize.minimize(losses[0], x0=initial_values,
                                             bounds=bounds,
                                             method=self.config['optimizer'],
                                             options={'ftol': self.config['ftol']})
+            log.info('end preopt')
             self.loss_val = self.update_losses(best_result, losses)
-            #check if solution is valid
+            # check if solution is valid
             valid = self.check(best_result, losses)
             counter += 1
-            #print a warning if preoptimization is stuck in a loop
+            # print a warning if preoptimization is stuck in a loop
             if counter % 10 == 0:
                 print('10 invalid preoptimization, consider changing parameters.')
                 log.info('10 invalid preoptimization, consider changing parameters.')
@@ -350,15 +357,15 @@ class topological_opti:
         # copy current Graph and delete num_edge´s smallest weight
         # set up reduced graph
         reduced_graph = self.graph.copy()
-        #find index of num_edge smallest edge
+        # find index of num_edge smallest edge
         idx_of_edge = reduced_graph.minimum(num_edge)
-        #store amplitude in case edge fails and needs to be put back in
+        # store amplitude in case edge fails and needs to be put back in
         amplitude = reduced_graph[idx_of_edge]
-        #remove smallest edge
+        # remove smallest edge
         reduced_graph.remove(idx_of_edge, update=False)
-        #update state catalog of reduced graph
+        # update state catalog of reduced graph
         reduced_graph.getStateCatalog()
-        #try a given number of times to delete this edge
+        # try a given number of times to delete this edge
         for ii in range(num_tries_one_edge):
             # if edge is tried for the first time, update loss function and other optimization parameters
             # also the weights of the old graph are used as initial values (this is much faster)
@@ -403,7 +410,7 @@ class topological_opti:
                 if all(np.array(abs(self.graph)) > 0.95):
                     self.saver.save_graph(self)
                 if self.save_hist:
-                    self.history.append(self.loss_val)
+                    self.history.append([str(self.graph),self.loss_val])
                 # return updated result graph
                 return Graph(reduced_graph.edges,
                              weights=self.weights_to_valid_input(result.x),
@@ -420,7 +427,7 @@ class topological_opti:
         solution_graph
             result of optimization
         """
-        #start with smallest edge
+        # start with smallest edge
         num_edge = 0
         graph_history = []
         # if num_edge becomes too large, optimization is stopped
@@ -430,7 +437,7 @@ class topological_opti:
             # if not successful, return old graph
             self.graph, success = self.optimize_one_edge(
                 num_edge, self.config['tries_per_edge'])
-            #iterate num_edge to try next smallest edge
+            # iterate num_edge to try next smallest edge
             num_edge += 1
             log.info(f'deleting edge {num_edge}')
             print(f'deleting edge {num_edge}')
@@ -438,7 +445,7 @@ class topological_opti:
                 print(
                     f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
                 log.info(f"deleted: {len(self.graph)}  edges left with loss {self.loss_val[0]:.3f}")
-                #reset to try smallest edge again for next iteration
+                # reset to try smallest edge again for next iteration
                 num_edge = 0
                 graph_history.append(self.graph)
 

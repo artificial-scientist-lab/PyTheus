@@ -112,7 +112,7 @@ class TestHelpFunctionsModule(unittest.TestCase):
                                    (2, 3, 1, 0), 
                                    (0, 3, 1, 0), 
                                    (0, 2, 0, 0)]),
-                  'nodes2connect': [(1, 3)]}
+                  'nodes2connect': [[1, 3], [2, 4]]}
 
         expected_edge_list = sorted([ 
                                (1, 2, 0, 3), 
@@ -126,7 +126,11 @@ class TestHelpFunctionsModule(unittest.TestCase):
                                (0, 2, 0, 0),
                                (1, 3, 0, 0), 
                                (1, 3, 2, 0), 
-                               (1, 3, 3, 0)
+                               (1, 3, 3, 0),
+                               (2, 4, 0, 0),
+                               (2, 4, 1, 0), 
+                               (2, 4, 2, 0), 
+                               (2, 4, 3, 0)
                               ])
 
         actual_edge_list = prepEdgeList(edge_list, config)

@@ -50,6 +50,11 @@ def run_main(filename, example, run_opt=True, state_cat=True):
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 
+    try: 
+        cnfg['init_graph'] = sorted(map(tuple, cnfg['init_graph']))
+        print('init_graph = ', cnfg['init_graph'])
+    except KeyError:
+        pass
     sys.setrecursionlimit(1000000000)
 
     # step 2: build up target and starting graph

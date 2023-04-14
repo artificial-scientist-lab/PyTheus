@@ -114,13 +114,14 @@ def prepEdgeList(edge_list, cnfg):
     try:
         removed_connections += cnfg['removed_connections']
     except KeyError:
-        try:
-            removed_connections = [edge for edge in edge_list if (edge not in cnfg['init_graph']) & (edge[:2] not in cnfg['nodes2connect'])]
-        except KeyError:
-            pass
+        pass
+    
+    try:
+        removed_connections += [edge for edge in edge_list if (edge not in cnfg['init_graph']) & (list(edge[:2]) not in cnfg['nodes2connect'])]
+    except KeyError:
+        pass
     if len(removed_connections) > 0:
         edge_list = removeConnections(edge_list, removed_connections)
-    
     return edge_list
 
 

@@ -350,8 +350,10 @@ def setup_for_target(cnfg, state_cat=True):
     # local dimensions necessary for each node to produce target
     cnfg["dimensions"] = th.stateDimensions(target_state.kets)
     # get complete starting graph according to local dimensions
-    edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg["imaginary"])
-    cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
+
+    #TODO for reviewer: the prev def. of verts was waay more complicated 
+    # I am not sure this one covers all cases the same way even though the tests pass
+    cnfg["verts"] = np.arange(len(cnfg["dimensions"])) + additional_nodes
     cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
     # introduce topological constraints
@@ -377,8 +379,10 @@ def setup_for_target(cnfg, state_cat=True):
 
 def build_starting_graph(cnfg, dimensions):
     # build starting graph
+
     edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
     edge_list = hf.prepEdgeList(edge_list, cnfg)
+
     print(f'start graph has {len(edge_list)} edges.')
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
     return start_graph

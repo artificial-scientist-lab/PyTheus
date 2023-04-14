@@ -52,6 +52,7 @@ def run_main(filename, example, run_opt=True, state_cat=True):
 
     try: 
         cnfg['init_graph'] = sorted(map(tuple, cnfg['init_graph']))
+        print('initial graph specified')
         print('init_graph = ', cnfg['init_graph'])
     except KeyError:
         pass
@@ -260,6 +261,14 @@ def setup_for_target(cnfg, state_cat=True):
     if not cnfg["out_nodes"]:
         additional_nodes += len(cnfg["in_nodes"])
 
+    try: 
+        if cnfg["nodes2connect"]:
+            print('nodes2connect specified, adding connections:')
+            print('nodes2connect = ', cnfg["nodes2connect"])
+        else:
+            print('nodes2connect not given. No connections inserted.')
+    except KeyError:
+            print('nodes2connect not given. No connections inserted.')
     try:
         if cnfg["removed_connections"]:
             print('removed_connections given. additional constraints on the graph.')
@@ -355,10 +364,8 @@ def setup_for_target(cnfg, state_cat=True):
     # local dimensions necessary for each node to produce target
     cnfg["dimensions"] = th.stateDimensions(target_state.kets)
     # get complete starting graph according to local dimensions
-
-    #TODO for reviewer: the prev def. of verts was waay more complicated 
-    # I am not sure this one covers all cases the same way even though the tests pass
-    cnfg["verts"] = np.arange(len(cnfg["dimensions"])) + additional_nodes
+    edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg["imaginary"])
+    cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
     cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
     # introduce topological constraints
@@ -375,6 +382,7 @@ def setup_for_target(cnfg, state_cat=True):
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
         edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
     print(f'start graph has {len(edge_list)} edges.')
 
     # turn edge list into graph
@@ -384,10 +392,8 @@ def setup_for_target(cnfg, state_cat=True):
 
 def build_starting_graph(cnfg, dimensions):
     # build starting graph
-
     edge_list = th.buildAllEdges(dimensions, imaginary=cnfg['imaginary'])
     edge_list = hf.prepEdgeList(edge_list, cnfg)
-
     print(f'start graph has {len(edge_list)} edges.')
     start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
     return start_graph

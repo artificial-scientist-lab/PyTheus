@@ -316,6 +316,10 @@ def Plot_Multi_Color_Line(X, Y, height, color, leng, radius):
     loc = generate_N_grams (y, ngram = 2)
     for pp in range(len(loc)):
         Plot_Vline(ax , loc[pp][0],loc[pp][1], X, color[pp] ) 
+        
+def Write_Label(ax, X, Y, text, fontsize ):
+   ax.text(X,Y, s= text, fontsize = fontsize)
+    
 ######################################################################
 def get_num_label(labels):
     num_to_label = dict((num, label) for num, label in enumerate(labels))

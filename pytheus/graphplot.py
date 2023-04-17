@@ -391,7 +391,7 @@ def flatten(X):
     else:
         return [X]
     
-def LengDublicate(lst):
+def LengDuplicate(lst):
     result = dict((i, lst.count(i)) for i in lst)
     x = result.values()
     count = 0

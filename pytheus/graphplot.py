@@ -316,3 +316,133 @@ def Plot_Multi_Color_Line(X, Y, height, color, leng, radius):
     loc = generate_N_grams (y, ngram = 2)
     for pp in range(len(loc)):
         Plot_Vline(ax , loc[pp][0],loc[pp][1], X, color[pp] ) 
+######################################################################
+def get_num_label(labels):
+    num_to_label = dict((num, label) for num, label in enumerate(labels))
+    return num_to_label
+
+def encoded_label(nums,labels ):# for transform num to alphabet
+    encoded_labels =[labels[num] for num in nums]
+    return encoded_labels
+
+def grouper(n, iterable):
+    args = [iter(iterable)] * n
+    return list(zip(*args))
+
+def Combine(x):
+    y = (list(itertools.combinations(x,2)))
+    return y
+
+def Pos_Element(low,step,leng):
+    Pos = []
+    if leng == 0:
+        Pos = Pos
+    elif leng>0:
+        up = step*float(leng)+low
+        for i in range(leng):
+            Pos.append(low)
+            low = low + step
+    return Pos
+
+def list_duplicates_of(seq,item):
+    start_at = -1
+    locs = []
+    while True:
+        try:
+            loc = seq.index(item,start_at+1)
+        except ValueError:
+            break
+        else:
+            locs.append(loc)
+            start_at = loc
+    return locs
+
+def DuplicateList(lst):
+    uniqueList = []
+    duplicateList = []
+    for i in lst:
+        if i not in uniqueList:
+            uniqueList.append(i)
+        elif i not in duplicateList:
+            duplicateList.append(i)
+    pos_list = []       
+    for jj in duplicateList:
+        x = list_duplicates_of(lst,jj)
+        pos_list.append([jj, x])    
+    return( pos_list)
+
+def REMOVE_BS(lst1 , lst2 ):
+    lst3 = []
+    lst1 = list(itertools.permutations(lst1, 2))
+    for ii in lst2:
+        for jj in lst1:
+            if ii == jj:
+                lst3.append(ii)
+    lst2 = [x for x in lst2 if  x not in lst3]
+    return lst2
+
+def flatten(X):
+    if isinstance(X, Iterable):
+        return [A for I in X for A in flatten(I)]
+    else:
+        return [X]
+    
+def LengDublicate(lst):
+    result = dict((i, lst.count(i)) for i in lst)
+    x = result.values()
+    count = 0
+    for item in x:
+        if item>1:
+            count += item
+    return(count)
+
+def gen_list_of_lists(original_list, new_structure):
+    assert len(original_list) == sum(new_structure)  
+    list_of_lists = [[original_list[i + sum(new_structure[:j])] for i in range(new_structure[j])] \
+                     for j in range(len(new_structure))]  
+    return list_of_lists
+
+def uniqueList(lst):
+    uniqueList = []
+    for i in lst:
+        if i not in uniqueList:
+            uniqueList.append(i)
+    pos_list = []       
+    for jj in uniqueList:
+        x = list_duplicates_of(lst,jj)
+        pos_list.append([jj, x])    
+    return( pos_list)
+
+def StringT0Tuple(Graph):
+    key = list(Graph.keys())
+    for ii in range (len(key)):
+        key[ii] = literal_eval(key[ii])
+    graph = dict(zip(key,list(Graph.values()))) 
+    return graph
+
+def generate_N_grams (position,ngram = 1):
+    positions=[pos for pos in position]
+    grams=zip(*[positions[i:] for i in range(0,ngram)])
+    return list(grams)
+
+#index 0 :path, 1: color
+def GetGraphColorEdge(Graph, index, PC):
+    GraphED = [grouper(2,i)[index] for i in list(sorted(Graph.keys()))]
+    GraphEC = [encoded_label(ED,get_num_label(PC))for ED in GraphED ]
+    return GraphEC
+
+def Pos0fpath(lst, x):
+    Pospath = []
+    d0 = x/10
+    for pos in lst:
+        x1 = pos+d0
+        x2 = pos+x-d0
+        Pospath.extend([x1, x2]) 
+    return(Pospath)
+          
+def get_index_color(colors,lst_col):
+    num_to_color = dict((num, color) for num, color in enumerate(colors))
+    color_to_num = {color: num for num, color in num_to_color.items()}
+    index_col = encoded_label(lst_col,color_to_num )
+    return  index_col
+  ################################################################################################################

@@ -450,3 +450,46 @@ def get_index_color(colors,lst_col):
     index_col = encoded_label(lst_col,color_to_num )
     return  index_col
   ################################################################################################################
+def PerfectMatching (GraphEdgesAlphabet, Numphoton):
+    Remove_Duplicate = list(GraphEdgesAlphabet for GraphEdgesAlphabet\
+                            ,_ in itertools.groupby(GraphEdgesAlphabet))
+    Com = list(itertools.combinations(Remove_Duplicate,int(Numphoton/2)))
+    perfect_matching= []
+    for ii in range(len(Com)):
+        a  = list(itertools.chain(*Com[ii]))
+        count = LengDuplicate(a)
+        if count ==0:
+            perfect_matching.append(list(Com[ii]))
+    return(perfect_matching)
+
+def layer0fcrystal (lst, Numphoton):
+    res = lst
+    ll = int(Numphoton/2)
+    remian= []
+    while len(res)>0:
+        r = res[0]
+        remian.append(r)
+        res = [[ele for j,ele in enumerate(sub) if ele not in r] for i,sub in enumerate(res)]
+        res = [item for item in res if len(item)>=ll]
+    return(remian)
+
+def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
+    colwei =  uniqueList(gea)
+    for ii in range(len(colwei)):
+        x =colwei[ii][1]
+        for jj in range(len(x)):
+            x[jj]=gcw[x[jj]]     
+    Remove_Duplicate = list(gea for gea,_ in itertools.groupby(gea))
+    cw_spdc = []
+    for ii in Layers :
+        cw = [Remove_Duplicate.index(jj) for jj in ii]
+        cw_spdc.append(cw)
+    wc =[]
+    for ii in range(len(colwei)):
+        wc.append(colwei[ii][1])
+
+    for ii in range(len(cw_spdc)):
+        wcspdc = cw_spdc[ii]
+        for jj in range(len(wcspdc)):
+            wcspdc[jj] =wc[wcspdc[jj]]
+    return(cw_spdc)

@@ -278,7 +278,7 @@ def Plot_Detector(ax , X, Y, leng, step, radius ):
         ax.add_patch(Rectangle((pos[ii]-1.2*radius, Y-radius/2), 2.4*radius, radius/2, fc = 'k', ec = 'k', zorder = 12))
         Plot_Connection_Line(ax, [pos[ii], pos[ii]-radius], [Y+radius,Y+2.5*radius] )
 
-def Plot_Crystal (X, Y, color, width, height, W, wmax =1): #for path identity
+def Plot_Crystal (ax, X, Y, color, width, height, W, wmax =1): #for path identity
     ax.add_patch(Rectangle((X, Y), width, height,fc = 'none', ec ='black' ,zorder=6))
     row = len(color)
     column = 2
@@ -493,3 +493,85 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
         for jj in range(len(wcspdc)):
             wcspdc[jj] =wc[wcspdc[jj]]
     return(cw_spdc)
+  
+def Plot_Path_Identity(graph,  filename, width, figsize , fontsize ):
+
+    fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')
+    Graph =StringT0Tuple(graph)
+    Edge= list(Graph.keys())
+    Edge.sort()
+    Graph = {i: Graph[i] for i in Edge}
+    GraphEdgesAlphabet = GetGraphColorEdge(Graph, 0, Paths )
+    GraphEdgesColor  =  GetGraphColorEdge(Graph, 1, colors )
+    Graphweight= list(Graph.values())
+    Num0fCrystal = len(Graph)
+    Dimension = len(np.unique(list(itertools.chain(*GraphEdgesColor))))
+    Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
+    #width = 0.1
+    height = width/2
+
+    wmax=0.0 # for finding the maximum weight
+    for w in range(len(Graphweight)):
+        wmax=np.maximum(wmax,np.max(np.abs(Graphweight[w])))
+    Layers = layer0fcrystal(PerfectMatching (GraphEdgesAlphabet, Numphoton), Numphoton)
+    color_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, GraphEdgesColor, Layers)
+    w_spdc =Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, Graphweight, Layers)
+    Detector =list(itertools.chain(*Layers[0]))
+    numX = int(Numphoton/2)
+    PX = Pos_Element(0, 3/2*width , numX)
+    PosxSpdc = list(itertools.repeat(PX,len(Layers)))
+    numY = len(PosxSpdc)
+    PY = Pos_Element(0, 2*height , numY)
+    PY.sort(reverse=True)
+    PosySpdc= [a for a in PY for i in range(numX )]
+    PosySpdc = grouper(numX,  PosySpdc )
+    YDR = max(PY)+2*height 
+    XDR = Pos0fpath(PX, width)
+    connectx =  grouper(2,  XDR)
+    connectx = list(itertools.repeat(connectx ,len(Layers)))
+    CY = []
+    for ii in range(len(PY)):
+        y1 = PY[ii]+height+height/10
+        y2 =PY[ii]-height/10
+        CY.extend([[y1, y2]])
+    CY[-1][1]= CY[-1][1]+height/5
+    connecty = flatten(CY )
+    del(connecty[0])
+    del (connecty[-1])
+    connecty = grouper(2, connecty )
+
+    Pathconnect = list(itertools.chain(*Layers))
+    Pathconnect = list(itertools.chain(*Pathconnect))
+    Connection_Line = DuplicateList(Pathconnect)
+    connectx = flatten(connectx)
+
+    for ii in range(len(Connection_Line)):
+        cl = Connection_Line[ii][1]
+        for jj in range(len(cl)):
+            cl[jj] = connectx[cl[jj]]
+
+    for jj in range(len(Connection_Line)):
+        Connection_Line[jj][1] = generate_N_grams(Connection_Line[jj][1],ngram = 2)
+        CL = Connection_Line[jj][1]
+        for jj in range(len(CL)):
+            Plot_Connection_Line(ax,CL[jj],connecty[jj])
+
+    for ii in range(len(PosxSpdc)):
+        for jj in range(len(PosxSpdc[ii])):
+            Plot_Crystal (ax, PosxSpdc[ii][jj], PosySpdc[ii][jj], color_spdc[ii][jj], width, height, w_spdc[ii][jj], wmax = wmax) 
+
+    for pos in range (len(XDR)):
+        Plot_Detector(ax , XDR[pos], YDR, 1,1, height/4 )
+        Plot_Vline(ax , CY[0][1], YDR, XDR[pos], 'k' )
+        Write_Label(ax,  XDR[pos], YDR+width/4, Detector[pos] , fontsize )
+
+    for posx in range(len(XDR)):
+        for posy in range(len(CY)):
+            Plot_Vline(ax , CY[posy][0], CY[posy][1], XDR[posx] , 'k')
+
+    ax.set_aspect( 1 )        
+    ax.axis('off') 
+    fig.savefig(filename + ".pdf", bbox_inches='tight')
+        
+    return fig
+   

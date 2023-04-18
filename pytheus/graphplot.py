@@ -574,4 +574,285 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize, colors, Path
     experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
  
     return experiment
-   
+################################################################################################################   
+def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsize , colors , Paths):
+    Graph =StringT0Tuple(graph)
+    Edge= list(Graph.keys())
+    Edge.sort()
+    Graph = {i: Graph[i] for i in Edge}
+    GraphEdgesAlphabet = GetGraphColorEdge(Graph, 0, Paths )
+    GraphEdgesColor  =  GetGraphColorEdge(Graph, 1, colors )
+    Graphweight= list(Graph.values())
+    Num0fCrystal = len(Graph)
+    Dimension = len(np.unique(list(itertools.chain(*GraphEdgesColor))))
+    Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
+    #width = 0.1
+    height = width/2
+
+    wmax=0.0 # for finding the maximum weight
+    for w in range(len(Graphweight)):
+        wmax=np.maximum(wmax,np.max(np.abs(Graphweight[w])))
+
+    PosX0fcrystal = Pos_Element(0, 3*width/2 , Num0fCrystal)
+    PosY0fcrystal = np.full(Num0fCrystal, 0)    
+    fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')  
+
+    for num in range(len(Graph)):
+        Plot_SPDC(ax, PosX0fcrystal[num], PosY0fcrystal[num],\
+                  width, height, GraphEdgesColor[num][0], GraphEdgesColor[num][1], Graphweight[num])
+
+    PosX0fpath = Pos0fpath(PosX0fcrystal, width)
+    Y = 2*height
+    PosY0fpath = [ Y for pos in range(len(PosX0fpath))]
+
+
+    AllPath= [] 
+    for pp in range(len(Graph)):
+            AllPath.extend([str(GraphEdgesAlphabet[pp][0])+str(pp)\
+                          ,str(GraphEdgesAlphabet[pp][1])+str(pp)])
+
+    AllColor = list(itertools.chain(*GraphEdgesColor))
+    PossiblePath = Combine(AllPath) 
+    PossibleColor= Combine(AllColor) 
+    PossibleposX = Combine(PosX0fpath)
+
+    PosX_L  = []
+    PosX_IN_BS = []
+    Path_L = []
+
+    for ii in range(len(PossiblePath)):
+        path1 = PossiblePath[ii][0]
+        path2 = PossiblePath[ii][1]
+        color1 = PossibleColor[ii][0]
+        color2 = PossibleColor[ii][1]
+        posx1 = PossibleposX[ii][0]
+        posx2 = PossibleposX[ii][1]
+
+        if path1[0]==path2[0] and color1== color2:
+            PosX_IN_BS.append(posx2)
+            PosX_L.extend([posx1,posx2] )
+            Path_L.extend([path1, path2])
+
+    PosX_IN_BS = list(set(PosX_IN_BS))
+    PosX_L = grouper(2, PosX_L)  
+    Pos =  REMOVE_BS(PosX_IN_BS, PosX_L )
+    if len (Pos)>0:
+        P1 , P2 =   list(zip(*Pos )) 
+        GET_DUBL = DuplicateList(P1)
+        GET_DUBL2 = DuplicateList(P1)
+        PosX1 =[]
+        for ii in range(len(GET_DUBL)):
+            x = GET_DUBL[ii][1]
+            for jj in x:
+                PosX1.append(((P1[jj], P2[jj])))
+
+        PosX2 = [pos for pos in Pos if pos not in PosX1]
+        PosY0 = Pos_Element(Y, height/3 ,len(GET_DUBL))
+        if (len(PosY0))>0:
+            PosY1 = Pos_Element(max(PosY0)+height/2,1.5*height , len(PosX1))
+
+        if (len(PosX1))>0:
+            PosY2 = Pos_Element(max(PosY1)+4*height,height,len(PosX2))
+        elif (len(PosX1))==0:
+            PosY2 = Pos_Element(Y+height, 2*height, len(PosX2))
+        d0 = np.sqrt((width/2)**2+ height**2)/4
+        for ii in range(len(PosX1)):
+            x = PosX1[ii][1]
+            y = PosY1[ii]
+            c = AllColor[PosX0fpath.index(x)]
+            Plot_BS(ax , x-d0 , y, width/2, height, c)
+            Plot_Vline(ax , Y, y+d0 ,x , c,  )
+            Plot_Vline(ax , y+3*d0, y+2.5*height, x-2*d0, c) 
+            Plot_Absorber(ax ,  x-2*d0-height/4 , y+2.5*height, height/2, height/2) 
+
+        ynab1 = [] 
+        xnab1= []
+        colnab1 =[]
+        pathnab1 = []
+
+        for ii in range(len(PosX2)):
+            x= PosX2[ii][1]
+            x1 =PosX2[ii][0]
+            y = PosY2[ii]
+            ynab1.append(y+3.5*height)
+            xnab1.append(x)
+            c = AllColor[PosX0fpath.index(x)]
+            p = AllPath[PosX0fpath.index(x)]
+            colnab1.append(c)
+            pathnab1.append(p)
+            Plot_BS(ax , x-d0 , y, width/2, height, c)
+            Plot_Vline(ax , Y, y+d0, x , c )
+            Plot_Vline(ax , Y, y+d0, x1 , c,) 
+            Plot_Hline(ax , x1, x-2*d0, y+d0 , c)
+            Plot_Vline(ax , y+3*d0, y+3.5*height, x, c,) 
+            Plot_Vline(ax , y+3*d0, y+2.5*height, x-2*d0, c) 
+            Plot_Absorber(ax , x-2*d0-height/4 ,y+2.5*height, height/2, height/2)
+
+        PosX0 = []
+        for ii in range(len(GET_DUBL)):
+            x = GET_DUBL[ii][1]
+            x1 = GET_DUBL[ii][0]
+            PosX0.append(x1)
+            for jj in range(len(x)):
+                x[jj] = P2[x[jj]]
+        ColX0 = [AllColor[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in PosX0]
+        turn_leng = [len(GET_DUBL2[ii][1]) for ii in range(len(GET_DUBL2))]
+        if len(turn_leng)>0:
+            PosY1 = gen_list_of_lists(PosY1, turn_leng)
+
+            for ii in range(len(GET_DUBL)):
+                GET_DUBL2[ii][1] = PosY1[ii]
+                GET_DUBL2[ii][0]= PosY0[ii]
+
+        for ii in range(len( PosX0)):
+                Plot_Vline(ax ,Y, PosY0[ii]+2*d0, PosX0[ii],  ColX0[ii]) 
+        xh1 = []
+        yh1 = []
+        xh2 = []
+        yh2 = []
+        col1 = []
+
+        for ii in range(len(GET_DUBL)):
+            x = GET_DUBL[ii]
+            y = GET_DUBL2[ii]
+            xh1.append(flatten(x))
+            yh1.append(flatten(y))
+            xh2.append(x[1])
+            yh2.append(y[1])
+            color = [AllColor[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in x[1]] 
+            col1.append(color) 
+
+        for ii in range(len(yh1)):
+            x = yh1[ii]
+            for jj in range(len(x)):
+                if jj ==0:
+                     x[jj] = x[jj]
+                elif jj >0:
+                     x[jj]=x[jj]+d0
+
+        for ii in range(len(xh1)):
+            for jj in range(len(xh1[ii])-1):
+                Plot_Hline(ax , xh1[ii][jj], xh2[ii][jj]-2*d0, yh1[ii][jj]+2*d0, col1[ii][jj])
+                Plot_Vline(ax , yh1[ii][jj]+2*d0, yh2[ii][jj]+d0, xh2[ii][jj]-2*d0 ,col1[ii][jj] )
+
+        ynab2 = []
+        xnab2 = []  
+        for ii in range(len(xh1)):
+            x = xh1[ii]
+            y = yh1[ii]
+            xnab2.append(x[-1])
+            ynab2.append(y[-1]+3*height)
+
+        for pos in range(len(ynab2)):
+            Plot_Vline(ax , ynab2[pos]-3*height+2*d0, ynab2[pos], xnab2[pos] ,ColX0[pos])
+
+        PosX_NAB =  xnab1+ xnab2
+        PosY_NAB  = ynab1+ ynab2
+        Path1nab = pathnab1
+        Path2nab = [AllPath[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in PosX0]
+        Path_NAB =  Path1nab + Path2nab
+        colornab1 = colnab1
+        colornab2 = ColX0
+        Color_NAB = colornab1+colornab2
+        PoSX_R = [pos for pos in PosX0fpath  if pos not in P2+P1]
+        Color_R = [AllColor[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in PoSX_R]
+        Path_R = [AllPath[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in PoSX_R]
+        PosY_R = [max(PosY0fpath) for pos in range(len(PoSX_R))] 
+
+        PosX_Concat =  PoSX_R + PosX_NAB
+        PosY_Concat = PosY_R+ PosY_NAB   
+        Path_Concat = Path_R + Path_NAB
+        Color_Concat = Color_R + Color_NAB
+
+    elif len(Pos) == 0:
+        PosX_Concat = PosX0fpath 
+        PosY_Concat = PosY0fpath   
+        Path_Concat = AllPath
+        Color_Concat = AllColor
+
+    Path_alphabet = []   
+    Path_Number =[]
+    for path in Path_Concat:
+        Path_alphabet.append(path[0])
+        Path_Number.append(path[1])
+
+    counts = Counter(Path_alphabet)    
+    single_path = [[PosX_Concat[Path_alphabet.index(item)],\
+                    PosY_Concat[Path_alphabet.index(item)],\
+                    Color_Concat[Path_alphabet.index(item)],
+                    Path_Concat[Path_alphabet.index(item)]]\
+                    for item in Path_alphabet if counts[item] <= 1]         
+
+    for sp in range(len(single_path)):
+        Plot_Detector(ax , single_path[sp][0], \
+                      single_path[sp][1], 1, height/4,height/3)
+        Write_Label(ax, single_path[sp][0], single_path[sp][1]+height/2, single_path[sp][3][0], fontsize )
+
+
+    get_to_posX = sorted(DuplicateList(Path_alphabet))
+    get_to_posY = sorted(DuplicateList(Path_alphabet))
+    get_to_Color = sorted(DuplicateList(Path_alphabet))
+    XtoD = sorted(DuplicateList(Path_alphabet))
+    yy = max(PosY_Concat)
+
+    try:
+        if len(get_to_posX ) > 0:
+            XD = Pos_Element(min(PosX_Concat)+height/3,(max(PosX_Concat)\
+                 -min(PosX_Concat)-1.75*height)/len(get_to_posX), len(get_to_posX))
+            FF = []
+            for ii in range(len(XtoD)):
+                Y = len(XtoD[ii][1])
+                FF.append(Y)
+            YY = Pos_Element(yy,height/3,sum(FF))
+            YtoD = gen_list_of_lists(YY, FF) 
+            YD = Pos_Element(max(YY)+height,height,len(get_to_posX))
+
+            col_index = []
+            for index in range(len(get_to_posX)):
+                X = get_to_posX[index][1]
+                Y = get_to_posY[index][1]
+                C = get_to_Color[index][1]
+                col_index.append(C)
+                x = XD[index]
+                y = YD[index]
+                XtoD[index][1] = Pos_Element(XD[index],height,len(XtoD[index][1]))
+                xd =  XtoD[index][1]
+                yd = YtoD[index]
+                
+                for jj in range(len(X)):
+                    X[jj]= PosX_Concat[X[jj]]
+                    Y[jj]= PosY_Concat[Y[jj]]
+                    C[jj]= Color_Concat[C[jj]]
+                    Plot_Vline(ax ,Y[jj], yy, X[jj], C[jj] )
+                    Y[jj]= yy
+                    Plot_Vline(ax , Y[jj], yd[jj], X[jj] , C[jj] )
+                    Plot_Vline(ax , y, yd[jj], xd[jj], C[jj] )
+                    Plot_Hline(ax , X[jj], xd[jj], yd[jj] , C[jj])
+
+            pathx_sort = []
+
+            for col in range(len(col_index)):
+                x = XtoD[col][1]
+                col_index[col] = get_index_color(colors,col_index[col])
+                min_index  = col_index[col].index(min(col_index[col]))
+                pathx_sort.append(x[min_index ] )
+
+            #task = 'BulkOptics'
+            for px in range(len(get_to_posX)):
+                c = get_to_Color[px][1]
+                tt = get_to_Color[px][0]
+                if task == 'BulkOptics':
+                    Plot_Sorter(ax , XD[px]-height/4 ,YD[px], len(get_to_posX[px][1]), height, height/2, height,c)
+                    Plot_Multi_Color_Line(ax,pathx_sort[px], YD[px]+height, 2*height, c, len(c)+1, height/3)
+                    Write_Label(ax, pathx_sort[px], YD[px]+3.2*height, tt,  fontsize )
+                elif task == 'PathEncoding':
+                    Plot_Detector(ax , XD[px] ,YD[px], len(get_to_posX[px][1]), height, height/3)
+                    Write_Label(ax, XD[px], YD[px]+height, tt,  fontsize )
+    except:
+         pass        
+
+    ax.axis('off')     
+    ax.set_aspect(1 )
+    experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
+    
+    return experiment

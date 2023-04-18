@@ -494,8 +494,8 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
             wcspdc[jj] =wc[wcspdc[jj]]
     return(cw_spdc)
   
-def Plot_Path_Identity(graph,  filename, width, figsize , fontsize ):
-
+def Plot_Path_Identity(graph,  filename, width, figsize , fontsize, colors, Paths ):
+  
     fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')
     Graph =StringT0Tuple(graph)
     Edge= list(Graph.keys())
@@ -509,10 +509,10 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize ):
     Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
     #width = 0.1
     height = width/2
-
     wmax=0.0 # for finding the maximum weight
     for w in range(len(Graphweight)):
         wmax=np.maximum(wmax,np.max(np.abs(Graphweight[w])))
+        
     Layers = layer0fcrystal(PerfectMatching (GraphEdgesAlphabet, Numphoton), Numphoton)
     color_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, GraphEdgesColor, Layers)
     w_spdc =Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, Graphweight, Layers)
@@ -568,10 +568,8 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize ):
     for posx in range(len(XDR)):
         for posy in range(len(CY)):
             Plot_Vline(ax , CY[posy][0], CY[posy][1], XDR[posx] , 'k')
-
     ax.set_aspect( 1 )        
     ax.axis('off') 
-    fig.savefig(filename + ".pdf", bbox_inches='tight')
-        
+    fig.savefig(filename + ".pdf", bbox_inches='tight')     
     return fig
    

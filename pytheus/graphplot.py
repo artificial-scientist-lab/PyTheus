@@ -495,7 +495,6 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
     return(cw_spdc)
   
 def Plot_Path_Identity(graph,  filename, width, figsize , fontsize, colors, Paths ):
-  
     fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')
     Graph =StringT0Tuple(graph)
     Edge= list(Graph.keys())
@@ -529,6 +528,7 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize, colors, Path
     XDR = Pos0fpath(PX, width)
     connectx =  grouper(2,  XDR)
     connectx = list(itertools.repeat(connectx ,len(Layers)))
+    
     CY = []
     for ii in range(len(PY)):
         y1 = PY[ii]+height+height/10
@@ -568,8 +568,10 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize, colors, Path
     for posx in range(len(XDR)):
         for posy in range(len(CY)):
             Plot_Vline(ax , CY[posy][0], CY[posy][1], XDR[posx] , 'k')
+            
     ax.set_aspect( 1 )        
     ax.axis('off') 
-    fig.savefig(filename + ".pdf", bbox_inches='tight')     
-    return fig
+    experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
+ 
+    return experiment
    

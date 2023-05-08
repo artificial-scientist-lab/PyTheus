@@ -619,7 +619,7 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False
     # We ignore the edge colors until the very end
     avail_colors = edgeBleach(graph)
     raw_edges = sorted(avail_colors.keys())
-    
+
     if nodes_left is None: 
         nodes_left = set(np.array(raw_edges)[:, :2].flat)
     if edges_left is None: 
@@ -631,13 +631,13 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False
         nodes_covered = set(sum(subgraph, ()))
         if all(node in nodes_covered for node in nodes_left):
             raw_covers.add(subgraph)
-    
-    painted_covers = []
+
+    painted_covers = set()
     for cover in sorted(raw_covers):
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
-            color_cover = [edge + color for edge, color in zip(cover, coloring)]
-            painted_covers.append(sorted(color_cover))
-    return [tuple(map(tuple,graph)) for graph in np.unique(painted_covers, axis=0)]
+            painted_covers.add(tuple(sorted(edge + color
+                                            for edge, color in zip(cover, coloring))))
+    return sorted(painted_covers)
 
 
 # # String Expressions

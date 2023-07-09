@@ -509,7 +509,6 @@ def layer0fcrystal (crystal_lst, Numphoton):
                 flatten.append(nl[i])
             else:
                 nl.pop(i)
-    layer1= sorted(list(filter(None, layer1)))
     layer1= union(sorted(list(filter(None, layer1))))
     layer = layer0+layer1
     return( layer)

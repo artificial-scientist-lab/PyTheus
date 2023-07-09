@@ -624,9 +624,9 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize , colors , Pa
                    reverse = True)[1:-1]) for lst in connecty]
     connecty= [y for y in connecty if y != []]
     y = [PY[idx] for idx in  sorted(virtual) ]
-    y =   sorted(grouper(2, Pos0fpath(y, height )))
+    y =  grouper(2, Pos0fpath(y, height ))
     
-    count =  dict(Counter(virtual))
+    count =  dict(Counter(sorted(virtual)))
     ele = list(count.keys())
     num = list(count.values())
     fl =  pospathx[0]

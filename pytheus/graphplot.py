@@ -459,17 +459,6 @@ def find_index_duplicate(lists, item):
                 index.append(idx)
     return index
 
-def union(lst):
-    for i in range(len(lst)):
-            for j in range(i+1,len(lst)):
-                if len(lst[i])==1 and len(lst[j])==1:
-                    for kk in lst[j]:
-                        if kk[0] and kk[1] not in list(itertools.chain(*lst[i])):
-                            lst[i].append(kk)
-                            lst[j] = list(set())
-    lst =  list(filter(None, lst))
-    return (lst)
-
   ################################################################################################################
 def PerfectMatching (GraphEdges, Numphoton):
     Com = list(itertools.combinations(GraphEdges,int(Numphoton/2)))
@@ -507,7 +496,7 @@ def layer0fcrystal (crystal_lst, Numphoton):
                 flatten.append(nl[i])
             else:
                 nl.pop(i)
-    layer1= union(sorted(list(filter(None, layer1))))
+    layer1= sorted(list(filter(None, layer1)))
     layer = layer0+layer1
     return( layer)
 

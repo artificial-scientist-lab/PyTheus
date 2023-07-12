@@ -17,7 +17,6 @@ import random
 from matplotlib.markers import MarkerStyle
 from collections import Counter
 from collections.abc import Iterable
-from collections import Counter
 from ast import literal_eval
 import collections
 import string
@@ -462,15 +461,13 @@ def find_index_duplicate(lists, item):
 def union(lst):
     for i in range(len(lst)):
             for j in range(i+1,len(lst)):
-                if len(lst[i])==1 and len(lst[j])==1:
-                    for kk in lst[j]:
-                        if kk[0] not in list(itertools.chain(*lst[i]))\
-                        and  kk[1] not in list(itertools.chain(*lst[i])):
-                            lst[i].append(kk)
-                            lst[j] = list(set())
+                for k in lst[j]:
+                    if k[0] not in list(itertools.chain(*lst[i]))\
+                    and  k[1] not in list(itertools.chain(*lst[i])):
+                        lst[i].append(k)
+                        lst[j].remove(k)
     lst =  list(filter(None, lst))
     return (lst)
-
 
   ################################################################################################################
 def PerfectMatching (GraphEdges, Numphoton):
@@ -501,7 +498,6 @@ def layer0fcrystal (crystal_lst, Numphoton):
      
     layer1 = [[ele for j,ele in enumerate(sub) if ele not in  list(itertools.chain(*layer0))]\
                       for i,sub in enumerate(other_crystal)]
-    layer1 =sorted(layer1, key=lambda l: (len(l), l),reverse = True)
     flatten = []
     for nl in  layer1:
         for i in range(len(nl)-1, -1, -1):
@@ -509,7 +505,8 @@ def layer0fcrystal (crystal_lst, Numphoton):
                 flatten.append(nl[i])
             else:
                 nl.pop(i)
-    layer1= union(sorted(list(filter(None, layer1))))
+    layer1= sorted(union(sorted(list(filter(None, layer1)))),\
+                   key=lambda l: (len(l), l),reverse = True)
     layer = layer0+layer1
     return( layer)
 
@@ -563,6 +560,7 @@ def Plot_Path_Identity(graph,  filename, width, figsize , fontsize , colors , Pa
         Layers =  Layers1 + Layers2
     else:
         Layers = Layers1
+    Layers =union(Layers)
     color_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, GraphEdgesColor, Layers)
     w_spdc =Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, Graphweight, Layers)
     Detector =list(itertools.chain(*Layers[0]))

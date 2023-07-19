@@ -309,7 +309,7 @@ def Plot_Sorter(ax , X, Y, leng, step, width, height, color):
         ax.add_patch(Circle((pos[p]+ width/2, Y+height/2), width/2,fc = color[p], ec = 'k', zorder = 15))
         ax.add_patch(Rectangle((pos[p], Y), width, height,fc = 'lightgray', ec = 'k', zorder = 12))
 
-def Plot_Multi_Color_Line(X, Y, height, color, leng, radius):
+def Plot_Multi_Color_Line(ax, X, Y, height, color, leng, radius):
     step = height/float(leng)
     y = Pos_Element(Y,step,leng)
     Plot_Detector(ax , X, y[-1]+radius/2, 1, 1, radius )

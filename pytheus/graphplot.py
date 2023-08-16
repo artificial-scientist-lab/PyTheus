@@ -4,11 +4,11 @@ import matplotlib.collections as collections
 import pytheus.theseus as th
 # import pytheus.analyzer as anal
 import matplotlib.patheffects as pe
-# from pytheus.fancy_classes import Graph
+from pytheus.fancy_classes import Graph
 import json
 import os
 import pytheus.leiwand
-
+import pytheus
 from matplotlib.patches import Rectangle, Wedge, Circle
 import matplotlib
 matplotlib.rcParams['figure.dpi']=300
@@ -21,148 +21,195 @@ from ast import literal_eval
 import collections
 import string
 
-
-def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
-             show_val=False, fs=15, markersize=25):
-    colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
-    col1 = colors[int(edge[2])]
-    col2 = colors[int(edge[3])]
-
-    vert1 = np.array(verts[int(edge[0])])
-    vert2 = np.array(verts[int(edge[1])])
-    if not np.array_equal(vert1, vert2):
-        diff = vert1 - vert2
-        rect = [diff[1], -diff[0]]
-        rect /= np.linalg.norm(rect)
-        hp = (vert1 + vert2) / 2 + (2 * ind - mult + 1) * 0.05 * rect
-    else:
-        hp = vert1 * 1.2
-
-    if scale_max is None:
-        lw = max_thickness
-
-    else:
-        lw = np.max([abs(max_thickness * edge[4]) / scale_max, 0.5])
-
+def transparency(W):
     try:
-        transparency = 0.2 + abs(edge[4]) * 0.8
+        transparency = 0.2 + abs(W) * 0.8
         transparency = min(transparency, 1)
     except IndexError:
-        transparency = 1
+            transparency = 1
     except TypeError:
-        transparency = 1
+             transparency = 1  
+    return transparency
 
-    ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw, alpha=transparency)
-    ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw, alpha=transparency)
+def PosOfVertices (num_nodes, side_length):
+    vertices = []
+    for nv in range(num_nodes):
+        angle = 2 * nv * np.pi / num_nodes
+        x = side_length * np.cos(angle)
+        y = side_length * np.sin(angle)
+        vertices.append((x, y))
+    return(vertices)
 
-#     if show_val:
+def correct(tpl):
+    corrected_item = []
+    for i, num in enumerate(tpl):
+        if  9 < num < 100:
+            num = num % 10 + 10     
+        corrected_item.append(num)
+    return tuple(corrected_item)
 
-#         if transparency > 0.5 and col1 == "blue":
-#             font_col = 'white'
-#         else:
-#             font_col = 'black'
-#         latex_weight = '${}$'.format(anal.num_in_str(edge[4]))
-#         if latex_weight == '$$':
-#             latex_weight = str(edge[4])
-#         ax.text(np.mean([0.9 * vert1[0], hp[0]]), np.mean([0.9 * vert1[1], hp[1]]),
-#                 latex_weight,
-#                 bbox={'facecolor': col1, 'alpha': transparency, 'edgecolor': col2, 'pad': 1}, c=font_col,
-#                 ha='center', va='center', rotation=0, fontweight='heavy', fontsize=fs)
-    try:
-        if edge[4] < 0:
-            ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="3", markeredgecolor="black",
-                    color="white")
-    except:
-        pass
+def convert_bools_to_ints(input_list):
+    converted_list = [int(item) if isinstance(item, bool) else item for item in input_list]
+    return converted_list
+
+def convert_to_fancy_graph(graph):
+    if isinstance(graph, list) or isinstance(graph, dict):
+        fancy_graph = Graph(graph)
+        return fancy_graph
+    elif isinstance(graph, pytheus.fancy_classes.Graph):
+        return graph
+    else:
+        raise ValueError("Input should be a list or dictionary or fancy graph")
 
 
-def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
-              weight_product=False, ax_fig=(), add_title='',
-              show_value_for_each_edge=False, fontsize=30, zorder=11,
-              markersize=25, number_nodes=True, filename='',figsize=10):
-    '''
-    Introducing a list/tuple of edges or a dictionary {edge:weight}, 
-    this function plots the corresponding graph.
+def calculate_b(nb, x):
+    b = (np.array(range(nb))-0.5*(nb-1)) * x / (np.max(np.arange(1, nb+1))-0.5*(nb-1))
+    return b
+
+def openfile(filename):
+    if not os.path.exists(filename) or os.path.isdir(filename):
+        raise IOError(f'File does not exist: {filename}')
+    with open(filename) as input_file:
+        file_dict = json.load(input_file)    
+    return file_dict 
+
+def plot_diamond(ax ,center_x, center_y, diamond_width, diamond_height, zorder  ): 
     
-    Parameters
-    ----------
-    graph : list, tuple or dictionary
-        List/tuple of all colored edges: [(node1, node2, color1, color2), ...]
-        or dictionary with weights: {(node1, node2, color1, color2):weight1, ...}
-    
-    TODO 
-    '''
-    if type(graph) != dict:
-        graph = {edge:1 for edge in graph}
-        edge_list = list(graph.keys())
-        weight_list = list(graph.values())
-    edge_list = list(graph.keys())
-    weight_list = list(graph.values())
+    diamond_x = [center_x, center_x + diamond_width / 2, center_x, center_x - diamond_width / 2, center_x]
+    diamond_y = [center_y + diamond_height / 2, center_y, center_y - diamond_height / 2,\
+                 center_y, center_y + diamond_height / 2]
+    ax.plot(diamond_x, diamond_y, color='black', zorder = zorder+1)
+    ax.fill(diamond_x, diamond_y, color='w', zorder = zorder)
+
+def plot_triangle(ax ,center, side_length, zorder, linewidth):
+    center_x = center[0]
+    center_y = center[1]
+    x = [center_x - side_length/2, center_x + side_length/2, center_x]
+    y = [center_y - (3**0.5)*side_length/6, center_y - (3**0.5)*side_length/6, center_y + (2*(3**0.5)*side_length)/6]
+    ax.plot(x + [x[0]], y + [y[0]], zorder = zorder+1, lw =linewidth, color ='k' )
+    plt.fill(x, y, color='w', zorder = zorder)
+
+def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12):
+    r = side_length/10
+    vertices = PosOfVertices(num_nodes, side_length)
+    if type_photons is None:
+        for i, vertex in enumerate(vertices):
+            ax.add_patch(Circle(vertex, radius= r, facecolor='w',\
+                            edgecolor='black', zorder = 10,linewidth=2))
+            ax.text(vertex[0], vertex[1], str(i), ha='center', \
+                va='center', fontsize=font_size,zorder = 12 )
         
-    edge_dict = th.edgeBleach(edge_list)
+    elif isinstance(type_photons, tuple) or isinstance(type_photons, list):
+        if len(type_photons)==3:
+            ancilla, single_emitters, in_nodes = type_photons
+            for i, vertex in enumerate(vertices):
+                if i in  ancilla:
+                    if i in single_emitters:
+                        plot_triangle(ax, vertex ,2.5*r, 10, 2  )
+                    else:
+                        x =vertex[0]-r
+                        y = vertex[1]-r
+                        ax.add_patch(Rectangle((x,y),2*r, 2*r,fc = 'w', \
+                                       ec = 'k',zorder = 10, linewidth=2))
+                elif i in single_emitters or i in in_nodes:
+                    plot_triangle(ax, vertex ,2.5*r, 10, 2  )
+                else:
+                    ax.add_patch(Circle(vertex, radius= r, facecolor='w',\
+                                    edgecolor='black', zorder = 10,linewidth=2))
+                ax.text(vertex[0], vertex[1], str(i), ha='center', \
+                        va='center', fontsize=font_size,zorder = 12 )
+        else:
+               raise ValueError("The type_photons is not valid.")
 
+ef Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
+               min_thickness = 2, thickness=10 ):
+    line_width = max(min(thickness/ max_len, max_thickness), min_thickness)
+    r =side_length/12
+    z = side_length/15
+    if V1 == V2:
+        w =colors[0][1]
+        x = V1[0] + side_length / 10 if V1[0] > 0 else V1[0] - side_length / 10
+        y = V1[1] + side_length / 10 if V1[1] > 0 else V1[1] - side_length / 10
+        x1 = x + r if V1[0] > 0 else x-r
+        y1 = y+r if V1[1] > 0 else y-r
+        ax.add_patch(Circle((x,y), radius=r, facecolor='w', edgecolor=colors[0][0][0],\
+                        zorder = 7,linewidth=line_width,alpha = transparency(w) ))
+        if w< 0:
+             plot_diamond(ax, x1, y1, r/2, r, zorder = 10 )            
+    else:
+        h = (V1[0] + V2[0]) / 2
+        k = (V1[1] + V2[1]) / 2
+        theta = np.arctan2(V1[1] - V2[1], V1[0]-V2[0])
+        a = np.sqrt((V1[0]-V2[0]) ** 2 + (V1[1] - V2[1]) ** 2) / 2
+        nb = len(colors)
+        b = calculate_b(nb, side_length/5)
+        t1 = np.linspace(0, np.pi / 2, 1000)
+        t2 = np.linspace(np.pi, np.pi / 2, 1000)
+        for ed in range(len(b)):
+            xi = h + a * np.cos(theta) * np.cos(t1) - b[ed] * np.sin(theta) * np.sin(t1)
+            yi = k + a * np.sin(theta) * np.cos(t1) + b[ed] * np.cos(theta) * np.sin(t1)
+            xj = h + a * np.cos(theta) * np.cos(t2) - b[ed] * np.sin(theta) * np.sin(t2)
+            yj = k + a * np.sin(theta) * np.cos(t2) + b[ed] * np.cos(theta) * np.sin(t2)
+            w = colors[ed][1]
+            ax.plot(xi, yi, color=colors[ed][0][0], linewidth=line_width, alpha = transparency(w), zorder = 9 )
+            ax.plot(xj, yj, color= colors[ed][0][1], linewidth=line_width, alpha = transparency(w),zorder = 9 )
+            if w< 0:
+                 plot_diamond(ax, xi[-1],yi[-1], r/2, r, zorder = 9 )
+
+def Type_Photons(config_file_name, sol_file_name):
+    sol_file = openfile(sol_file_name)
+    config_file = openfile(config_file_name)
+    graph = sol_file['graph']
+    edge_list = list(graph.keys())
+    for ii in range (len(edge_list)):
+        edge_list[ii] = literal_eval(edge_list[ii])
     num_vertices = len(np.unique(np.array(edge_list)[:, :2]))
-
-    angles = np.linspace(0, 2 * np.pi * (num_vertices - 1) / num_vertices, num_vertices)
-
-    rad = 0.9
-    vertcoords = []
-    for angle in angles:
-        x = rad * np.cos(angle)
-        y = rad * np.sin(angle)
-        vertcoords.append(tuple([x, y]))
-
-    vertnums = list(range(num_vertices))
-    verts = dict(zip(vertnums, vertcoords))
-
-    if scaled_weights:
-        try: # I think this doesn't work anymore
-            scale_max = np.max(np.abs(np.array(edge_list)[:, 4]))
-        except:
-            scale_max = None
+    vertex_list = np.arange(0, num_vertices, 1).tolist()
+    if 'num_anc' in config_file:
+        num_anc = config_file['num_anc']
+        if num_anc ==0:
+            ancilla = []
+        else:
+            ancilla = vertex_list[-num_anc:]
+    else :
+        ancilla = []
+   
+    if 'single_emitters' in  config_file:
+        single_emitters = config_file['single_emitters']
     else:
-        scale_max = None
-
-    if len(ax_fig) == 0:
-        fig, ax = plt.subplots(figsize=(figsize,)*2)
+        single_emitters = []
+        
+    if 'in_nodes' in  config_file:
+        in_nodes = config_file['in_nodes']
     else:
-        fig, ax = ax_fig
+        in_nodes = []   
+    return ancilla, single_emitters, in_nodes
 
-    for uc_edge in edge_dict.keys():
-        mult = len(edge_dict[uc_edge])
-        for ii, coloring in enumerate(edge_dict[uc_edge]):
-            drawEdge(uc_edge + coloring + tuple([graph[tuple(uc_edge + coloring)]]), verts, ii, mult, ax,
-                     scale_max=scale_max, max_thickness=max_thickness,
-                     show_val=show_value_for_each_edge, fs=0.8 * fontsize, markersize=markersize)
-
-    circ = []
-    if number_nodes:
-        node_labels = verts.keys()
-    else:
-        node_labels = list(map(chr, range(97, 123)))
-    for vert, coords in zip(node_labels, verts.values()):
-        circ.append(plt.Circle(coords, 0.1, alpha=0.5))
-        ax.text(coords[0], coords[1], str(vert), zorder=zorder,
-                ha='center', va='center', size=fontsize)
-
-    circ = collections.PatchCollection(circ, zorder=zorder - 1)
-    circ.set(facecolor='lightgrey', edgecolor='dimgray', linewidth=3)
-    ax.add_collection(circ)
-
-    ax.set_xlim([-1.1, 1.1])
-    ax.set_ylim([-1.1, 1.1])
-    ax.axis('off')
-
-#     if weight_product:
-#         total_weight = np.product(weight_list)
-
-#         wp = '${}$'.format(anal.num_in_str(total_weight))
-#         if wp == '$$':
-#             wp = str(total_weight)
-#         ax.set_title(wp + str(add_title), fontsize=fontsize)
-
-    if add_title != '' and weight_product is False:
-        ax.set_title(str(add_title), fontsize=fontsize)
+def  graphPlot(graph, type_photons = None,DistanceOfVertices=0.1,filename='',show=True):
+    colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
+    graph = convert_to_fancy_graph(graph)
+    GraphEdge = [grouper(2,i)[0] for i in list(sorted(graph.edges))]
+    GEC = [grouper(2,i)[1] for i in list(sorted(graph.edges))]
+    GraphEdgeColor  =[encoded_label(ED,get_num_label(colors))for ED in GEC  ]
+    Num_Vertices = len(np.unique(list(itertools.chain(*GraphEdge))))
+    Graphweight = convert_bools_to_ints(graph.weights)
+    g = uniqueList(GraphEdge)
+    posv = PosOfVertices (Num_Vertices, DistanceOfVertices)
+    for n, eg in enumerate(g):
+        posxy = eg[0]
+        posxy= correct(posxy)
+        c = eg [1]
+        updated_posxy = tuple(posv[xy] for xy in posxy)
+        updated_color = [[GraphEdgeColor[cc],Graphweight[cc]]  for cc in c]
+        g[n] = [updated_posxy, updated_color]    
+    fig, ax = plt.subplots()
+    Plot_Vertices(ax, Num_Vertices, DistanceOfVertices,type_photons)
+    max_length = max(g, key=lambda x: len(x[1]))
+    max_len = len(max_length[1])
+    for eg in g:
+        Plot_Edges(ax, eg[0][0], eg[0][1], eg[1], DistanceOfVertices, max_len = max_len)   
+    ax.set_aspect(1 )
+    ax.axis('off') 
 
     if show:
         plt.show()
@@ -170,11 +217,9 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     else:
         pass
     if filename:
-        fig.savefig(filename + ".pdf")
-
+        fig =fig.savefig(filename + ".pdf", bbox_inches='tight')
     return fig
-
-
+  
 def leiwandPlot(graph, name='graph'):
     data = []
     edge_dict = th.edgeBleach(graph.edges)
@@ -213,16 +258,12 @@ def leiwandPlotBulk(graph, cnfg, root, name = 'graph'):
                 data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
     pytheus.leiwand.leiwandBulk(data, cnfg, root=root, name=name)
 
-
-def plotFromFile(filename, number_nodes=True, outfile=""):
-    if not os.path.exists(filename) or os.path.isdir(filename):
-        raise IOError(f'File does not exist: {filename}')
-    with open(filename) as input_file:
-        sol_dict = json.load(input_file)
-    # graph = Graph(sol_dict['graph'])
-    # graphPlot(graph.graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
-    graphPlot(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
-    
+def plotFromFile(config_file_name, sol_file_name , outfile=""):
+    sol_file = openfile(sol_file_name)
+    type_photons = Type_Photons(config_file_name, sol_file_name)
+    graph = sol_file['graph']
+    return graphPlot(graph , type_photons, filename = outfile)
+   
 ##############################################################################################################################
 
 colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']

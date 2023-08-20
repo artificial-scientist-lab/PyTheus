@@ -26,9 +26,9 @@ def transparency(W):
         transparency = 0.2 + abs(W) * 0.8
         transparency = min(transparency, 1)
     except IndexError:
-            transparency = 1
+        transparency = 1
     except TypeError:
-             transparency = 1  
+        transparency = 1  
     return transparency
 
 def PosOfVertices (num_nodes, side_length):
@@ -89,13 +89,13 @@ def plot_triangle(ax ,center, side_length, zorder, linewidth):
     ax.plot(x + [x[0]], y + [y[0]], zorder = zorder+1, lw =linewidth, color ='k' )
     plt.fill(x, y, color='w', zorder = zorder)
 
-def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12):
+def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12, linewidth=2):
     r = side_length/10
     vertices = PosOfVertices(num_nodes, side_length)
     if type_photons is None:
         for i, vertex in enumerate(vertices):
             ax.add_patch(Circle(vertex, radius= r, facecolor='w',\
-                            edgecolor='black', zorder = 10,linewidth=2))
+                            edgecolor='black', zorder = 10, linewidth=linewidth))
             ax.text(vertex[0], vertex[1], str(i), ha='center', \
                 va='center', fontsize=font_size,zorder = 12 )
         
@@ -103,29 +103,28 @@ def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12
         if len(type_photons)==3:
             ancilla, single_emitters, in_nodes = type_photons
             for i, vertex in enumerate(vertices):
-                if i in  ancilla:
+                if i in ancilla:
                     if i in single_emitters:
-                        plot_triangle(ax, vertex ,2.5*r, 10, 2  )
+                        plot_triangle(ax, vertex ,2.5*r, 10, linewidth=linewidth  )
                     else:
                         x =vertex[0]-r
                         y = vertex[1]-r
                         ax.add_patch(Rectangle((x,y),2*r, 2*r,fc = 'w', \
-                                       ec = 'k',zorder = 10, linewidth=2))
+                                       ec = 'k',zorder = 10, linewidth=linewidth))
                 elif i in single_emitters or i in in_nodes:
-                    plot_triangle(ax, vertex ,2.5*r, 10, 2  )
+                    plot_triangle(ax, vertex ,2.5*r, 10, linewidth=linewidth  )
                 else:
                     ax.add_patch(Circle(vertex, radius= r, facecolor='w',\
-                                    edgecolor='black', zorder = 10,linewidth=2))
+                                    edgecolor='black', zorder = 10, linewidth=linewidth))
                 ax.text(vertex[0], vertex[1], str(i), ha='center', \
                         va='center', fontsize=font_size,zorder = 12 )
         else:
                raise ValueError("The type_photons is not valid.")
 
-ef Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
-               min_thickness = 2, thickness=10 ):
+def Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
+               min_thickness = 2, thickness=10, de = 5 ):
     line_width = max(min(thickness/ max_len, max_thickness), min_thickness)
     r =side_length/12
-    z = side_length/15
     if V1 == V2:
         w =colors[0][1]
         x = V1[0] + side_length / 10 if V1[0] > 0 else V1[0] - side_length / 10
@@ -142,7 +141,7 @@ ef Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
         theta = np.arctan2(V1[1] - V2[1], V1[0]-V2[0])
         a = np.sqrt((V1[0]-V2[0]) ** 2 + (V1[1] - V2[1]) ** 2) / 2
         nb = len(colors)
-        b = calculate_b(nb, side_length/5)
+        b = calculate_b(nb, side_length/de )
         t1 = np.linspace(0, np.pi / 2, 1000)
         t2 = np.linspace(np.pi, np.pi / 2, 1000)
         for ed in range(len(b)):
@@ -152,7 +151,7 @@ ef Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
             yj = k + a * np.sin(theta) * np.cos(t2) + b[ed] * np.cos(theta) * np.sin(t2)
             w = colors[ed][1]
             ax.plot(xi, yi, color=colors[ed][0][0], linewidth=line_width, alpha = transparency(w), zorder = 9 )
-            ax.plot(xj, yj, color= colors[ed][0][1], linewidth=line_width, alpha = transparency(w),zorder = 9 )
+            ax.plot(xj, yj, color= colors[ed][0][1], linewidth=line_width, alpha = transparency(w), zorder = 9 )
             if w< 0:
                  plot_diamond(ax, xi[-1],yi[-1], r/2, r, zorder = 9 )
 
@@ -185,7 +184,9 @@ def Type_Photons(config_file_name, sol_file_name):
         in_nodes = []   
     return ancilla, single_emitters, in_nodes
 
-def  graphPlot(graph, type_photons = None,DistanceOfVertices=0.1,filename='',show=True):
+def graphPlot(graph, type_photons = None, DistanceOfVertices=0.1, filename='',\
+             show=True, max_thickness = 5, min_thickness = 2, thickness=10, font_size =12,
+              linewidth= 2, de = 5):
     colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
     graph = convert_to_fancy_graph(graph)
     GraphEdge = [grouper(2,i)[0] for i in list(sorted(graph.edges))]
@@ -203,11 +204,13 @@ def  graphPlot(graph, type_photons = None,DistanceOfVertices=0.1,filename='',sho
         updated_color = [[GraphEdgeColor[cc],Graphweight[cc]]  for cc in c]
         g[n] = [updated_posxy, updated_color]    
     fig, ax = plt.subplots()
-    Plot_Vertices(ax, Num_Vertices, DistanceOfVertices,type_photons)
+    Plot_Vertices(ax, Num_Vertices, DistanceOfVertices,type_photons, font_size = font_size,\
+                  linewidth=linewidth)
     max_length = max(g, key=lambda x: len(x[1]))
     max_len = len(max_length[1])
     for eg in g:
-        Plot_Edges(ax, eg[0][0], eg[0][1], eg[1], DistanceOfVertices, max_len = max_len)   
+        Plot_Edges(ax, eg[0][0], eg[0][1], eg[1], DistanceOfVertices, max_len = max_len,\
+                  max_thickness = max_thickness, min_thickness = min_thickness , thickness=thickness, de = de )  
     ax.set_aspect(1 )
     ax.axis('off') 
 

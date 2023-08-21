@@ -270,7 +270,7 @@ def plotFromFile(config_file_name, sol_file_name , outfile=""):
 ##############################################################################################################################
 
 colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
-Paths = [ list(string.ascii_lowercase)
+Paths = [ list(string.ascii_lowercase)]
 
 #plot path and optical elements
 def Plot_BS(ax, X, Y, width, height, color):

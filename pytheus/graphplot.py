@@ -270,7 +270,7 @@ def plotFromFile(config_file_name, sol_file_name , outfile=""):
 ##############################################################################################################################
 
 colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
-Paths = [ list(string.ascii_lowercase)]
+Paths = list(string.ascii_lowercase)
 
 #plot path and optical elements
 def Plot_BS(ax, X, Y, width, height, color):
@@ -290,15 +290,16 @@ def Plot_PBS(ax, X, Y, width,height, color1, color2 ):
     ax.plot([X, X-d0],[Y+2*d0, Y+3*d0 ],zorder = 20 , color = color2,linestyle =':')
     ax.vlines(X, ymin = Y, ymax =Y+4*d0, colors ='indigo',zorder = 19  )
     
-def Plot_SPDC(ax, X, Y, width, height, color1, color2, W, wmax = 1 ):
-    ax.add_patch(Rectangle((X, Y), width/2, height, fc = color1, ec = 'none',alpha= abs(W)/wmax))
-    ax.add_patch(Rectangle((X+width/2,Y), width/2, height, fc = color2, ec ='none' , alpha= abs(W)/wmax))
+def Plot_SPDC(ax, X, Y, width, height, color1, color2, W ):
+    alpha = transparency(W)
+    ax.add_patch(Rectangle((X, Y), width/2, height, fc = color1, ec = 'none',alpha= alpha))
+    ax.add_patch(Rectangle((X+width/2,Y), width/2, height, fc = color2, ec ='none' , alpha=alpha))
     ax.add_patch(Rectangle((X, Y),width, height, fc = \
                            'none', ec ='black',zorder = 10 ))
     d0 = width/10
     d1 = Y+height
     ax.vlines(X+d0, ymin = d1, ymax = d1+height, colors = color1)
-    ax.vlines(X+width-d0, ymin = d1, ymax = d1+height, colors = color2)  
+    ax.vlines(X+width-d0, ymin = d1, ymax = d1+height, colors = color2) 
     
 def Plot_Absorber(ax , X , Y,  width, height) :  
     ax.add_patch(Rectangle((X, Y), width, height,fc = 'k', ec = 'r',zorder=10, joinstyle= 'bevel', lw =2))
@@ -322,7 +323,7 @@ def Plot_Detector(ax , X, Y, leng, step, radius ):
         ax.add_patch(Rectangle((pos[ii]-1.2*radius, Y-radius/2), 2.4*radius, radius/2, fc = 'k', ec = 'k', zorder = 12))
         Plot_Connection_Line(ax, [pos[ii], pos[ii]-radius], [Y+radius,Y+2.5*radius] )
 
-def Plot_Crystal (ax, X, Y, color, width, height, W, wmax =1): #for path identity
+def Plot_Crystal (ax, X, Y, color, width, height, W): #for path identity
     ax.add_patch(Rectangle((X, Y), width, height,fc = 'none', ec ='black' ,zorder=6))
     row = len(color)
     column = 2
@@ -340,7 +341,7 @@ def Plot_Crystal (ax, X, Y, color, width, height, W, wmax =1): #for path identit
             posx= x_crystal[x]
             colors = color[y][x]
             ax.add_patch(Rectangle((posx, posy), width1, height1,\
-                                   fc = colors, ec ='none' ,zorder=5, alpha =abs(W[y])/wmax ))
+                                   fc = colors, ec ='none', zorder=5, alpha =transparency(W[y])))
             
 def Plot_Sorter(ax , X, Y, leng, step, width, height, color):
     pos = Pos_Element(X,step,leng)
@@ -461,21 +462,14 @@ def uniqueList(lst):
         pos_list.append([jj, x])    
     return( pos_list)
 
-def StringT0Tuple(Graph):
-    key = list(Graph.keys())
-    for ii in range (len(key)):
-        key[ii] = literal_eval(key[ii])
-    graph = dict(zip(key,list(Graph.values()))) 
-    return graph
-
 def generate_N_grams (position,ngram = 1):
     positions=[pos for pos in position]
     grams=zip(*[positions[i:] for i in range(0,ngram)])
     return list(grams)
 
 #index 0 :path, 1: color
-def GetGraphColorEdge(Graph, index, PC):
-    GraphED = [grouper(2,i)[index] for i in list(sorted(Graph.keys()))]
+def GetGraphColorEdge(graph, index, PC):
+    GraphED = [grouper(2,i)[index] for i in graph.edges]
     GraphEC = [encoded_label(ED,get_num_label(PC))for ED in GraphED ]
     return GraphEC
 
@@ -514,23 +508,11 @@ def union(lst):
     return (lst)
 
   ################################################################################################################
-def PerfectMatching (GraphEdges, Numphoton):
-    Com = list(itertools.combinations(GraphEdges,int(Numphoton/2)))
-    perfect_matching= []
-    for ii in range(len(Com)):
-        a  = list(itertools.chain(*Com[ii]))
-        count = LengDuplicate(a)
-        if count ==0:
-            perfect_matching.append(list(Com[ii]))
-    return(perfect_matching)
-
 def layer0fcrystal (crystal_lst, Numphoton):
-    
-    res = PerfectMatching (crystal_lst, Numphoton)
+    res = th.findPerfectMatchings(crystal_lst)
     ll = int(Numphoton/2)
     layer0= []
     other_crystal = []
-
     while len(res)>0:
         r = res[0]
         layer0.append(r)
@@ -538,9 +520,8 @@ def layer0fcrystal (crystal_lst, Numphoton):
         for item  in res:
             if 0<len(item)<ll:
                 other_crystal.append(item)
-        res = [item for item in res if len(item)>=ll]
-     
-    layer1 = [[ele for j,ele in enumerate(sub) if ele not in  list(itertools.chain(*layer0))]\
+        res = [item for item in res if len(item)>=ll]  
+    layer1 = [[ele for j,ele in enumerate(sub) if ele not in  list(itertools.chain(*layer0))]
                       for i,sub in enumerate(other_crystal)]
     flatten = []
     for nl in  layer1:
@@ -563,7 +544,7 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
     Remove_Duplicate = list(gea for gea,_ in itertools.groupby(gea))
     cw_spdc = []
     for ii in Layers :
-        cw = [Remove_Duplicate.index(jj) for jj in ii]
+        cw = [Remove_Duplicate.index(list(jj)) for jj in ii]
         cw_spdc.append(cw)
     wc =[]
     for ii in range(len(colwei)):
@@ -575,182 +556,197 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
             wcspdc[jj] =wc[wcspdc[jj]]
     return(cw_spdc)
   
-def Plot_Path_Identity(graph,  filename, width, figsize , fontsize , colors , Paths):
-    fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')
-    Graph =StringT0Tuple(graph)
-    Edge= list(Graph.keys())
-    Edge.sort()
-    Graph = {i: Graph[i] for i in Edge}
-    GraphEdgesAlphabet = GetGraphColorEdge(Graph, 0, Paths )
-    GraphEdgesColor  =  GetGraphColorEdge(Graph, 1, colors )
-    Graphweight= list(Graph.values())
-    Num0fCrystal = len(Graph)
-    Dimension = len(np.unique(list(itertools.chain(*GraphEdgesColor))))
-    Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
-    Remove_Duplicate = list(GraphEdgesAlphabet for GraphEdgesAlphabet\
-                            ,_ in itertools.groupby(GraphEdgesAlphabet))
-    #width = 0.1
-    height = width/2
-
-    wmax=0.0 # for finding the maximum weight
-    for w in range(len(Graphweight)):
-        wmax=np.maximum(wmax,np.max(np.abs(Graphweight[w])))
-    Layers1 = layer0fcrystal(Remove_Duplicate, Numphoton)
-    NotInPM =[edges for edges in Remove_Duplicate if edges\
-              not in list(itertools.chain(*Layers1))]
-    NP = len(np.unique(list(itertools.chain(*NotInPM))))
-    if len( NotInPM)>0:
-        Layers2 = layer0fcrystal(NotInPM, NP)
-        Layers =  Layers1 + Layers2
-    else:
-        Layers = Layers1
-    Layers =union(Layers)
-    color_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, GraphEdgesColor, Layers)
-    w_spdc =Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, Graphweight, Layers)
-    Detector =list(itertools.chain(*Layers[0]))
-  
-    PosxSpdc = []
-    ys = []
-    width = 0.1
-    height = width/2
-    for ii in range(len(Layers)):
-        numx = len(Layers[ii])
-        ys.append(numx)
-        px = Pos_Element(0, 3/2*width , numx)
-        PosxSpdc.append(px)
+def PlotPathIdentity(graph,  filename= "", width=0.1, figsize= (8, 8) , 
+                       fontsize = 16 , colors = colors , Paths= Paths):
     
-    numy = len(PosxSpdc)
-    PY = Pos_Element(0, 2*height , numy)
-    PY.sort(reverse=True)
-    P0 = PosxSpdc[0]
-    PosySpdc=  gen_list_of_lists(np.repeat(PY, ys).tolist(), ys)
+    fig, ax = plt.subplots(ncols=1, nrows=1,figsize= figsize, facecolor='w')
     
-    pospathx = []
-    pospathy = []
-    
-    for ii in range(len(PosxSpdc)):
-        x = Pos0fpath(PosxSpdc[ii], width)
-        pospathx.append(x)
-        for jj in range(len(PosxSpdc[ii])):
-            Plot_Crystal (ax, PosxSpdc[ii][jj], PosySpdc[ii][jj], color_spdc[ii][jj], width\
-                          , height, w_spdc[ii][jj], wmax = wmax) 
-           
-            y1 = PosySpdc[ii][jj]+height-height/10
-            y2 =PosySpdc[ii][jj]+height/10
-            pospathy.extend([[y1, y2]])
-            Plot_Vline(ax , y1, y2 , x , 'k')
-                 
-    YDR = max(PY)+2*height 
-    XDR = Pos0fpath(P0, width)
-    for pos in range (len(XDR)):
-        Plot_Detector(ax , XDR[pos], YDR, 1,1, height/4 )
-        Plot_Vline(ax ,  pospathy[0][0], YDR, XDR[pos], 'k' )
-        Write_Label(ax,  XDR[pos], YDR+width/4, Detector[pos] , fontsize )
+    graph = convert_to_fancy_graph(graph)
+    GraphEdgesAlphabet = GetGraphColorEdge(graph, 0, Paths )
+    count = 0
+    for v in GraphEdgesAlphabet:
+        if v[0]==v[1]:
+            count +=1
+    if count >0:
+        raise ValueError("The graph has self-loops")  
         
-    lrs = [list(itertools.chain(*pp)) for pp in Layers]
-    ps = sorted(list(itertools.chain(*Layers[0])))
-    duplicate0fps= [find_index_duplicate(lrs, pp) for pp in ps]
-    
-    virtual = []
-    flr=  pospathx[0]
-    for lst in range (len(duplicate0fps )):
-        for idx in range(duplicate0fps [lst][0], duplicate0fps [lst][-1]):
-            if idx not in duplicate0fps [lst]:
-                duplicate0fps[lst].append(idx)
-                Layers[idx].append(ps[lst])
-                virtual.append(idx)
+    else:
+        
+        GraphEdgesColor  =  GetGraphColorEdge(graph, 1, colors )
+        Graphweight = convert_bools_to_ints(graph.weights)
+        Dimension = len(np.unique(list(itertools.chain(*GraphEdgesColor))))
+        Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
+
+        Remove_Multiedge = list(tuple(GraphEdgesAlphabet) for GraphEdgesAlphabet
+                                ,_ in itertools.groupby(GraphEdgesAlphabet))
+      
+        height = width/2
        
-    connecty =[[PY[idx] for idx in sorted(duplicate0fps[lst])]\
-           for lst in range(len(duplicate0fps))]
-    connecty= [ grouper(2, sorted(Pos0fpath(lst, height ),\
-                   reverse = True)[1:-1]) for lst in connecty]
-    connecty= [y for y in connecty if y != []]
-    y = [PY[idx] for idx in  sorted(virtual) ]
-    y =  grouper(2, Pos0fpath(y, height ))
+
+        if  len(th.findPerfectMatchings(Remove_Multiedge))==0:
+
+            raise ValueError("It appears that there is no perfect matching in the graph.")  
+
+        else:
+            Layers1 = layer0fcrystal(Remove_Multiedge, Numphoton)
+
+        NotInPM =[edges for edges in Remove_Multiedge if edges
+                  not in list(itertools.chain(*Layers1))]
     
-    count =  dict(Counter(sorted(virtual)))
-    ele = list(count.keys())
-    num = list(count.values())
-    fl =  pospathx[0]
-    x = []
-  
-    for ii in range(len(ele)):
-        leng = len(pospathx[ele[ii]])
-        for i in range(num[ii]):
-            item = fl[i+leng]
-            x.append(item)
-            pospathx[ele[ii]].append(item)
-           
-    Pathconnect = list(itertools.chain(*Layers))
-    Pathconnect = list(itertools.chain(*Pathconnect))
-    Connection_Line = DuplicateList(Pathconnect)
-    connect = flatten( pospathx)
-    
-    for ii in range(len(Connection_Line)):
-        cl = Connection_Line[ii][1]
-        for jj in range(len(cl)):
-            cl[jj] = connect[cl[jj]]
-            
-    Connection_Line = dict(Connection_Line)
-    CL = dict(collections.OrderedDict(sorted(Connection_Line.items())))
-    connectx =[generate_N_grams(lst, 2) for lst in list(CL.values())]
-    
-    for ii in range(len(connectx)):
-        for jj in range(len(connectx[ii])):
-            Plot_Connection_Line(ax,connectx[ii][jj],connecty[ii][jj])
-            
-    for ii in range(len(x)):
-        Plot_Vline(ax , y[ii][0], y[ii][1], x[ii] ,'k' )
-                
-    ax.set_aspect( 1 )        
-    ax.axis('off') 
-    experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
+        if len( NotInPM) > 0:
+            Layers2 = union([NotInPM [i:i+1] for i in range(0, len(NotInPM ), 1)])
+            Layers =  Layers1 + Layers2
+        else:
+            Layers = Layers1
+        Layers = union( Layers)
+        
+        color_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton,
+                                                GraphEdgesColor, Layers)
+
+        w_spdc = Get_Color_Weight_Crystals(GraphEdgesAlphabet, Numphoton, Graphweight, Layers)
+
+        Detector =list(itertools.chain(*Layers[0]))
+        PosxSpdc = []
+        ys = []
+        width = 0.1
+        height = width/2
+        for ii in range(len(Layers)):
+            numx = len(Layers[ii])
+            ys.append(numx)
+            px = Pos_Element(0, 3/2*width , numx)
+            PosxSpdc.append(px)
+
+        numy = len(PosxSpdc)
+        PY = Pos_Element(0, 2*height , numy)
+        PY.sort(reverse=True)
+        P0 = PosxSpdc[0]
+        PosySpdc=  gen_list_of_lists(np.repeat(PY, ys).tolist(), ys)
+
+        pospathx = []
+        pospathy = []
+
+        for ii in range(len(PosxSpdc)):
+            x = Pos0fpath(PosxSpdc[ii], width)
+            pospathx.append(x)
+            for jj in range(len(PosxSpdc[ii])):
+                Plot_Crystal (ax, PosxSpdc[ii][jj], PosySpdc[ii][jj], color_spdc[ii][jj], width\
+                              , height, w_spdc[ii][jj]) 
+
+                y1 = PosySpdc[ii][jj]+height-height/10
+                y2 =PosySpdc[ii][jj]+height/10
+                pospathy.extend([[y1, y2]])
+                Plot_Vline(ax , y1, y2 , x , 'k')
+
+        YDR = max(PY)+2*height 
+        XDR = Pos0fpath(P0, width)
+        for pos in range (len(XDR)):
+            Plot_Detector(ax , XDR[pos], YDR, 1,1, height/4 )
+            Plot_Vline(ax ,  pospathy[0][0], YDR, XDR[pos], 'k' )
+            Write_Label(ax,  XDR[pos], YDR+width/4, Detector[pos] , fontsize )
+
+        lrs = [list(itertools.chain(*pp)) for pp in Layers]
+        ps = sorted(list(itertools.chain(*Layers[0])))
+        duplicate0fps= [find_index_duplicate(lrs, pp) for pp in ps]
+
+        virtual = []
+        flr=  pospathx[0]
+        for lst in range (len(duplicate0fps )):
+            for idx in range(duplicate0fps [lst][0], duplicate0fps [lst][-1]):
+                if idx not in duplicate0fps [lst]:
+                    duplicate0fps[lst].append(idx)
+                    Layers[idx].append(ps[lst])
+                    virtual.append(idx)
+
+        connecty =[[PY[idx] for idx in sorted(duplicate0fps[lst])]\
+               for lst in range(len(duplicate0fps))]
+
+        connecty= [ grouper(2, sorted(Pos0fpath(lst, height ),\
+                       reverse = True)[1:-1]) for lst in connecty]
+        connecty= [y for y in connecty if y != []]
+
+
+        y = [PY[idx] for idx in sorted(virtual) ]
+        y =  grouper(2, Pos0fpath(y, height ))
+
+
+        count =  dict(Counter(sorted(virtual)))
+        ele = list(count.keys())
+        num = list(count.values())
+
+        fl =  pospathx[0]
+        x = []
+        for ii in range(len(ele)):
+            leng = len(pospathx[ele[ii]])
+            for i in range(num[ii]):
+                item = fl[i+leng]
+                x.append(item)
+                pospathx[ele[ii]].append(item)    
+        Pathconnect = list(itertools.chain(*Layers))
+        Pathconnect = list(itertools.chain(*Pathconnect))
+        Connection_Line = DuplicateList(Pathconnect)
+        connect = flatten( pospathx)
+
+
+        for ii in range(len(Connection_Line)):
+            cl = Connection_Line[ii][1]
+            for jj in range(len(cl)):
+                cl[jj] = connect[cl[jj]]
+
+        Connection_Line = dict(Connection_Line)
+        CL = dict(collections.OrderedDict(sorted(Connection_Line.items())))
+
+        connectx =[generate_N_grams(lst, 2) for lst in list(CL.values())]
+
+        for ii in range(len(connectx)):
+            for jj in range(len(connectx[ii])):
+                Plot_Connection_Line(ax,connectx[ii][jj],connecty[ii][jj])
+
+        for ii in range(len(x)):
+            Plot_Vline(ax , y[ii][0], y[ii][1], x[ii] ,'k' )
+        ax.set_aspect( 1 )        
+        ax.axis('off') 
+        experiment = fig.savefig(filename + ".pdf", bbox_inches='tight')   
     return experiment
 ################################################################################################################   
-def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsize , colors , Paths):
-    Graph =StringT0Tuple(graph)
-    Edge= list(Graph.keys())
-    Edge.sort()
-    Graph = {i: Graph[i] for i in Edge}
-    GraphEdgesAlphabet = GetGraphColorEdge(Graph, 0, Paths )
-    GraphEdgesColor  =  GetGraphColorEdge(Graph, 1, colors )
-    Graphweight= list(Graph.values())
-    Num0fCrystal = len(Graph)
+def PlotBulkOpticsPathEncoding(graph, task = 'PathEncoding'  , filename='', width =0.1\
+                               , figsize =(16, 16) , fontsize= 16 , colors= colors , Paths=Paths):
+    graph = convert_to_fancy_graph(graph)
+    GraphEdgesAlphabet = GetGraphColorEdge(graph, 0, Paths )
+    GraphEdgesColor  =  GetGraphColorEdge(graph, 1, colors )
+    Graphweight = convert_bools_to_ints(graph.weights)
+    Num0fCrystal = len(graph)
     Dimension = len(np.unique(list(itertools.chain(*GraphEdgesColor))))
     Numphoton =  len(np.unique(list(itertools.chain(*GraphEdgesAlphabet))))
-    #width = 0.1
-    height = width/2
-
-    wmax=0.0 # for finding the maximum weight
-    for w in range(len(Graphweight)):
-        wmax=np.maximum(wmax,np.max(np.abs(Graphweight[w])))
-
+    height =width/2
     PosX0fcrystal = Pos_Element(0, 3*width/2 , Num0fCrystal)
-    PosY0fcrystal = np.full(Num0fCrystal, 0)    
-    fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w')  
-
-    for num in range(len(Graph)):
+    PosY0fcrystal = np.full(Num0fCrystal, 0) 
+    
+    fig,ax=plt.subplots(ncols=1,nrows=1,figsize= figsize, facecolor='w') 
+  
+    for num in range(len(graph)):
         Plot_SPDC(ax, PosX0fcrystal[num], PosY0fcrystal[num],\
-                  width, height, GraphEdgesColor[num][0], GraphEdgesColor[num][1], Graphweight[num])
-
+                  width, height, GraphEdgesColor[num][0],\
+                  GraphEdgesColor[num][1], Graphweight[num])
+  
     PosX0fpath = Pos0fpath(PosX0fcrystal, width)
     Y = 2*height
     PosY0fpath = [ Y for pos in range(len(PosX0fpath))]
 
-
     AllPath= [] 
-    for pp in range(len(Graph)):
+    for pp in range(len(graph)):
             AllPath.extend([str(GraphEdgesAlphabet[pp][0])+str(pp)\
                           ,str(GraphEdgesAlphabet[pp][1])+str(pp)])
 
     AllColor = list(itertools.chain(*GraphEdgesColor))
-    PossiblePath = Combine(AllPath) 
+    PossiblePath = Combine(AllPath)
     PossibleColor= Combine(AllColor) 
     PossibleposX = Combine(PosX0fpath)
+    
 
     PosX_L  = []
     PosX_IN_BS = []
     Path_L = []
+
 
     for ii in range(len(PossiblePath)):
         path1 = PossiblePath[ii][0]
@@ -765,7 +761,7 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
             PosX_L.extend([posx1,posx2] )
             Path_L.extend([path1, path2])
 
-    PosX_IN_BS = list(set(PosX_IN_BS))
+    PosX_IN_BS  = list(set(PosX_IN_BS ))
     PosX_L = grouper(2, PosX_L)  
     Pos =  REMOVE_BS(PosX_IN_BS, PosX_L )
     if len (Pos)>0:
@@ -773,18 +769,19 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
         GET_DUBL = DuplicateList(P1)
         GET_DUBL2 = DuplicateList(P1)
         PosX1 =[]
+        
         for ii in range(len(GET_DUBL)):
             x = GET_DUBL[ii][1]
             for jj in x:
                 PosX1.append(((P1[jj], P2[jj])))
+     
 
-        PosX2 = [pos for pos in Pos if pos not in PosX1]
+        PosX2 = [pos for pos in Pos if pos not in PosX1] 
         PosY0 = Pos_Element(Y, height/3 ,len(GET_DUBL))
         if (len(PosY0))>0:
-            PosY1 = Pos_Element(max(PosY0)+height/2,1.5*height , len(PosX1))
-
+            PosY1 = Pos_Element(max(PosY0)+height/2,2.5*height , len(PosX1))
         if (len(PosX1))>0:
-            PosY2 = Pos_Element(max(PosY1)+4*height,height,len(PosX2))
+            PosY2 = Pos_Element(max(PosY1)+4*height,1.5*height,len(PosX2))
         elif (len(PosX1))==0:
             PosY2 = Pos_Element(Y+height, 2*height, len(PosX2))
         d0 = np.sqrt((width/2)**2+ height**2)/4
@@ -798,8 +795,8 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
             Plot_Absorber(ax ,  x-2*d0-height/4 , y+2.5*height, height/2, height/2) 
 
         ynab1 = [] 
-        xnab1= []
-        colnab1 =[]
+        xnab1 = []
+        colnab1 = []
         pathnab1 = []
 
         for ii in range(len(PosX2)):
@@ -819,7 +816,7 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
             Plot_Vline(ax , y+3*d0, y+3.5*height, x, c,) 
             Plot_Vline(ax , y+3*d0, y+2.5*height, x-2*d0, c) 
             Plot_Absorber(ax , x-2*d0-height/4 ,y+2.5*height, height/2, height/2)
-
+ 
         PosX0 = []
         for ii in range(len(GET_DUBL)):
             x = GET_DUBL[ii][1]
@@ -829,13 +826,14 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
                 x[jj] = P2[x[jj]]
         ColX0 = [AllColor[PosX0fpath.index(pos)] for pos in PosX0fpath if pos in PosX0]
         turn_leng = [len(GET_DUBL2[ii][1]) for ii in range(len(GET_DUBL2))]
+    
         if len(turn_leng)>0:
             PosY1 = gen_list_of_lists(PosY1, turn_leng)
 
             for ii in range(len(GET_DUBL)):
                 GET_DUBL2[ii][1] = PosY1[ii]
                 GET_DUBL2[ii][0]= PosY0[ii]
-
+    
         for ii in range(len( PosX0)):
                 Plot_Vline(ax ,Y, PosY0[ii]+2*d0, PosX0[ii],  ColX0[ii]) 
         xh1 = []
@@ -877,7 +875,7 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
 
         for pos in range(len(ynab2)):
             Plot_Vline(ax , ynab2[pos]-3*height+2*d0, ynab2[pos], xnab2[pos] ,ColX0[pos])
-
+            
         PosX_NAB =  xnab1+ xnab2
         PosY_NAB  = ynab1+ ynab2
         Path1nab = pathnab1
@@ -904,6 +902,7 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
 
     Path_alphabet = []   
     Path_Number =[]
+    
     for path in Path_Concat:
         Path_alphabet.append(path[0])
         Path_Number.append(path[1])
@@ -919,7 +918,6 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
         Plot_Detector(ax , single_path[sp][0], \
                       single_path[sp][1], 1, height/4,height/3)
         Write_Label(ax, single_path[sp][0], single_path[sp][1]+height/2, single_path[sp][3][0], fontsize )
-
 
     get_to_posX = sorted(DuplicateList(Path_alphabet))
     get_to_posY = sorted(DuplicateList(Path_alphabet))
@@ -962,29 +960,24 @@ def Plot_BulkOptics_PathEncoding(graph, task , filename, width, figsize , fontsi
                     Plot_Hline(ax , X[jj], xd[jj], yd[jj] , C[jj])
 
             pathx_sort = []
-
             for col in range(len(col_index)):
                 x = XtoD[col][1]
                 col_index[col] = get_index_color(colors,col_index[col])
                 min_index  = col_index[col].index(min(col_index[col]))
                 pathx_sort.append(x[min_index ] )
-
-            #task = 'BulkOptics'
             for px in range(len(get_to_posX)):
                 c = get_to_Color[px][1]
                 tt = get_to_Color[px][0]
                 if task == 'BulkOptics':
                     Plot_Sorter(ax , XD[px]-height/4 ,YD[px], len(get_to_posX[px][1]), height, height/2, height,c)
                     Plot_Multi_Color_Line(ax,pathx_sort[px], YD[px]+height, 2*height, c, len(c)+1, height/3)
-                    Write_Label(ax, pathx_sort[px], YD[px]+3.2*height, tt,  fontsize )
+                    Write_Label(ax, pathx_sort[px], YD[px]+3.5*height, tt,  fontsize )
                 elif task == 'PathEncoding':
                     Plot_Detector(ax , XD[px] ,YD[px], len(get_to_posX[px][1]), height, height/3)
                     Write_Label(ax, XD[px], YD[px]+height, tt,  fontsize )
     except:
          pass        
-
     ax.axis('off')     
     ax.set_aspect(1 )
     experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
-    
     return experiment

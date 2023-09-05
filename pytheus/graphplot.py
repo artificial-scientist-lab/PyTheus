@@ -312,9 +312,9 @@ def Plot_Vline(ax , YMIN, YMAX, X , color ):
               ,zorder = 8 )   
 
 def Plot_Connection_Line(ax,X,Y):
-    t=np.linspace(0,1,1000)
+    t=np.linspace(0,1,20)
     ax.plot(X[0]+(3*t**2-2*t**3)*(X[1]-X[0]),Y[0]+t*(Y[1]-Y[0]),
-           color='k')    
+           color='k',zorder = 8)  
 
 def Plot_Detector(ax , X, Y, leng, step, radius ):
     pos = Pos_Element(X,step,leng)

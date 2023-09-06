@@ -2,24 +2,222 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.collections as collections
 import pytheus.theseus as th
-# import pytheus.analyzer as anal
 import matplotlib.patheffects as pe
-from pytheus.fancy_classes import Graph
-import json
-import os
+import json, os
 import pytheus.leiwand
+
 import pytheus
+from pytheus.fancy_classes import Graph
 from matplotlib.patches import Rectangle, Wedge, Circle
 import matplotlib
 matplotlib.rcParams['figure.dpi']=300
-import itertools
-import random
 from matplotlib.markers import MarkerStyle
 from collections import Counter
 from collections.abc import Iterable
 from ast import literal_eval
-import collections
-import string
+from collections import OrderedDict
+import itertools, random, string
+
+
+# # Graph plotting tools
+
+def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
+             show_val=False, fs=15, markersize=25):
+    colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
+    col1 = colors[int(edge[2])]
+    col2 = colors[int(edge[3])]
+
+    vert1 = np.array(verts[int(edge[0])])
+    vert2 = np.array(verts[int(edge[1])])
+    if not np.array_equal(vert1, vert2):
+        diff = vert1 - vert2
+        rect = [diff[1], -diff[0]]
+        rect /= np.linalg.norm(rect)
+        hp = (vert1 + vert2) / 2 + (2 * ind - mult + 1) * 0.05 * rect
+    else:
+        hp = vert1 * 1.2
+
+    if scale_max is None:
+        lw = max_thickness
+
+    else:
+        lw = np.max([abs(max_thickness * edge[4]) / scale_max, 0.5])
+
+    try:
+        transparency = 0.2 + abs(edge[4]) * 0.8
+        transparency = min(transparency, 1)
+    except IndexError:
+        transparency = 1
+    except TypeError:
+        transparency = 1
+
+    ax.plot([vert1[0], hp[0]], [vert1[1], hp[1]], color=col1, linewidth=lw, alpha=transparency)
+    ax.plot([hp[0], vert2[0]], [hp[1], vert2[1]], col2, linewidth=lw, alpha=transparency)
+#     if show_val:
+#         if transparency > 0.5 and col1 == "blue":
+#             font_col = 'white'
+#         else:
+#             font_col = 'black'
+#         latex_weight = '${}$'.format(anal.num_in_str(edge[4]))
+#         if latex_weight == '$$':
+#             latex_weight = str(edge[4])
+#         ax.text(np.mean([0.9 * vert1[0], hp[0]]), np.mean([0.9 * vert1[1], hp[1]]),
+#                 latex_weight,
+#                 bbox={'facecolor': col1, 'alpha': transparency, 'edgecolor': col2, 'pad': 1}, c=font_col,
+#                 ha='center', va='center', rotation=0, fontweight='heavy', fontsize=fs)
+    try:
+        if edge[4] < 0:
+            ax.plot(hp[0], hp[1], marker="d", markersize=markersize, markeredgewidth="3", markeredgecolor="black",
+                    color="white")
+    except:
+        pass
+
+
+def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
+              weight_product=False, ax_fig=(), add_title='',
+              show_value_for_each_edge=False, fontsize=30, zorder=11,
+              markersize=25, number_nodes=True, filename='',figsize=10):
+    '''
+    Introducing a list/tuple of edges or a dictionary {edge:weight}, 
+    this function plots the corresponding graph.
+    
+    Parameters
+    ----------
+    graph : list, tuple or dictionary
+        List/tuple of all colored edges: [(node1, node2, color1, color2), ...]
+        or dictionary with weights: {(node1, node2, color1, color2):weight1, ...}
+    
+    TODO 
+    '''
+    if type(graph) != dict:
+        graph = {edge:1 for edge in graph}
+        edge_list = list(graph.keys())
+        weight_list = list(graph.values())
+    edge_list = list(graph.keys())
+    weight_list = list(graph.values())
+        
+    edge_dict = th.edgeBleach(edge_list)
+
+    num_vertices = len(np.unique(np.array(edge_list)[:, :2]))
+
+    angles = np.linspace(0, 2 * np.pi * (num_vertices - 1) / num_vertices, num_vertices)
+
+    rad = 0.9
+    vertcoords = []
+    for angle in angles:
+        x = rad * np.cos(angle)
+        y = rad * np.sin(angle)
+        vertcoords.append(tuple([x, y]))
+
+    vertnums = list(range(num_vertices))
+    verts = dict(zip(vertnums, vertcoords))
+
+    if scaled_weights:
+        try: # I think this doesn't work anymore
+            scale_max = np.max(np.abs(np.array(edge_list)[:, 4]))
+        except:
+            scale_max = None
+    else:
+        scale_max = None
+
+    if len(ax_fig) == 0:
+        fig, ax = plt.subplots(figsize=(figsize,)*2)
+    else:
+        fig, ax = ax_fig
+
+    for uc_edge in edge_dict.keys():
+        mult = len(edge_dict[uc_edge])
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            drawEdge(uc_edge + coloring + tuple([graph[tuple(uc_edge + coloring)]]), verts, ii, mult, ax,
+                     scale_max=scale_max, max_thickness=max_thickness,
+                     show_val=show_value_for_each_edge, fs=0.8 * fontsize, markersize=markersize)
+
+    circ = []
+    if number_nodes:
+        node_labels = verts.keys()
+    else:
+        node_labels = list(map(chr, range(97, 123)))
+    for vert, coords in zip(node_labels, verts.values()):
+        circ.append(plt.Circle(coords, 0.1, alpha=0.5))
+        ax.text(coords[0], coords[1], str(vert), zorder=zorder,
+                ha='center', va='center', size=fontsize)
+
+    circ = collections.PatchCollection(circ, zorder=zorder - 1)
+    circ.set(facecolor='lightgrey', edgecolor='dimgray', linewidth=3)
+    ax.add_collection(circ)
+
+    ax.set_xlim([-1.1, 1.1])
+    ax.set_ylim([-1.1, 1.1])
+    ax.axis('off')
+    # if weight_product:
+    #     total_weight = np.product(weight_list)
+    #     wp = '${}$'.format(anal.num_in_str(total_weight))
+    #     if wp == '$$':
+    #         wp = str(total_weight)
+    #     ax.set_title(wp + str(add_title), fontsize=fontsize)
+    if add_title != '' and weight_product is False:
+        ax.set_title(str(add_title), fontsize=fontsize)
+
+    if show:
+        plt.show()
+        plt.pause(0.01)
+    else:
+        pass
+    if filename:
+        fig.savefig(filename + ".pdf")
+
+    return fig
+
+
+def leiwandPlot(graph, name='graph'):
+    data = []
+    edge_dict = th.edgeBleach(graph.edges)
+    for uc_edge in edge_dict.keys():
+        mult = len(edge_dict[uc_edge])
+        loop = (uc_edge[0] == uc_edge[1])
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            edge = tuple(uc_edge + coloring)
+            weight = graph[edge]
+            if loop:
+                loose = 10 + 5 * ii
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
+            else:
+                bend = -22.5 + (ii + 0.5) * 45 / mult
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
+    pytheus.leiwand.leiwand(data, name)
+
+
+def leiwandPlotBulk(graph, cnfg, root, name = 'graph'):
+    # if graph is imaginary, just take absolute value as weight for now
+    if graph.imaginary:
+        graph.absolute()
+    data = []
+    edge_dict = th.edgeBleach(graph.edges)
+    for uc_edge in edge_dict.keys():
+        mult = len(edge_dict[uc_edge])
+        loop = (uc_edge[0] == uc_edge[1])
+        for ii, coloring in enumerate(edge_dict[uc_edge]):
+            edge = tuple(uc_edge + coloring)
+            weight = graph[edge]
+            if loop:
+                loose = 10 + 5 * ii
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
+            else:
+                bend = -22.5 + (ii + 0.5) * 45 / mult
+                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
+    pytheus.leiwand.leiwandBulk(data, cnfg, root=root, name=name)
+
+
+def plotFromFile(filename, number_nodes=True, outfile=""):
+    if not os.path.exists(filename) or os.path.isdir(filename):
+        raise IOError(f'File does not exist: {filename}')
+    with open(filename) as input_file:
+        sol_dict = json.load(input_file)
+    # graph = Graph(sol_dict['graph'])
+    # graphPlot(graph.graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    graphPlot(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+
+# # Experiment plotting tools
 
 def transparency(W):
     try:
@@ -60,7 +258,6 @@ def convert_to_fancy_graph(graph):
         return graph
     else:
         raise ValueError("Input should be a list or dictionary or fancy graph")
-
 
 def calculate_b(nb, x):
     b = (np.array(range(nb))-0.5*(nb-1)) * x / (np.max(np.arange(1, nb+1))-0.5*(nb-1))
@@ -184,91 +381,6 @@ def Type_Photons(config_file_name, sol_file_name):
         in_nodes = []   
     return ancilla, single_emitters, in_nodes
 
-def graphPlot(graph, type_photons = None, DistanceOfVertices=0.1, filename='',\
-             show=True, max_thickness = 5, min_thickness = 2, thickness=10, font_size =12,
-              linewidth= 2, de = 5):
-    colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
-    graph = convert_to_fancy_graph(graph)
-    GraphEdge = [grouper(2,i)[0] for i in list(sorted(graph.edges))]
-    GEC = [grouper(2,i)[1] for i in list(sorted(graph.edges))]
-    GraphEdgeColor  =[encoded_label(ED,get_num_label(colors))for ED in GEC  ]
-    Num_Vertices = len(np.unique(list(itertools.chain(*GraphEdge))))
-    Graphweight = convert_bools_to_ints(graph.weights)
-    g = uniqueList(GraphEdge)
-    posv = PosOfVertices (Num_Vertices, DistanceOfVertices)
-    for n, eg in enumerate(g):
-        posxy = eg[0]
-        posxy= correct(posxy)
-        c = eg [1]
-        updated_posxy = tuple(posv[xy] for xy in posxy)
-        updated_color = [[GraphEdgeColor[cc],Graphweight[cc]]  for cc in c]
-        g[n] = [updated_posxy, updated_color]    
-    fig, ax = plt.subplots()
-    Plot_Vertices(ax, Num_Vertices, DistanceOfVertices,type_photons, font_size = font_size,\
-                  linewidth=linewidth)
-    max_length = max(g, key=lambda x: len(x[1]))
-    max_len = len(max_length[1])
-    for eg in g:
-        Plot_Edges(ax, eg[0][0], eg[0][1], eg[1], DistanceOfVertices, max_len = max_len,\
-                  max_thickness = max_thickness, min_thickness = min_thickness , thickness=thickness, de = de )  
-    ax.set_aspect(1 )
-    ax.axis('off') 
-
-    if show:
-        plt.show()
-        plt.pause(0.01)
-    else:
-        pass
-    if filename:
-        fig =fig.savefig(filename + ".pdf", bbox_inches='tight')
-    return fig
-  
-def leiwandPlot(graph, name='graph'):
-    data = []
-    edge_dict = th.edgeBleach(graph.edges)
-    for uc_edge in edge_dict.keys():
-        mult = len(edge_dict[uc_edge])
-        loop = (uc_edge[0] == uc_edge[1])
-        for ii, coloring in enumerate(edge_dict[uc_edge]):
-            edge = tuple(uc_edge + coloring)
-            weight = graph[edge]
-            if loop:
-                loose = 10 + 5 * ii
-                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
-            else:
-                bend = -22.5 + (ii + 0.5) * 45 / mult
-                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
-    pytheus.leiwand.leiwand(data, name)
-
-
-def leiwandPlotBulk(graph, cnfg, root, name = 'graph'):
-    # if graph is imaginary, just take absolute value as weight for now
-    if graph.imaginary:
-        graph.absolute()
-    data = []
-    edge_dict = th.edgeBleach(graph.edges)
-    for uc_edge in edge_dict.keys():
-        mult = len(edge_dict[uc_edge])
-        loop = (uc_edge[0] == uc_edge[1])
-        for ii, coloring in enumerate(edge_dict[uc_edge]):
-            edge = tuple(uc_edge + coloring)
-            weight = graph[edge]
-            if loop:
-                loose = 10 + 5 * ii
-                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], loose])
-            else:
-                bend = -22.5 + (ii + 0.5) * 45 / mult
-                data.append([weight, str(edge[0]), edge[2], str(edge[1]), edge[3], bend])
-    pytheus.leiwand.leiwandBulk(data, cnfg, root=root, name=name)
-
-def plotFromFile(config_file_name, sol_file_name , outfile=""):
-    sol_file = openfile(sol_file_name)
-    type_photons = Type_Photons(config_file_name, sol_file_name)
-    graph = sol_file['graph']
-    return graphPlot(graph , type_photons, filename = outfile)
-   
-##############################################################################################################################
-
 colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
 Paths = list(string.ascii_lowercase)
 
@@ -280,7 +392,7 @@ def Plot_BS(ax, X, Y, width, height, color):
     ax.plot([X+d0, X-d0],[Y+d0, Y+3*d0 ],zorder = 20 , color = color)
     ax.plot([X-d0, X+d0],[Y+d0, Y+3*d0 ],zorder = 20 , color = color)
     ax.vlines(X, ymin = Y, ymax =Y+4*d0, colors ='navy',zorder = 19  )
-     
+
 def Plot_PBS(ax, X, Y, width,height, color1, color2 ):
     ax.add_patch(Rectangle((X, Y), width, height,fc = 'thistle', \
                            ec = 'indigo', angle = 45, zorder =18) )
@@ -289,7 +401,7 @@ def Plot_PBS(ax, X, Y, width,height, color1, color2 ):
     ax.plot([X-d0, X],[Y+d0, Y+2*d0 ],zorder = 20 , color = color2)
     ax.plot([X, X-d0],[Y+2*d0, Y+3*d0 ],zorder = 20 , color = color2,linestyle =':')
     ax.vlines(X, ymin = Y, ymax =Y+4*d0, colors ='indigo',zorder = 19  )
-    
+
 def Plot_SPDC(ax, X, Y, width, height, color1, color2, W ):
     alpha = transparency(W)
     ax.add_patch(Rectangle((X, Y), width/2, height, fc = color1, ec = 'none',alpha= alpha))
@@ -300,13 +412,13 @@ def Plot_SPDC(ax, X, Y, width, height, color1, color2, W ):
     d1 = Y+height
     ax.vlines(X+d0, ymin = d1, ymax = d1+height, colors = color1)
     ax.vlines(X+width-d0, ymin = d1, ymax = d1+height, colors = color2) 
-    
+
 def Plot_Absorber(ax , X , Y,  width, height) :  
     ax.add_patch(Rectangle((X, Y), width, height,fc = 'k', ec = 'r',zorder=10, joinstyle= 'bevel', lw =2))
-    
+
 def Plot_Hline(ax , XMIN, XMAX, Y , color): 
     ax.hlines(Y, xmin=XMIN, xmax=XMAX, colors=color, zorder = 9)
-    
+
 def Plot_Vline(ax , YMIN, YMAX, X , color ): 
     ax.vlines(X, ymin=YMIN, ymax=YMAX, colors=color\
               ,zorder = 8 )   
@@ -342,7 +454,7 @@ def Plot_Crystal (ax, X, Y, color, width, height, W): #for path identity
             colors = color[y][x]
             ax.add_patch(Rectangle((posx, posy), width1, height1,\
                                    fc = colors, ec ='none', zorder=5, alpha =transparency(W[y])))
-            
+
 def Plot_Sorter(ax , X, Y, leng, step, width, height, color):
     pos = Pos_Element(X,step,leng)
     xmin = min(pos)
@@ -361,11 +473,10 @@ def Plot_Multi_Color_Line(ax, X, Y, height, color, leng, radius):
     loc = generate_N_grams (y, ngram = 2)
     for pp in range(len(loc)):
         Plot_Vline(ax , loc[pp][0],loc[pp][1], X, color[pp] ) 
-        
+
 def Write_Label(ax, X, Y, text, fontsize ):
    ax.text(X,Y, s= text, fontsize = fontsize)
-    
-######################################################################
+
 def get_num_label(labels):
     num_to_label = dict((num, label) for num, label in enumerate(labels))
     return num_to_label
@@ -435,7 +546,7 @@ def flatten(X):
         return [A for I in X for A in flatten(I)]
     else:
         return [X]
-    
+
 def LengDuplicate(lst):
     result = dict((i, lst.count(i)) for i in lst)
     x = result.values()
@@ -481,13 +592,13 @@ def Pos0fpath(lst, x):
         x2 = pos+x-d0
         Pospath.extend([x1, x2]) 
     return(Pospath)
-          
+
 def get_index_color(colors,lst_col):
     num_to_color = dict((num, color) for num, color in enumerate(colors))
     color_to_num = {color: num for num, color in num_to_color.items()}
     index_col = encoded_label(lst_col,color_to_num )
     return  index_col
-  
+
 def find_index_duplicate(lists, item):
     index = []
     for idx in range(len(lists)):
@@ -507,7 +618,6 @@ def union(lst):
     lst =  list(filter(None, lst))
     return (lst)
 
-  ################################################################################################################
 def layer0fcrystal (crystal_lst, Numphoton):
     res = th.findPerfectMatchings(crystal_lst)
     ll = int(Numphoton/2)
@@ -555,7 +665,7 @@ def Get_Color_Weight_Crystals(gea, Numphoton, gcw, Layers):
         for jj in range(len(wcspdc)):
             wcspdc[jj] =wc[wcspdc[jj]]
     return(cw_spdc)
-  
+
 def PlotPathIdentity(graph,  filename= "", width=0.1, figsize= (8, 8) , 
                        fontsize = 16 , colors = colors , Paths= Paths):
     
@@ -693,7 +803,7 @@ def PlotPathIdentity(graph,  filename= "", width=0.1, figsize= (8, 8) ,
                 cl[jj] = connect[cl[jj]]
 
         Connection_Line = dict(Connection_Line)
-        CL = dict(collections.OrderedDict(sorted(Connection_Line.items())))
+        CL = dict(OrderedDict(sorted(Connection_Line.items())))
 
         connectx =[generate_N_grams(lst, 2) for lst in list(CL.values())]
 
@@ -707,7 +817,8 @@ def PlotPathIdentity(graph,  filename= "", width=0.1, figsize= (8, 8) ,
         ax.axis('off') 
         experiment = fig.savefig(filename + ".pdf", bbox_inches='tight')   
     return experiment
-################################################################################################################   
+
+
 def PlotBulkOpticsPathEncoding(graph, task = 'PathEncoding'  , filename='', width =0.1\
                                , figsize =(16, 16) , fontsize= 16 , colors= colors , Paths=Paths):
     graph = convert_to_fancy_graph(graph)

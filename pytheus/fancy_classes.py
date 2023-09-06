@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
 import pytheus.theseus as th
-from pytheus.graphplot import graphPlot
+# from pytheus.graphplot import graphPlot
 from copy import deepcopy
 
 # +
@@ -641,15 +641,15 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         if update: 
             self.fullUpdate()
         
-        
-    def plot(self, scaled_weights=False, show=False, max_thickness=10,
-             weight_product=False, ax_fig=(), add_title='',show_value_for_each_edge=False, 
-             fontsize=30, zorder=11, markersize=25, number_nodes=True, filename='',figsize=10):
-        graphPlot(self.graph, scaled_weights=scaled_weights, show=show, 
-                 max_thickness=max_thickness, weight_product=weight_product, ax_fig=ax_fig,
-                 add_title=add_title, show_value_for_each_edge=show_value_for_each_edge, 
-                 fontsize=fontsize, zorder=zorder, markersize=markersize, 
-                 number_nodes=number_nodes, filename=filename, figsize=figsize)
+    # This leads to circular imports, the plotting tools may require changes    
+    # def plot(self, scaled_weights=False, show=False, max_thickness=10,
+    #          weight_product=False, ax_fig=(), add_title='',show_value_for_each_edge=False, 
+    #          fontsize=30, zorder=11, markersize=25, number_nodes=True, filename='',figsize=10):
+    #     graphPlot(self.graph, scaled_weights=scaled_weights, show=show, 
+    #              max_thickness=max_thickness, weight_product=weight_product, ax_fig=ax_fig,
+    #              add_title=add_title, show_value_for_each_edge=show_value_for_each_edge, 
+    #              fontsize=fontsize, zorder=zorder, markersize=markersize, 
+    #              number_nodes=number_nodes, filename=filename, figsize=figsize)
 
 
 # # The State class

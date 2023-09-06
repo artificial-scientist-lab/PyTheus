@@ -633,7 +633,7 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False
             raw_covers.add(subgraph)
 
     painted_covers = set()
-    for cover in sorted(raw_covers):
+    for cover in raw_covers:
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
             painted_covers.add(tuple(sorted(edge + color
                                             for edge, color in zip(cover, coloring))))

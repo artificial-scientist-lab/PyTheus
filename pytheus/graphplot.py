@@ -18,6 +18,8 @@ from ast import literal_eval
 from collections import OrderedDict
 import itertools, random, string
 
+colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
+Paths = list(string.ascii_lowercase)
 
 # # Graph plotting tools
 
@@ -73,7 +75,7 @@ def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
         pass
 
 
-def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
+def graphPlotOld(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig=(), add_title='',
               show_value_for_each_edge=False, fontsize=30, zorder=11,
               markersize=25, number_nodes=True, filename='',figsize=10):
@@ -215,7 +217,7 @@ def plotFromFile(filename, number_nodes=True, outfile=""):
         sol_dict = json.load(input_file)
     # graph = Graph(sol_dict['graph'])
     # graphPlot(graph.graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
-    graphPlot(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    graphPlotOld(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
 
 # # Experiment plotting tools
 
@@ -321,7 +323,7 @@ def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12
 def Plot_Edges(ax, V1, V2, colors, side_length, max_len, max_thickness = 5,\
                min_thickness = 2, thickness=10, de = 5 ):
     line_width = max(min(thickness/ max_len, max_thickness), min_thickness)
-    r =side_length/12
+    r =side_length/6#12
     if V1 == V2:
         w =colors[0][1]
         x = V1[0] + side_length / 10 if V1[0] > 0 else V1[0] - side_length / 10
@@ -380,9 +382,6 @@ def Type_Photons(config_file_name, sol_file_name):
     else:
         in_nodes = []   
     return ancilla, single_emitters, in_nodes
-
-colors = ['dodgerblue', 'firebrick', 'limegreen', 'darkorange', 'purple', 'yellow', 'cyan']
-Paths = list(string.ascii_lowercase)
 
 #plot path and optical elements
 def Plot_BS(ax, X, Y, width, height, color):
@@ -1092,3 +1091,52 @@ def PlotBulkOpticsPathEncoding(graph, task = 'PathEncoding'  , filename='', widt
     ax.set_aspect(1 )
     experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
     return experiment
+
+
+def graphPlot(graph, type_photons = None, DistanceOfVertices=0.1,filename='',
+               show=True,max_thickness = 5, min_thickness = 2, thickness=10, font_size =12,
+              linewidth= 2, de = 5, colors = colors,figsize=10):
+
+    graph = convert_to_fancy_graph(graph)
+    GraphEdge = [grouper(2,i)[0] for i in list(sorted(graph.edges))]
+    GEC = [grouper(2,i)[1] for i in list(sorted(graph.edges))]
+    GraphEdgeColor  =[encoded_label(ED,get_num_label(colors))for ED in GEC  ]
+    Num_Vertices = len(np.unique(list(itertools.chain(*GraphEdge))))
+    Graphweight = convert_bools_to_ints(graph.weights)
+    g = uniqueList(GraphEdge)
+    posv = PosOfVertices (Num_Vertices, DistanceOfVertices)
+    
+    
+    for n, eg in enumerate(g):
+        posxy = eg[0]
+        posxy= correct(posxy)
+        c = eg [1]
+        updated_posxy = tuple(posv[xy] for xy in posxy)
+        updated_color = [[GraphEdgeColor[cc],Graphweight[cc]]  for cc in c]
+        g[n] = [updated_posxy, updated_color]
+        
+    fig, ax = plt.subplots(figsize=(figsize,)*2)
+    
+    Plot_Vertices(ax, Num_Vertices, DistanceOfVertices,type_photons, font_size = font_size,\
+                  linewidth=linewidth)
+    max_length = max(g, key=lambda x: len(x[1]))
+    max_len = len(max_length[1])
+    for eg in g:
+        Plot_Edges(ax, eg[0][0], eg[0][1], eg[1], DistanceOfVertices, max_len = max_len,\
+                  max_thickness = max_thickness ,\
+               min_thickness = min_thickness , thickness=thickness, de = de )   
+    ax.set_aspect(1 )
+    ax.axis('off') 
+
+    if show:
+        plt.show()
+        plt.pause(0.01)
+    else:
+        pass
+    if filename:
+        fig =fig.savefig(filename + ".pdf", bbox_inches='tight')
+    return fig
+
+cols = ['#66c2a5', '#fc8d62', '#8da0cb']
+
+

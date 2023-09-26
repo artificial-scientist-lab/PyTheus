@@ -238,7 +238,7 @@ class GraphPlotter(Graph):
         y = [center_y - (3**0.5)*self.triangleside/6,
              center_y - (3**0.5)*self.triangleside/6,
              center_y + (2*(3**0.5)*self.triangleside)/6]
-        ax.fill(x, y, color = self.fillvertexcolor, zorder = 2)
+        ax.fill(x, y, color = self.fillvertexcolor, zorder = 3)
         ax.plot(x + [x[0]], y + [y[0]], linewidth = self.vlinewidth,
                      color = self.outvertexcolor, zorder = 3)       
         
@@ -370,7 +370,7 @@ class GraphPlotter(Graph):
                     if not self.showPM:
                         ax.text(vertex[0], vertex[1],
                                      str(i), ha ='center',
-                                     va ='center ', fontsize = self.fontsize, 
+                                     va ='center', fontsize = self.fontsize, 
                                      color = self.textcolor)
                     else:
                         pass

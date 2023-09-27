@@ -179,12 +179,12 @@ class GraphPlotter(Graph):
         self.sidelength = sidelength
         self.edgecolor = edgecolor
         self.figsize = figsize
-        self.numPM = (len(self.perfect_matchings))
         self.fig, self.ax = None, None
         self.rows = rows
         self.cols = cols
         self.showPM = showPM   
         if self.showPM:
+            self.numPM = (len(self.perfect_matchings))
             if  self.numPM > 1:
                 self.rows = round(np.sqrt(self.numPM))
                 self.cols = self.rows if self.rows**2 >= self.numPM else self.rows+1

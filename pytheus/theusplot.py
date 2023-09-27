@@ -383,7 +383,7 @@ class GraphPlotter(Graph):
                                              nrows = self.rows, ncols = self.cols )  
             self.plot_vertices(self.ax)
             self.plot_edges(self.ax, self.updated_edgeBleach, self.new_structure_weights )
-            self.ax.set_aspect(1 )
+            self.ax.set_aspect(1)
             self.ax.axis('off') 
         else:
             PM_counter = 0
@@ -410,15 +410,15 @@ class GraphPlotter(Graph):
                             self.plot_vertices(self.ax[row, col])
                             self.ax[row,col].set_xlim(xmin = -lmin, xmax = lmin)
                             self.ax[row,col].set_ylim(ymin = -lmin, ymax = lmin)
-                            self.plot_edges(self.ax[row,col], updated_PM[PM_counter],  weight[PM_counter])
-                           
+                            self.plot_edges(self.ax[row,col], updated_PM[PM_counter], weight[PM_counter])
+                            self.ax[row,col].set_aspect(1)
                             PM_counter += 1
                 for num in range(PM_counter, self.cols*self.rows):
                     self.fig.delaxes(self.ax.flatten()[num])
             else:
                 self.plot_vertices(self.ax)
                 self.plot_edges(self.ax,  updated_PM[0], weight[0])
-                self.ax.set_aspect(1 )
+                self.ax.set_aspect(1)
                 self.ax.axis('off') 
 
     def showgraph(self):
@@ -430,6 +430,7 @@ class GraphPlotter(Graph):
         self.showgraph()
         graph = self.fig.savefig(filename + ".pdf", bbox_inches='tight')
         return graph
+        
 class ExperimentPlotter(Graph):   
     def __init__(self,
                  edges, 
@@ -736,7 +737,7 @@ class ExperimentPlotter(Graph):
                 for ii in range(len(x)):
                     self.Plot_Vline(y[ii][0], y[ii][1], x[ii] ,'k')
                     
-                self.ax.set_aspect(1 )
+                self.ax.set_aspect(1)
                 self.ax.axis('off')
                 
     def BulkOpticsPathEncodingPlot(self):
@@ -1012,7 +1013,7 @@ class ExperimentPlotter(Graph):
                                       XtoD[px][0])
         else:
             pass 
-        self.ax.set_aspect(1 )
+        self.ax.set_aspect(1)
         self.ax.axis('off')
           
     def showexperiment(self):

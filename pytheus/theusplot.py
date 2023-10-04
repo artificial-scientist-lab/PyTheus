@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Wedge, Circle
+from matplotlib.patches import Rectangle, Wedge, Circle, Ellipse
 import matplotlib
 matplotlib.rcParams['figure.dpi']=300
 import  string, itertools

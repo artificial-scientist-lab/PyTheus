@@ -147,7 +147,7 @@ def get_index_color(colors, lst_col):
 ## The  graph plotting class
 class GraphPlotter(Graph):
     
-    """Graphplot class draws graphs that can be equivalent to a quantum optics experiment. """
+    """Graphplotter class draws graphs that can be equivalent to a quantum optics experiment. """
     
     def __init__(self,
                  edges, 
@@ -240,7 +240,27 @@ class GraphPlotter(Graph):
              center_y + (2*(3**0.5)*self.triangleside)/6]
         ax.fill(x, y, color = self.fillvertexcolor, zorder = 3)
         ax.plot(x + [x[0]], y + [y[0]], linewidth = self.vlinewidth,
-                     color = self.outvertexcolor, zorder = 3)       
+                     color = self.outvertexcolor, zorder = 3)
+        
+    def plot_environment (self, ax, center):
+        ax.add_patch(Circle(center,
+                            radius = 1.05*self.circleradius,
+                            facecolor = 'w',
+                            edgecolor = 'w',
+                            zorder = 3))
+        angle_step = 45  # degrees
+        angles = np.arange(0, 180, angle_step)
+        
+        for angle in angles:
+             ax.add_patch(Ellipse(center,
+                                  2.25*self.circleradius,
+                                  self.circleradius,
+                                  angle = angle,
+                                  alpha = 0.5,
+                                  ec = self.outvertexcolor,
+                                  fc =  self.fillvertexcolor,
+                                  linewidth = self.vlinewidth,
+                                  zorder = 3))
         
     def calculate_b(self, ne): #To get the diameter of the ellipse to draw the edge
         #ne : Number of edges in multiple edges (len(colors))
@@ -274,11 +294,11 @@ class GraphPlotter(Graph):
             x1 = x + self.sizediamond/2 if V1[0] > 0 else x - self.sizediamond/2
             y1 = y + self.sizediamond/2 if V1[1] > 0 else y - self.sizediamond/2
             ax.add_patch(Circle((x,y),
-                                     radius = self.sizediamond/2,
-                                     facecolor ='white',
-                                     edgecolor = edgecol[0][0],
-                                     linewidth = edgewidth,
-                                     alpha = transparency(w[0])))
+                                radius = self.sizediamond/2,
+                                facecolor ='white',
+                                edgecolor = edgecol[0][0],
+                                linewidth = edgewidth,
+                                alpha = transparency(w[0])))
             if w[0]< 0:
                  self.plot_diamond(ax, (x1, y1))
             else:
@@ -299,15 +319,15 @@ class GraphPlotter(Graph):
                 xj = h + a * np.cos(theta) * np.cos(t2) - b[ed] * np.sin(theta) * np.sin(t2)
                 yj = k + a * np.sin(theta) * np.cos(t2) + b[ed] * np.cos(theta) * np.sin(t2)
                 ax.plot(xi,
-                             yi,
-                             color = edgecol[ed][0],
-                             linewidth = edgewidth,
-                             alpha = transparency(w[ed]))
+                        yi,
+                        color = edgecol[ed][0],
+                        linewidth = edgewidth,
+                        alpha = transparency(w[ed]))
                 ax.plot(xj,
-                             yj,
-                             color = edgecol[ed][1],
-                             linewidth = edgewidth,
-                             alpha = transparency(w[ed]))
+                        yj,
+                        color = edgecol[ed][1],
+                        linewidth = edgewidth,
+                        alpha = transparency(w[ed]))
                 if w[ed] < 0:
                      self.plot_diamond(ax, (xi[-1], yi[-1]))
                 else:
@@ -325,11 +345,11 @@ class GraphPlotter(Graph):
             
             for i, vertex in enumerate(vertices):
                 ax.add_patch(Circle(vertex, 
-                                         radius = self.circleradius,
-                                         facecolor = self.fillvertexcolor,
-                                         edgecolor = self.outvertexcolor,
-                                         linewidth = self.vlinewidth,
-                                         zorder = 3))
+                                    radius = self.circleradius,
+                                    facecolor = self.fillvertexcolor,
+                                    edgecolor = self.outvertexcolor,
+                                    linewidth = self.vlinewidth,
+                                    zorder = 3))
                 if not self.showPM:
                     ax.text(vertex[0], vertex[1],
                                  str(i), ha ='center',
@@ -340,9 +360,9 @@ class GraphPlotter(Graph):
                 
         elif isinstance(self.detectortype, tuple) or isinstance(self.detectortype, list):
             
-            if len(self.detectortype) == 3:
-                ancilla, single_emitters, in_nodes = self.detectortype
-                
+            if len(self.detectortype) == 4:
+                ancilla, single_emitters, in_nodes, env = self.detectortype
+    
                 for i, vertex in enumerate(vertices):
                     if i in ancilla:
                         if i in single_emitters:
@@ -351,22 +371,25 @@ class GraphPlotter(Graph):
                             x = vertex[0] - self.circleradius
                             y = vertex[1] - self.circleradius
                             ax.add_patch(Rectangle((x, y), 
-                                                        self.squareside, 
-                                                        self.squareside,
-                                                        facecolor = self.fillvertexcolor, 
-                                                        edgecolor = self.outvertexcolor, 
-                                                        linewidth = self.vlinewidth,
-                                                        zorder = 3))                                       
+                                                    self.squareside, 
+                                                    self.squareside,
+                                                    facecolor = self.fillvertexcolor, 
+                                                    edgecolor = self.outvertexcolor, 
+                                                    linewidth = self.vlinewidth,
+                                                    zorder = 3))                                       
                     elif i in single_emitters or i in in_nodes:
                         self.plot_triangle(ax, vertex)
                         
+                    elif i in env:
+                        self.plot_environment(ax, vertex)
+                        
                     else:
                         ax.add_patch(Circle(vertex, 
-                                                 radius =  self.circleradius,
-                                                 facecolor = self.fillvertexcolor,
-                                                 edgecolor = self.outvertexcolor,
-                                                 linewidth = self.vlinewidth,
-                                                 zorder = 3))
+                                            radius =  self.circleradius,
+                                            facecolor = self.fillvertexcolor,
+                                            edgecolor = self.outvertexcolor,
+                                            linewidth = self.vlinewidth,
+                                            zorder = 3))
                     if not self.showPM:
                         ax.text(vertex[0], vertex[1],
                                      str(i), ha ='center',
@@ -380,16 +403,17 @@ class GraphPlotter(Graph):
     def graphPlot(self):
         if not self.showPM:
             self.fig, self.ax = plt.subplots(figsize=(self.figsize,)*2,
-                                             nrows = self.rows, ncols = self.cols )  
+                                             nrows = self.rows, ncols = self.cols)  
+            
+            self.plot_edges(self.ax, self.updated_edgeBleach, self.new_structure_weights)
             self.plot_vertices(self.ax)
-            self.plot_edges(self.ax, self.updated_edgeBleach, self.new_structure_weights )
-            self.ax.set_aspect(1)
+            self.ax.set_aspect(1 )
             self.ax.axis('off') 
         else:
             PM_counter = 0
             lmin = self.sidelength + self.sidelength/5
             self.fig, self.ax = plt.subplots(figsize=(self.figsize,)*2,
-                                             nrows = self.rows, ncols = self.cols ) 
+                                             nrows = self.rows, ncols = self.cols) 
             PM = self.perfect_matchings
             graph = self.graph 
             updated_PM = []
@@ -407,17 +431,17 @@ class GraphPlotter(Graph):
                         if  PM_counter < self.numPM:
                             self.ax[row, col].axis('off')
                             #self.ax[row, col].set_title(f"PM {PM_counter+ 1}", fontsize = self.fontsize)
-                            self.plot_vertices(self.ax[row, col])
+                            self.plot_vertices(self.ax[row,col])
+                            self.plot_edges(self.ax[row,col], updated_PM[PM_counter], weight[PM_counter])
                             self.ax[row,col].set_xlim(xmin = -lmin, xmax = lmin)
                             self.ax[row,col].set_ylim(ymin = -lmin, ymax = lmin)
-                            self.plot_edges(self.ax[row,col], updated_PM[PM_counter], weight[PM_counter])
                             self.ax[row,col].set_aspect(1)
                             PM_counter += 1
                 for num in range(PM_counter, self.cols*self.rows):
                     self.fig.delaxes(self.ax.flatten()[num])
             else:
                 self.plot_vertices(self.ax)
-                self.plot_edges(self.ax,  updated_PM[0], weight[0])
+                self.plot_edges(self.ax, updated_PM[0], weight[0])
                 self.ax.set_aspect(1)
                 self.ax.axis('off') 
 
@@ -429,9 +453,12 @@ class GraphPlotter(Graph):
     def savegraph(self, filename):
         self.showgraph()
         graph = self.fig.savefig(filename + ".pdf", bbox_inches='tight')
-        return graph
-        
+        return graph 
+
+##  The experiment plotting class 
 class ExperimentPlotter(Graph):   
+    """ExperimentPlotter can translate graphs to experiments based on three approaches:
+    path identity, bulk optics, and path encoding."""
     def __init__(self,
                  edges, 
                  dimensions = None,

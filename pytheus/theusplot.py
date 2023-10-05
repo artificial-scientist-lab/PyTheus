@@ -242,12 +242,7 @@ class GraphPlotter(Graph):
         ax.plot(x + [x[0]], y + [y[0]], linewidth = self.vlinewidth,
                      color = self.outvertexcolor, zorder = 3)
         
-    def plot_environment (self, ax, center):
-        ax.add_patch(Circle(center,
-                            radius = 1.05*self.circleradius,
-                            facecolor = 'w',
-                            edgecolor = 'w',
-                            zorder = 3))
+    def plot_environment (self, ax, center, color, alpha):
         angle_step = 45  # degrees
         angles = np.arange(0, 180, angle_step)
         
@@ -256,11 +251,12 @@ class GraphPlotter(Graph):
                                   2.25*self.circleradius,
                                   self.circleradius,
                                   angle = angle,
-                                  alpha = 0.5,
-                                  ec = self.outvertexcolor,
-                                  fc =  self.fillvertexcolor,
+                                  alpha = alpha,
+                                  ec = color[0],
+                                  fc = color[1],
                                   linewidth = self.vlinewidth,
                                   zorder = 3))
+ 
         
     def calculate_b(self, ne): #To get the diameter of the ellipse to draw the edge
         #ne : Number of edges in multiple edges (len(colors))
@@ -381,7 +377,8 @@ class GraphPlotter(Graph):
                         self.plot_triangle(ax, vertex)
                         
                     elif i in env:
-                        self.plot_environment(ax, vertex)
+                        self.plot_environment(ax, vertex, ('w','w'), 1)
+                        self.plot_environment(ax, vertex, (self.outvertexcolor, self.fillvertexcolor), 0.5)
                         
                     else:
                         ax.add_patch(Circle(vertex, 

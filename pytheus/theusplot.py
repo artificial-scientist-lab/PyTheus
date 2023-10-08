@@ -138,6 +138,7 @@ def find_index_duplicate(lists, item):
             if ele == item :
                 index.append(idx)
     return index
+    
 def get_index_color(colors, lst_col):
     num_to_color = dict((num, color) for num, color in enumerate(colors))
     color_to_num = {color: num for num, color in num_to_color.items()}
@@ -173,7 +174,8 @@ class GraphPlotter(Graph):
                  thickness = 10,
                  rows = 1,
                  cols = 1, 
-                 showPM = False):
+                 showPM = False,
+                 inherited = False):
         
         super().__init__(edges, dimensions, weights, imaginary, order, loops)
         self.sidelength = sidelength
@@ -182,7 +184,8 @@ class GraphPlotter(Graph):
         self.fig, self.ax = None, None
         self.rows = rows
         self.cols = cols
-        self.showPM = showPM   
+        self.showPM = showPM
+        self.inherited = inherited
         if self.showPM:
             self.numPM = (len(self.perfect_matchings))
             if  self.numPM > 1:
@@ -229,16 +232,24 @@ class GraphPlotter(Graph):
     def __repr__(self):
         return " "
     
-    def plot_triangle(self,ax, center):
+    def get_vertex_color(self, lst):
+        grouped_list = []
+        for inner_list in lst:
+            for num in range(0, 2):
+                 grouped_list.append([inner_list[num], inner_list[num+2]])
+        v, c = list(zip(*sorted( grouped_list)))
+        return encoded_label(c, self.edgecolor)
+    
+    def plot_triangle(self,ax, center, color):
         center_x = center[0]
         center_y = center[1]
         x = [center_x - self.triangleside/2,
-             center_x+ self.triangleside/2,
+             center_x + self.triangleside/2,
              center_x]
         y = [center_y - (3**0.5)*self.triangleside/6,
              center_y - (3**0.5)*self.triangleside/6,
              center_y + (2*(3**0.5)*self.triangleside)/6]
-        ax.fill(x, y, color = self.fillvertexcolor, zorder = 3)
+        ax.fill(x, y, color = color, zorder = 3)
         ax.plot(x + [x[0]], y + [y[0]], linewidth = self.vlinewidth,
                      color = self.outvertexcolor, zorder = 3)
         
@@ -253,10 +264,9 @@ class GraphPlotter(Graph):
                                   angle = angle,
                                   alpha = alpha,
                                   ec = color[0],
-                                  fc = color[1],
+                                  fc =  color[1],
                                   linewidth = self.vlinewidth,
-                                  zorder = 3))
- 
+                                  zorder =3))
         
     def calculate_b(self, ne): #To get the diameter of the ellipse to draw the edge
         #ne : Number of edges in multiple edges (len(colors))
@@ -335,14 +345,14 @@ class GraphPlotter(Graph):
         for ii, cce in enumerate(coordcoloredge):
             self.fun_plot_edges(ax, cce[0], cce[1], max_len, w[ii])
                 
-    def plot_vertices(self, ax):
+    def plot_vertices(self, ax, color):
         vertices = self.CoordOfVertices
         if self.detectortype is None:
             
             for i, vertex in enumerate(vertices):
                 ax.add_patch(Circle(vertex, 
                                     radius = self.circleradius,
-                                    facecolor = self.fillvertexcolor,
+                                    facecolor = color[i],
                                     edgecolor = self.outvertexcolor,
                                     linewidth = self.vlinewidth,
                                     zorder = 3))
@@ -358,7 +368,7 @@ class GraphPlotter(Graph):
             
             if len(self.detectortype) == 4:
                 ancilla, single_emitters, in_nodes, env = self.detectortype
-    
+                
                 for i, vertex in enumerate(vertices):
                     if i in ancilla:
                         if i in single_emitters:
@@ -369,21 +379,21 @@ class GraphPlotter(Graph):
                             ax.add_patch(Rectangle((x, y), 
                                                     self.squareside, 
                                                     self.squareside,
-                                                    facecolor = self.fillvertexcolor, 
+                                                    facecolor = color[i], 
                                                     edgecolor = self.outvertexcolor, 
                                                     linewidth = self.vlinewidth,
                                                     zorder = 3))                                       
                     elif i in single_emitters or i in in_nodes:
-                        self.plot_triangle(ax, vertex)
+                        self.plot_triangle(ax, vertex, color[i])
                         
                     elif i in env:
                         self.plot_environment(ax, vertex, ('w','w'), 1)
-                        self.plot_environment(ax, vertex, (self.outvertexcolor, self.fillvertexcolor), 0.5)
+                        self.plot_environment(ax, vertex, (self.outvertexcolor, color[i]), 0.5)
                         
                     else:
                         ax.add_patch(Circle(vertex, 
                                             radius =  self.circleradius,
-                                            facecolor = self.fillvertexcolor,
+                                            facecolor = color[i],
                                             edgecolor = self.outvertexcolor,
                                             linewidth = self.vlinewidth,
                                             zorder = 3))
@@ -395,15 +405,15 @@ class GraphPlotter(Graph):
                     else:
                         pass
             else:
-                raise ValueError(invalidInput('detectortype'))           
-             
+                raise ValueError(invalidInput('detectortype'))  
+        
     def graphPlot(self):
         if not self.showPM:
             self.fig, self.ax = plt.subplots(figsize=(self.figsize,)*2,
                                              nrows = self.rows, ncols = self.cols)  
             
             self.plot_edges(self.ax, self.updated_edgeBleach, self.new_structure_weights)
-            self.plot_vertices(self.ax)
+            self.plot_vertices(self.ax, [self.fillvertexcolor]*self.num_nodes)
             self.ax.set_aspect(1 )
             self.ax.axis('off') 
         else:
@@ -428,7 +438,10 @@ class GraphPlotter(Graph):
                         if  PM_counter < self.numPM:
                             self.ax[row, col].axis('off')
                             #self.ax[row, col].set_title(f"PM {PM_counter+ 1}", fontsize = self.fontsize)
-                            self.plot_vertices(self.ax[row,col])
+                            if self.inherited:
+                                self.plot_vertices(self.ax[row, col], self.get_vertex_color(PM[PM_counter]))
+                            else:
+                                self.plot_vertices(self.ax[row, col], [self.fillvertexcolor]*self.num_nodes)
                             self.plot_edges(self.ax[row,col], updated_PM[PM_counter], weight[PM_counter])
                             self.ax[row,col].set_xlim(xmin = -lmin, xmax = lmin)
                             self.ax[row,col].set_ylim(ymin = -lmin, ymax = lmin)
@@ -437,7 +450,10 @@ class GraphPlotter(Graph):
                 for num in range(PM_counter, self.cols*self.rows):
                     self.fig.delaxes(self.ax.flatten()[num])
             else:
-                self.plot_vertices(self.ax)
+                if self.inherited:
+                    self.plot_vertices(self.ax, self.get_vertex_color(PM[0]))
+                else:
+                    self.plot_vertices(self.ax, [self.fillvertexcolor]*self.num_nodes)
                 self.plot_edges(self.ax, updated_PM[0], weight[0])
                 self.ax.set_aspect(1)
                 self.ax.axis('off') 
@@ -450,7 +466,7 @@ class GraphPlotter(Graph):
     def savegraph(self, filename):
         self.showgraph()
         graph = self.fig.savefig(filename + ".pdf", bbox_inches='tight')
-        return graph 
+        return graph   
 
 ##  The experiment plotting class 
 class ExperimentPlotter(Graph):   

@@ -118,6 +118,7 @@ def flatten(X):
         return [A for I in X for A in flatten(I)]
     else:
         return [X]
+        
 def grouper(n, iterable):
     args = [iter(iterable)] * n
     return list(zip(*args))
@@ -372,7 +373,7 @@ class GraphPlotter(Graph):
                 for i, vertex in enumerate(vertices):
                     if i in ancilla:
                         if i in single_emitters:
-                            self.plot_triangle(vertex)
+                            self.plot_triangle(ax, vertex, color[i])
                         else:
                             x = vertex[0] - self.circleradius
                             y = vertex[1] - self.circleradius

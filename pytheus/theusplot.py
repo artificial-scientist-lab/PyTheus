@@ -176,6 +176,7 @@ class GraphPlotter(Graph):
         self.fig, self.ax = None, None
         self.__dict__.update(kwargs)
         self.vlinewidth  = self.__dict__.get('vlinewidth', 1)
+        self.sidelength = self.__dict__.get('sidelength', 0.1)
         self.fillvertexcolor = self.__dict__.get('fillvertexcolor', 'white')
         self.outvertexcolor = self.__dict__.get('outvertexcolor', 'black')
         self.rv = self.__dict__.get('rv', 0.1) # To determine the radius of the vertex
@@ -206,7 +207,6 @@ class GraphPlotter(Graph):
     @property    
     def coordofvertices (self):
         coordinate = []
-        self.sidelength = self.__dict__.get('sidelength', 0.1)
         for nv in range(self.num_nodes):
             angle = 2 * nv * np.pi / self.num_nodes
             x = self.sidelength * np.cos(angle)

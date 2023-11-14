@@ -46,6 +46,7 @@ def run_main(filename, example, run_opt=True, state_cat=True):
     cnfg, filename = read_config(example, filename)
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logging.info(filename)
+    logging.info('test')
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 
@@ -81,7 +82,7 @@ def run_main(filename, example, run_opt=True, state_cat=True):
     if run_opt:
         optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state)
     else:
-        return cnfg
+        return cnfg, target_state
 
 
 def optimize_graph(cnfg, dimensions, filename, start_graph, sys_dict, target_state):
@@ -291,6 +292,14 @@ def setup_for_target(cnfg, state_cat=True):
     try:
         if cnfg["heralding_out"]:
             print("heralding_out = True. out_nodes are not detected. ancillary detectors herald the outgoing state")
+            try:
+                if cnfg["novac"] == True:
+                    print("novac = True. we assume the correct number of photons is leaving the setup")
+                else:
+                    print("novac = False. we assume that the number of photons leaving the setup is not fixed")
+            except KeyError:
+                print("novac not given, that the number of photons leaving the setup is not fixed")
+                cnfg["novac"] = False
         else:
             print("heralding_out = False. out_nodes are detected. outgoing state is post-selected.")
     except KeyError:
@@ -344,7 +353,7 @@ def setup_for_target(cnfg, state_cat=True):
     edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg["imaginary"])
     cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
     cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
-                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
+                            ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
     # introduce topological constraints
     # start with explicitly removed connections
     removed_connections = cnfg["removed_connections"]

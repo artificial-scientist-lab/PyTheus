@@ -26,6 +26,7 @@
     3
   ],
   "heralding_out": true,
+  "number_resolving": true,
   "thresholds": [
     0.5,
     0.1

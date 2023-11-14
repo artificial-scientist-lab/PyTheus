@@ -5,7 +5,7 @@
   "foldername": "heralded_bell_2d_sp",
   "ftol": 1e-09,
   "loss_func": "cr",
-  "num_anc": 2,
+  "num_anc": 3,
   "num_pre": 1,
   "optimizer": "L-BFGS-B",
   "safe_hist": true,
@@ -22,7 +22,8 @@
     2,
     3,
     4,
-    5
+    5,
+    6
   ],
   "heralding_out": true,
   "number_resolving": false,

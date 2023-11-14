@@ -94,12 +94,15 @@ def brutal_covers(cnfg, graph):
                     keep = False
 
         # # if in maximum order, we select for events where the correct total number of photons go into output paths
-        # if len(cover) == max_edges:
-        #     sum = 0
-        #     for vert in cnfg["out_nodes"]:
-        #         sum += counter[vert]
-        #     if sum != len(cnfg["out_nodes"]):
-        #         keep = False
+        if cnfg['novac']:
+            if len(cover) == max_edges:
+                sum = 0
+                for vert in cnfg["out_nodes"]:
+                    sum += counter[vert]
+                if sum != len(cnfg["out_nodes"]):
+                    keep = False
+            else:
+                keep = False
 
         # if all conditions are met, use edgecover for norm
         if keep:
@@ -109,7 +112,11 @@ def brutal_covers(cnfg, graph):
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
             color_cover = [edge + color for edge, color in zip(cover, coloring)]
             painted_covers.append(sorted(color_cover))
-    return [[tuple(ed) for ed in graph] for graph in np.unique(painted_covers, axis=0)]
+    final_list = []
+    for order in orders:
+        painted_covers_order = [graph for graph in painted_covers if len(graph) == order]
+        final_list += [tuple([tuple(ed) for ed in gg]) for gg in np.unique(painted_covers_order, axis=0)]
+    return final_list
 
 
 def heralded_covers(cnfg, graph):
@@ -134,8 +141,9 @@ def heralded_covers(cnfg, graph):
     edgecovers = []
     for cover in tmp_edgecovers:
         keep = True
-        counter = Counter(list(itertools.chain(*th.edgeBleach(cover).keys())))
-
+        bleached_cover = [e[:2] for e in cover]
+        concat_cover = list(itertools.chain(*bleached_cover))
+        counter = Counter(concat_cover)
         # check inputs and single emitters
         for vert in cnfg["in_nodes"] + cnfg["single_emitters"]:
             # if any are covered more than once, don't keep edge cover
@@ -152,12 +160,13 @@ def heralded_covers(cnfg, graph):
                     keep = False
 
         # if in maximum order, we select for events where the correct total number of photons go into output paths
-        if len(cover) == max_edges:
-            sum = 0
-            for vert in cnfg["out_nodes"]:
-                sum += counter[vert]
-            if sum != len(cnfg["out_nodes"]):
-                keep = False
+        if cnfg['novac']:
+            if len(cover) == max_edges:
+                sum = 0
+                for vert in cnfg["out_nodes"]:
+                    sum += counter[vert]
+                if sum != len(cnfg["out_nodes"]):
+                    keep = False
 
         # if all conditions are met, use edgecover for norm
         if keep:

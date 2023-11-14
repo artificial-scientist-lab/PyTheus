@@ -27,6 +27,8 @@
     3
   ],
   "heralding_out": true,
+  "number_resolving": true,
+  "novac": true,
   "single_emitters": [
     4,
     5,

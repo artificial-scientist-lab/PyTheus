@@ -27,7 +27,8 @@
     3
   ],
   "heralding_out": true,
-  "novac": true,
+  "number_resolving": true,
+  "novac": false,
   "thresholds": [
     0.2,
     0.1

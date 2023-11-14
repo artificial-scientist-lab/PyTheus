@@ -28,6 +28,7 @@
   ],
   "heralding_out": true,
   "brutal_covers": true,
+  "number_resolving": true,
   "single_emitters": [
     4,
     5

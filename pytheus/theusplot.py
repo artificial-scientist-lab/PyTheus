@@ -1040,4 +1040,289 @@ class ExperimentPlotter(Graph):
         self.showexperiment()
         experiment = self.fig.savefig(filename + ".pdf", bbox_inches='tight')
         return experiment  
- 
+
+#Automated design for plotting experimental scheme for producing a symmetric Dicke state
+#https://journals.aps.org/pra/abstract/10.1103/PhysRevA.99.032338
+
+def plot_symmetric_Dicke_state (n,
+                                r = 0.5,
+                                fiber_color  = '#F0DE36',
+                                bs_color = '#75C2F6',
+                                nl_color = '#1D5D9B',
+                                pbs_color = '#F8BDEB',
+                                figsize= 8,
+                                center = (0, 0),
+                                lbs = 0.08, 
+                                legend = False,
+                                filename =''):
+    
+    fig, ax = plt.subplots(figsize=(figsize,)*2)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    
+    def pbs(ax, x, y, x0 , fc=pbs_color, width = r/6, ll ='k'):
+    
+        pbs_rect = Rectangle((x, y), width, width, fc=fc, ec='k')
+        corners = pbs_rect.get_corners()
+        center = pbs_rect.get_center()
+
+        ax.add_patch(pbs_rect)
+        ax.plot([corners[1][0], corners[3][0]], [corners[1][1], corners[3][1]], color='k', alpha = 0.5)
+
+        x_d = center[0] + x0 if center[0] > 0 else center[0] - x0
+        y_d = center[1] + x0 if center[1] > 0 else center[1] - x0
+        
+        theta0 = (-90, 90) if center[0] > 0 else (90, -90)
+        theta1 = (0, 180) if center[1] > 0 else (180, 0)
+        
+        x_max_line = x_d + 0.6*width if  x_d > 0 else x_d-0.6*width
+        y_max_line = y_d + 0.6*width if  y_d > 0 else y_d-0.6*width
+        
+
+        ax.hlines(center[1], xmin=center[0], xmax=x_max_line, colors = ll)
+        ax.vlines(center[0], ymin=center[1], ymax=y_max_line, colors = ll)
+        ax.add_patch(Wedge(( center[0], y_d ), width/3, theta1[0], theta1[1],fc = '#F1F7B5', ec = 'k', zorder = 2))
+        ax.add_patch(Wedge((x_d, center[1] ), width/3, theta0[0], theta0[1], fc = '#F1F7B5', ec = 'k', zorder = 2))
+        
+          
+    def write_text(ax, x, y, text, fontsize = 9, color ='k', rotation = 0): # for labelling
+        ax.text(x,
+                y,
+                s = text,
+                fontsize = fontsize, 
+                color = color,
+                ha ='center',
+                va ='center',
+                math_fontfamily='dejavuserif', 
+                rotation = rotation)
+        
+    def plot_hwp_qwp(ax, x, y , width = r/8, line = 'h'):
+        if line =='h':
+            ax.add_patch(Rectangle((x, y ), width, width/5, fc = '#00DFA2',  ec = '#00DFA2', zorder = 2))
+            y1 = y+2*width/5 if y>0 else y-2*width/5
+            ax.add_patch(Rectangle((x, y1) , width, width/5, fc =  '#FF0060',  ec =  '#FF0060', zorder = 2))
+        elif line =='v':
+            ax.add_patch(Rectangle((x, y ), width/5, width, fc = '#00DFA2',  ec = '#00DFA2', zorder = 2))
+            x1 = x+2*width/5 if x>0 else x-2*width/5
+            ax.add_patch(Rectangle((x1, y) , width/5, width, fc =  '#FF0060',  ec =  '#FF0060', zorder = 2))
+            
+    def plot_fiber_line(ax, x, y, color = fiber_color, lw = 3):
+        t = np.linspace(0,1,1000)
+        ax.plot(x[0]+(t)*(x[1]-x[0]),
+                     y[0]+t*(y[1]-y[0]), color = color, lw = lw )
+        
+    def plot_bs(ax, x, y, width, height, color):
+
+        ax.add_patch(Rectangle((x, y), width/2, height, fc = color, ec = color, zorder = 3 ))
+        d0 = height/10
+        ax.hlines(y+d0, xmin = x, xmax = x-height, colors = 'k')
+        ax.hlines(y+ height-d0, xmin = x, xmax = x-height, colors = 'k')
+        
+    if legend:
+        l = 0.5
+        text = ['Beam Splitter', 'Fiber',  'PBS' , 'Pump', 'Nonlinear\n Crystal', 'Detector', 'HWP & QWP' ]
+        y_text = [0, 0.5*l, 1*l, 1.6*l, 2.6*l, 3.75*l, 4.4*l]
+        
+        for tt in range(len(text)):
+            ax.text(1.1*l, y_text[tt], s= text[tt], fontsize = 24)
+            
+        ax.add_patch(Rectangle((0, 0), l ,l/4, fc = bs_color, ec = bs_color, zorder = 3 ))
+        plot_fiber_line(ax, (0.1,0.4), (0.6*l, 0.6*l), color = fiber_color, lw =10)
+       
+        pbs_rect = Rectangle((0.12, 0.8*l), l/2, l/2, fc=pbs_color, ec='k')
+        corners = pbs_rect.get_corners()
+        center = pbs_rect.get_center()
+
+        ax.add_patch(pbs_rect)
+        ax.plot([corners[1][0], corners[3][0]], [corners[1][1], corners[3][1]], color='k', alpha = 0.5)
+        
+        ax.add_patch(Rectangle((0, 1.6*l), l ,l/3, fc = 'k', ec = 'k', zorder = 3 ))
+        ax.add_patch(Rectangle((0.15, 2.3*l), l/3 ,l, fc = nl_color, ec = 'k', zorder = 3 ))
+        
+        
+        ax.add_patch(Wedge(( 0.25, 3.8*l ), l/3, 90, -90 , fc = '#F1F7B5', ec = 'k', zorder = 3))
+        ax.hlines(3.8*l, xmin = -0.1, xmax = 0.15, colors = 'k')
+        
+        ax.add_patch(Rectangle((-0.2, -0.1), 3.8*l ,5.2*l, fc = 'none', ec = 'k', zorder = 3 , linestyle ="--", lw =4))
+        plot_hwp_qwp(ax, 0, 4.4*l , width = l/2, line = 'h')  
+        
+    else:
+        
+        
+        if n <= 0:
+            raise ValueError(f"introduce valid number.")    
+
+        elif n % 2 == 0:
+            m = int(n/2)
+
+        else :
+            raise ValueError(f"n must be an even number, but got {n}.")
+
+        if n<12:
+
+            for i in range(m + 1):
+                angle = 2 * np.pi * i / (m + 1)
+                end_point = np.array([r * np.cos(angle), r * np.sin(angle)])
+                out_fiber = np.array([r / 2 * np.cos(angle), r / 2 * np.sin(angle)])
+
+                # Plot fiber-coupler
+                if i == 0:
+                    ax.plot([center[0], end_point[0]], [center[1], end_point[1]], color=fiber_color, lw=3)
+                else:
+                    ax.plot([center[0], end_point[0]], [center[1], end_point[1]], color='k', lw=2)
+
+                if i > 0:
+                    ax.plot([center[0], out_fiber[0]], [center[1], out_fiber[1]], color=fiber_color, lw=3)
+
+                #plot BS
+                bslength = lbs*r
+
+                if angle in [0, np.pi/2]:
+                            angle -= np.pi/10
+                elif angle in [np.pi, 3*np.pi/2]:
+                            angle += np.pi/10
+                else:
+                     pass
+
+
+                bs_vector = np.array([-np.sin(angle), np.cos(angle)])
+
+                bs_end_points = [end_point + bslength * bs_vector,
+                                 end_point - bslength * bs_vector]
+                if i > 0:  
+
+                    if end_point[1]> 0:
+                        pbs(ax, end_point[0]-r/12, end_point[1]+r/3, x0 = r/4)
+                        ax.vlines(end_point[0], ymin = end_point[1], ymax = end_point[1]+5*r/12, colors = 'k')
+                        plot_hwp_qwp(ax, end_point[0]-r/16,  end_point[1]+r/6 , width = r/8)
+
+                    else:
+                        pbs(ax, end_point[0]-r/12, end_point[1]-r/2, x0 = r/4)
+                        ax.vlines(end_point[0], ymin = end_point[1], ymax = end_point[1]-5*r/12, colors = 'k')
+                        plot_hwp_qwp(ax, end_point[0]-r/16,  end_point[1]-r/6 , width = r/8)
+
+
+                    if end_point[0]> 0:
+                        pbs(ax, end_point[0]+r/3, end_point[1]-r/12, x0 = r/4)
+                        ax.hlines(end_point[1], xmin = end_point[0], xmax = end_point[0]+5*r/12, colors = 'k')
+                        plot_hwp_qwp (ax, end_point[0]+r/6,  end_point[1]-r/16 , width = r/8, line = "v")
+
+                    else:
+                        pbs(ax, end_point[0]-r/2, end_point[1]-r/12, x0 = r/4)
+                        ax.hlines(end_point[1], xmin = end_point[0], xmax = end_point[0]-5*r/12, colors = 'k')
+                        plot_hwp_qwp(ax, end_point[0]-r/6,  end_point[1]-r/16 , width = r/8, line = "v")
+
+                    for point in bs_end_points:
+                            ax.plot([end_point[0], point[0]],
+                                    [end_point[1], point[1]],
+                                    color = bs_color,
+                                    lw = 6,
+                                    zorder =2)
+                            #write_text(ax, end_point[0], end_point[1], f"BS$_{i}$", fontsize = 8, rotation = angle)
+
+                else :
+                    ax.hlines(end_point[1],
+                              xmin = end_point[0],
+                              xmax = end_point[0]+r/4,
+                              colors = 'k',
+                              lw =2, 
+                              zorder = 1)
+                    ax.add_patch(Rectangle((end_point[0]+r/4, end_point[1]-r/8),
+                                            r/12,
+                                            r/4,
+                                            fc = nl_color,
+                                            ec = 'k',
+                                            zorder = 2))
+                    #write_text(ax, end_point[0]+r/3.48, end_point[1]+r/6, r"NL")
+                    ax.hlines(end_point[1],
+                              xmin =  end_point[0] + r/4,
+                              xmax = end_point[0] + 0.6*r,
+                              colors = '#FF7676',
+                              lw =2, 
+                              zorder = 1)
+
+                    ax.add_patch(Rectangle(( end_point[0] + 0.6*r, end_point[1]-r/24),
+                                            r/4,
+                                            r/12,
+                                            fc = 'k',
+                                            ec = 'k',
+                                            zorder = 2))
+                    #write_text(ax, end_point[0]+0.72*r, end_point[1]+r/10, r"Pump")
+
+                    ax.add_patch(Rectangle(( center[0], center[1]-r/40),
+                                            r/3,
+                                            r/20,
+                                            fc = '#967E76',
+                                            ec = '#967E76',
+                                            zorder = 2))
+                    ax.annotate(f"1-to-{m} fiber coupler",
+                                xy=(center[0]+r/10,center[0]-r/20),
+                                xytext=(center[0]+r/3, center[1]-r/3),
+                                arrowprops=dict(arrowstyle="->"), fontsize =10)
+        else:
+
+            ax.add_patch(Rectangle(center,
+                                    r/4,
+                                    r/12,
+                                    fc = 'k',
+                                    ec = 'k',
+                                    zorder = 2))
+            ax.hlines(center[1]+r/24,
+                      xmin =  center[0] + r/4,
+                      xmax = center[0]-0.6*r,
+                      colors = '#FF7676',
+                      lw =2,
+                      zorder = 1)
+            ax.add_patch(Rectangle(( center[0]-1.1*r, center[1]+r/60),
+                                            r/5,
+                                            r/20,
+                                            fc = '#967E76',
+                                            ec = '#967E76',
+                                            zorder = 2))
+
+            ax.add_patch(Rectangle(( center[0]-0.6*r, center[1]-r/12),
+                                            r/12,
+                                            r/4,
+                                            fc = nl_color,
+                                            ec = 'k',
+                                            zorder = 2))
+            ax.hlines(center[1]+r/24,
+                      xmin =  center[0]-0.6*r,
+                      xmax = center[0]-1.1*r,
+                      colors = 'k',
+                      lw =2,
+                      zorder = 1)
+
+            ax.hlines(center[1]+r/24,
+                      xmin =  center[0]-0.75*r,
+                      xmax = center[0]-1.1*r,
+                      colors = fiber_color,
+                      lw =3,
+                      zorder = 1)
+
+            ax.annotate(f"1-to-{m} fiber coupler",
+                                xy=(center[0]-1*r,center[1]),
+                                xytext=(center[0]-0.9*r, center[1]-r/3),
+                                arrowprops=dict(arrowstyle="->"), fontsize =10)
+            y_fiber1 =(np.array(range(m))-0.5*(m-1)) *0.5 /(np.max(np.arange(1, m+1))-0.5*(m-1))
+            y_fiber0 = np.full(m, center[1]+r/24) 
+            x_fiber0  = np.full(m, center[0]-1.1*r) 
+            x_fiber1 = np.full(m, center[0]-1.4*r) 
+
+            for i in range(m):
+                plot_fiber_line(ax, ( x_fiber0[i], x_fiber1[i]), (y_fiber0[i], y_fiber1[i]))
+                plot_fiber_line(ax, ( x_fiber1[i], x_fiber1[i]-0.2*r), (y_fiber1[i], y_fiber1[i]), lw = 2, color = 'k')
+                plot_bs(ax, x_fiber1[i]-0.2*r- r/36, y_fiber1[i]-r/20, r/18, r/10, bs_color)
+
+            min_pbs_rect = min(y_fiber1)-r/15
+            max_pbs_rect = max(y_fiber1)+r/15
+            h = max_pbs_rect - min_pbs_rect
+            w = h/4
+            pbs_rect = Rectangle((x_fiber1[i]-0.2*r- r/36-w-r/10, min_pbs_rect),w, h, fc = pbs_color, ec = 'k',zorder = 2)
+            pbs_center = pbs_rect.get_center()
+            ax.add_patch(pbs_rect)
+            write_text(ax, pbs_center[0], pbs_center[1], f'{n}-fold', fontsize = 10, color ='k', rotation = 0)
+            
+    experiment = fig.savefig(filename + ".pdf", bbox_inches='tight') 
+    
+    return experiment

@@ -75,7 +75,7 @@ def drawEdge(edge, verts, ind, mult, ax, scale_max=None, max_thickness=10,
         pass
 
 
-def graphPlotOld(graph, scaled_weights=False, show=True, max_thickness=10,
+def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
               weight_product=False, ax_fig=(), add_title='',
               show_value_for_each_edge=False, fontsize=30, zorder=11,
               markersize=25, number_nodes=True, filename='',figsize=10):
@@ -1093,7 +1093,7 @@ def PlotBulkOpticsPathEncoding(graph, task = 'PathEncoding'  , filename='', widt
     return experiment
 
 
-def graphPlot(graph, type_photons = None, DistanceOfVertices=0.1,filename='',
+def graphPlotNew(graph, type_photons = None, DistanceOfVertices=0.1,filename='',
                show=True,max_thickness = 5, min_thickness = 2, thickness=10, font_size =12,
               linewidth= 2, de = 5, colors = colors,figsize=10):
 

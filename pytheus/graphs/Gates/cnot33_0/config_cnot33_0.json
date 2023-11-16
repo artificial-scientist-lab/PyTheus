@@ -30,6 +30,6 @@
   "heralding_out": true,
   "tries_per_edge": 10,
   "unicolor": false,
-  "number_resolving": true,
+  "number_resolving": false,
   "novac": true
 }

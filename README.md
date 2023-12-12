@@ -1,8 +1,9 @@
 # PyTheus
 **PyTheus, a highly-efficient discovery framework for quantum optics experiments**
 
-[**Digital Discovery of 100 diverse Quantum Experiments with PyTheus**](https://arxiv.org/abs/2210.09980) \
-*Carlos Ruiz-Gonzalez, Sören Arlt, Jan Petermann, Sharareh Sayyad, Tareq Jaouni, Ebrahim Karimi, Nora Tischler, Xuemei Gu, Mario Krenn*
+[**Digital Discovery of 100 diverse Quantum Experiments with PyTheus**](https://quantum-journal.org/papers/q-2023-12-12-1204/) \
+*Carlos Ruiz-Gonzalez, Sören Arlt, Jan Petermann, Sharareh Sayyad, Tareq Jaouni, Ebrahim Karimi, Nora Tischler, Xuemei Gu, Mario Krenn* \
+Quantum **7**, 1204 (2023).
 
 [**Digital Discovery of a Scientific Concept at the Core of Experimental Quantum Optics**](https://arxiv.org/abs/2210.09981) \
 *Sören Arlt, Carlos Ruiz-Gonzalez, Mario Krenn*

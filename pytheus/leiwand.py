@@ -188,10 +188,9 @@ def leiwand(data, name='graph'):
     print("created {}.pdf".format(output))
 
 
-def leiwandBulk(data, cnfg, name='graph', root=""):
+def leiwandBulk(data, cnfg, name='graph', root="", layout='polygon'):
     #go into directory where graph should be saved
     os.chdir(os.path.join(os.getcwd(), root))
-    poly = {}
     output = name
     numcolors = 7
     # defining shapes for different kinds of vertices
@@ -272,14 +271,23 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
             # sort vertices alphabetically
             vertices = list(sorted(vertices))
 
-        if len(poly) < len(vertices):
-            # poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
-            angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
-            poly = [tuple([variables["radius"] * np.cos(theta - variables["angle"]),
-                           variables["radius"] * np.sin(theta - variables["angle"])]) for theta in angles]
+
+        if layout == 'polygon': #default original behaviour
+                poly = {}
+                if len(poly) < len(vertices):
+                    # poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
+                    angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
+                    poly = [tuple([variables["radius"] * np.cos(theta - variables["angle"]),
+                                   variables["radius"] * np.sin(theta - variables["angle"])]) for theta in angles]
+                else:
+                    # sort alphabetically
+                    poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
+        elif np.shape(np.array(layout)) == (len(vertices), 2): #layout is a list of coordinates
+            poly = layout
+
         else:
-            # sort alphabetically
-            poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
+            raise Exception("layout is not a list of coordinates or 'polygon'")
+
         for i, coord in enumerate(poly):
             print(r"\node[vertex] ({name}) at ({x},{y}) [{shape}] {xname};".format(name=vertices[i], shape=shape_dict[
                 cnfg["vert_types"][i]], xname=r"{\color{fontcolor}" + vertices[i] + "}", x=coord[0], y=coord[1]),
@@ -336,6 +344,7 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
         subprocess.call(["pdflatex", output + ".tex"], stdout=file)
 
     print("created {}.pdf".format(output))
+    
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ variables = {
     "col4": "{RGB}{128,0,128}",
     "col5": "{RGB}{255, 255, 0}",
     "col6": "{RGB}{102, 0, 102}",
+    "black": "{RGB}{0, 0, 0}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
     "angle": 0,
@@ -214,6 +215,7 @@ def leiwandBulk(data, cnfg, name='graph', root="", layout='polygon'):
             optionmap[(ii, ii, True)] = f"bicolor={{col{ii}}}{{col{ii}}}"
         optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c2}}}{{col{c1}}}" for c1, c2 in
                           itertools.product(range(numcolors), repeat=2)})
+        optionmap.update({tuple([99, 99, True]): "bicolor={black}{black}"}) #added option for coloreless edges
         # if use f"bicolor_neg={{col{c1}}}{{col{c2}}}" will inverse the color for the negitive edges, don't know why;
         # print(optionmap)
         if whitespace is not None:

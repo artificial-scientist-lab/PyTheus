@@ -1,4 +1,5 @@
 import itertools
+import operator
 import numpy as np
 
 
@@ -66,17 +67,27 @@ def makeUnicolor(edge_list, num_nodes):
 
 def removeConnections(edge_list, connection_list):
     '''
-    removes all edges that connect certain pairs of vertices.
+    removes all edges that connect certain pairs of vertices or specific edges.
 
     example:
-    input: edge_list, [[0,1],[3,5]]
-    output: edge_list without any edges that connect 0-1 or 3-5.
+    input: edge_list, [[0, 1, 0, 0], [1, 2]]
+    output: edge_list without any edges that connect 1-2 and the 0-1-0-0 edge, all other 0-1 edges are kept
     '''
-    new_edge_list = edge_list
-    for connection in connection_list:
-        new_edge_list = [edge for edge in new_edge_list if (edge[0] != connection[0] or edge[1] != connection[1])]
-    return new_edge_list
 
+    if len(connection_list) > 0:
+        con2rm = connection_list[0]
+        if len(con2rm) == 2: # remove all edges that connect the two nodes
+            edge_list = [edge for edge in edge_list if edge[0] != con2rm[0] or 
+                                                          edge[1] != con2rm[1]]
+        elif len(con2rm) == 4: # remove specific edge
+            edge_list = [edge for edge in edge_list if edge[0] != con2rm[0] or
+                                                          edge[1] != con2rm[1] or
+                                                          edge[2] != con2rm[2] or
+                                                          edge[3] != con2rm[3]]
+        return removeConnections(edge_list, connection_list[1:])
+    
+    else:
+        return sorted(edge_list)
 
 def prepEdgeList(edge_list, cnfg):
     """
@@ -101,10 +112,16 @@ def prepEdgeList(edge_list, cnfg):
         pass
     removed_connections += list(itertools.combinations(disjoint_nodes,2))
     try:
-         removed_connections += cnfg['removed_connections']
+        removed_connections += cnfg['removed_connections']
     except KeyError:
         pass
-    edge_list = removeConnections(edge_list,removed_connections)
+    
+    try:
+        removed_connections += [edge for edge in edge_list if (edge not in cnfg['init_graph']) & (list(edge[:2]) not in cnfg['nodes2connect'])]
+    except KeyError:
+        pass
+    if len(removed_connections) > 0:
+        edge_list = removeConnections(edge_list, removed_connections)
     return edge_list
 
 

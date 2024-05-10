@@ -174,7 +174,8 @@ To find solutions with higher weights we have introduced the _simplified count r
 # Config Examples
 
 This section gives examples for config files showcasing the features for different kinds of experiments that can
-searched for.
+searched for. A complete list of the 100 config files in the PyTheus papers can be found [here](https://github.com/artificial-scientist-lab/PyTheus/tree/main/pytheus/graphs).
+
 
 ## Target State Optimization
 

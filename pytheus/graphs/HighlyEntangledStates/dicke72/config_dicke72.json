@@ -1,0 +1,43 @@
+{
+    "description": "Creation of dicke state of seven qubits.",
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "dicke72cr",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 3,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000011",
+        "0000101",
+        "0000110",
+        "0001001",
+        "0001010",
+        "0001100",
+        "0010001",
+        "0010010",
+        "0010100",
+        "0011000",
+        "0100001",
+        "0100010",
+        "0100100",
+        "0101000",
+        "0110000",
+        "1000001",
+        "1000010",
+        "1000100",
+        "1001000",
+        "1010000",
+        "1100000"
+    ],
+    "thresholds": [
+        0.1,
+        0.001
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false
+}

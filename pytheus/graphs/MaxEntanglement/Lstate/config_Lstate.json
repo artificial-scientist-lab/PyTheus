@@ -1,0 +1,92 @@
+{
+    "description": "Creation of L-state. Four ancillary particles. https://iopscience.iop.org/article/10.1088/1742-6596/698/1/012003/pdf",
+    "bulk_thr": 0,
+    "edges_tried": 30,
+    "foldername": "L_state_noANC",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 0,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": "polar",
+    "safe_hist": true,
+    "samples": 20,
+    "target_state": [
+        "0000",
+        "1111",
+        "0011",
+        "1100",
+        "0101",
+        "0110",
+        "1001",
+        "1010"
+    ],
+    "amplitudes": [
+        [
+            -1,
+            0
+        ],
+        [
+            -1,
+            0
+        ],
+        [
+            1.7320508075688772,
+            1.5707963267948966
+        ],
+        [
+            1.7320508075688772,
+            1.5707963267948966
+        ],
+        [
+            1.0,
+            0.0
+        ],
+        [
+            1.0,
+            0.0
+        ],
+        [
+            1.0,
+            0.0
+        ],
+        [
+            1.0,
+            0.0
+        ]
+    ],
+    "thresholds": [
+        0.1,
+        0.01
+    ],
+    "tries_per_edge": 10,
+    "unicolor": false,
+    "dimensions": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "topopt": true,
+    "seed": 3267316621,
+    "in_nodes": [],
+    "out_nodes": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "single_emitters": [],
+    "removed_connections": [],
+    "heralding_out": false,
+    "number_resolving": false,
+    "brutal_covers": false,
+    "save_hist": true,
+    "verts": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "anc_detectors": []
+}

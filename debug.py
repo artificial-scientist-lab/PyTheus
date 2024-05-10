@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from theseus.cli import run
+from pytheus.cli import run
 from pathlib import Path
 
 import os

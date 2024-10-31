@@ -340,11 +340,20 @@ def setup_for_target(cnfg, state_cat=True):
     except KeyError:
         cnfg["num_pre"] = 1
 
-    # define target
-    target = [term + additional_nodes * '0' for term in cnfg["target_state"]]
-    target_state = State(target, amplitudes=cnfg["amplitudes"], imaginary=cnfg["imaginary"])
-    # print readable expression of the target state
-    print(hf.readableState(target_state))
+    try:
+        cnfg["target_state"]
+    except KeyError:
+        print('no target state given')
+
+    try:
+        # define target
+        target = [term + additional_nodes * '0' for term in cnfg["target_state"]]
+        target_state = State(target, amplitudes=cnfg["amplitudes"], imaginary=cnfg["imaginary"])
+        # print readable expression of the target state
+        print(hf.readableState(target_state))
+    except:
+        raise ValueError('Target state had invalid format and could not be created.')
+
 
     # build starting graph
     # local dimensions necessary for each node to produce target

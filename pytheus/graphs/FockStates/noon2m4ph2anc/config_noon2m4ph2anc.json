@@ -1,0 +1,22 @@
+{
+    "description": "Noon state of 2 modes and 4 particles.",
+    "bulk_thr": 0.1,
+    "edges_tried": 20,
+    "foldername": "noon_2_4_anc2_cr",
+    "ftol": 1e-05,
+    "loss_func": "fockcr",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [[0,4],[4,0]],
+    "amplitudes": [1,-1],
+    "thresholds": [0.1,0.001],
+    "tries_per_edge": 1,
+    "unicolor": false,
+    "loops":true
+  }
+   
+  

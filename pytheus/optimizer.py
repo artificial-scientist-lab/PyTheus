@@ -220,7 +220,11 @@ class topological_opti:
             if counter % 10 == 0:
                 print('10 invalid preoptimization, consider changing parameters.')
                 log.info('10 invalid preoptimization, consider changing parameters.')
-
+            if counter % 100 == 0:
+                print('100 invalid preoptimization, state cannot be found.')
+                log.info('100 invalid preoptimization, state cannot be found.')
+                raise ValueError('100 invalid preoptimization steps. Conclusion: State cannot be created with provides parameters')
+                
         # if num_pre is set to larger than 1 in config, do num_pre preoptimization and choose the best one.
         # for optimizations with concrete target state, num_pre = 1 is enough
         for __ in range(self.config['num_pre'] - 1):

@@ -11,13 +11,13 @@ email = 'cruizgo@proton.me, soeren.arlt@mpl.mpg.de, mario.krenn@mpl.mpg.de'
 description = 'PyTheus, a highly-efficient inverse-design algorithm for quantum optical experiments'
 dist_name = 'pytheusQ'
 package_name = 'pytheus'
-year = '2022'
+year = '2024'
 url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    return "1.2.7"
+    return "1.2.8"
 
 
 setup(

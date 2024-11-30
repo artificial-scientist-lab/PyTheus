@@ -50,6 +50,12 @@ def run_main(filename, example, run_opt=True, state_cat=True):
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 
+    try: 
+        cnfg['init_graph'] = sorted(map(tuple, cnfg['init_graph']))
+        print('initial graph specified')
+        print('init_graph = ', cnfg['init_graph'])
+    except KeyError:
+        pass
     sys.setrecursionlimit(1000000000)
 
     # step 2: build up target and starting graph
@@ -255,6 +261,14 @@ def setup_for_target(cnfg, state_cat=True):
     if not cnfg["out_nodes"]:
         additional_nodes += len(cnfg["in_nodes"])
 
+    try: 
+        if cnfg["nodes2connect"]:
+            print('nodes2connect specified, adding connections:')
+            print('nodes2connect = ', cnfg["nodes2connect"])
+        else:
+            print('nodes2connect not given. No connections inserted.')
+    except KeyError:
+            print('nodes2connect not given. No connections inserted.')
     try:
         if cnfg["removed_connections"]:
             print('removed_connections given. additional constraints on the graph.')
@@ -377,6 +391,7 @@ def setup_for_target(cnfg, state_cat=True):
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
         edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
+    edge_list = hf.prepEdgeList(edge_list, cnfg)
     print(f'start graph has {len(edge_list)} edges.')
 
     # turn edge list into graph

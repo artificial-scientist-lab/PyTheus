@@ -31,6 +31,7 @@ variables = {
     "col4": "{RGB}{128,0,128}",
     "col5": "{RGB}{255, 255, 0}",
     "col6": "{RGB}{102, 0, 102}",
+    "black": "{RGB}{0, 0, 0}",
     "vertexcolor": "{RGB}{250,250,250}",
     "fontcolor": "{RGB}{0,0,0}",
     "angle": 0,
@@ -188,10 +189,9 @@ def leiwand(data, name='graph'):
     print("created {}.pdf".format(output))
 
 
-def leiwandBulk(data, cnfg, name='graph', root=""):
+def leiwandBulk(data, cnfg, name='graph', root="", layout='polygon'):
     #go into directory where graph should be saved
     os.chdir(os.path.join(os.getcwd(), root))
-    poly = {}
     output = name
     numcolors = 7
     # defining shapes for different kinds of vertices
@@ -215,6 +215,7 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
             optionmap[(ii, ii, True)] = f"bicolor={{col{ii}}}{{col{ii}}}"
         optionmap.update({tuple([c1, c2, False]): f"bicolor_neg={{col{c2}}}{{col{c1}}}" for c1, c2 in
                           itertools.product(range(numcolors), repeat=2)})
+        optionmap.update({tuple([99, 99, True]): "bicolor={black}{black}"}) #added option for coloreless edges
         # if use f"bicolor_neg={{col{c1}}}{{col{c2}}}" will inverse the color for the negitive edges, don't know why;
         # print(optionmap)
         if whitespace is not None:
@@ -272,14 +273,23 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
             # sort vertices alphabetically
             vertices = list(sorted(vertices))
 
-        if len(poly) < len(vertices):
-            # poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
-            angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
-            poly = [tuple([variables["radius"] * np.cos(theta - variables["angle"]),
-                           variables["radius"] * np.sin(theta - variables["angle"])]) for theta in angles]
+
+        if layout == 'polygon': #default original behaviour
+                poly = {}
+                if len(poly) < len(vertices):
+                    # poly = Polygon.regular(len(vertices), radius=variables["radius"], angle=float(180))
+                    angles = [2 * np.pi * ii / len(vertices) for ii in range(len(vertices))]
+                    poly = [tuple([variables["radius"] * np.cos(theta - variables["angle"]),
+                                   variables["radius"] * np.sin(theta - variables["angle"])]) for theta in angles]
+                else:
+                    # sort alphabetically
+                    poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
+        elif np.shape(np.array(layout)) == (len(vertices), 2): #layout is a list of coordinates
+            poly = layout
+
         else:
-            # sort alphabetically
-            poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
+            raise Exception("layout is not a list of coordinates or 'polygon'")
+
         for i, coord in enumerate(poly):
             print(r"\node[vertex] ({name}) at ({x},{y}) [{shape}] {xname};".format(name=vertices[i], shape=shape_dict[
                 cnfg["vert_types"][i]], xname=r"{\color{fontcolor}" + vertices[i] + "}", x=coord[0], y=coord[1]),
@@ -336,6 +346,7 @@ def leiwandBulk(data, cnfg, name='graph', root=""):
         subprocess.call(["pdflatex", output + ".tex"], stdout=file)
 
     print("created {}.pdf".format(output))
+    
 
 
 if __name__ == "__main__":

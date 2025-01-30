@@ -46,7 +46,6 @@ def run_main(filename, example, run_opt=True, state_cat=True):
     cnfg, filename = read_config(example, filename)
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logging.info(filename)
-    logging.info('test')
     if 'description' in cnfg.keys():
         logging.info(cnfg['description'])
 

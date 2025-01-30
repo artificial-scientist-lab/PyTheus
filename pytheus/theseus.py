@@ -10,6 +10,11 @@ import numpy as np
 import warnings
 
 
+import logging
+
+log = logging.getLogger(__name__)
+
+
 # # Auxiliary Functions
 # Helpful functions used in many processes but not by the final user. 
 
@@ -691,7 +696,7 @@ def weightProduct(edge_list, imaginary=False):
 
 
 # This expression could also be UNlambdified so we add some check for the Counter
-factorialProduct = lambda lst: np.product([factorial(ii) for ii in Counter(lst).values()])
+factorialProduct = lambda lst: np.prod([factorial(ii) for ii in Counter(lst).values()])
 
 def writeNorm(state_catalog, imaginary=False, hot=False):
     '''
@@ -729,13 +734,16 @@ def writeNorm(state_catalog, imaginary=False, hot=False):
     else:
         for key, values in state_catalog.items():
             term_sum = ' + '.join([f'{weightProduct(graph, imaginary)}' for graph in values])
+            if term_sum == '':
+                term_sum = '0'
             if imaginary == False:
                 # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
                 # The factor should be squared or, in this case, left outside the square
                 norm_sum.append(f'(({term_sum})**2)')
             else:
                 norm_sum.append(f'(abs({term_sum})**2)')
-        return ' + '.join(norm_sum)
+        norm_sum = ' + '.join(norm_sum)
+        return norm_sum
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
@@ -778,6 +786,8 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):
         try:
             # The division with factorialProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+            if len(state_catalog[tuple(ket)]) == 0:
+                raise KeyError
             term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in state_catalog[tuple(ket)]]
             term_sum = ' + '.join(term_sum)
             # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
@@ -789,7 +799,7 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
             equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
         except KeyError:
             equation_sum.append('0')
-            warnings.warn(f'The ket {tuple(ket)} was not available in the state catalog')
+            log.info(f'The ket {tuple(ket)} of the target state was not available in the state catalog, it was set to 0. This could be because there is no perfect matching or edgecover that produces this ket.')
     # equation_sum = ' + '.join(equation_sum).replace('0 + ','').replace(' + 0','')
     # if equation_sum == '0':
     equation_sum = ' + '.join(term for term in equation_sum if term != '0')

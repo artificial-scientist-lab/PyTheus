@@ -158,6 +158,13 @@ class topological_opti:
             loss_specs = {'cnfg': self.config}
         callable_loss = [func(current_graph, **loss_specs)
                          for func in lossfunctions]
+        
+        testinit, _ = self.prepOptimizer(len(current_graph))
+        for loss in callable_loss:
+            try:
+                loss(testinit[0])
+            except Exception:
+                raise RuntimeError('Loss function gives error for a test input, so it is not properly defined. This could be due to configuration parameters given for the optimization. Trying to compute perfect matchings for an odd number of total particles (main+ancilla) will lead to a meaningless loss function (0/0 --> division by zero).')
         return callable_loss
 
     def update_losses(self, result, losses):

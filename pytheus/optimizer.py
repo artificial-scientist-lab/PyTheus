@@ -230,7 +230,7 @@ class topological_opti:
             if counter % 100 == 0:
                 print('100 invalid preoptimization, state cannot be found.')
                 log.info('100 invalid preoptimization, state cannot be found.')
-                raise ValueError('100 invalid preoptimization steps. Conclusion: State cannot be created with provides parameters')
+                raise ValueError('100 invalid preoptimization steps. Conclusion: State cannot be created with provides parameters. Consider adding more ancillas or using less restrictions if possible (e.g. removed_connections).')
                 
         # if num_pre is set to larger than 1 in config, do num_pre preoptimization and choose the best one.
         # for optimizations with concrete target state, num_pre = 1 is enough

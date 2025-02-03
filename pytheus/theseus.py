@@ -746,7 +746,7 @@ def writeNorm(state_catalog, imaginary=False, hot=False):
         return norm_sum
 
 
-def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False):
+def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False, ignore_missing_kets=False):
     '''
     Given a list of target kets, it writes a non-normalized fidelity function.
     
@@ -782,24 +782,28 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     #     norm2 = str(norm2)
     if state_catalog is None:
         state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
+    non_zero_state_catalog = {key: value for key, value in state_catalog.items() if len(value) > 0}
     equation_sum = []
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):
-        try:
-            # The division with factorialProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
-            if len(state_catalog[tuple(ket)]) == 0:
-                raise KeyError
-            term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in state_catalog[tuple(ket)]]
-            term_sum = ' + '.join(term_sum)
-            # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
-            creation_term = factorialProduct(ket)
-            if (creation_term**.5) % 1 == 0:
-                creation_term = int(creation_term**.5)
+        # The division with factorialProduct comes from combinatoric reasons: wikipedia.org/wiki/Multinomial_theorem
+        if tuple(ket) not in non_zero_state_catalog:
+            if ignore_missing_kets:
+                equation_sum.append('0')
+                log.info(f'The ket {tuple(ket)} of the target state was not available in the state catalog, it was set to 0. This could be because there is no perfect matching or edgecover that produces this ket.')
             else:
-                creation_term = f'{creation_term}**.5'
-            equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
-        except KeyError:
-            equation_sum.append('0')
-            log.info(f'The ket {tuple(ket)} of the target state was not available in the state catalog, it was set to 0. This could be because there is no perfect matching or edgecover that produces this ket.')
+                truncated_non_zero_state_catalog_keys = list(non_zero_state_catalog.keys())[0:min(10, len(non_zero_state_catalog))]
+                truncated_non_zero_state_catalog = {key: value for key, value in non_zero_state_catalog.items() if key in truncated_non_zero_state_catalog_keys}
+                raise ValueError(f"At least one of the target kets is not available in the state catalog. This could be because there is no perfect matching or edgecover that produces this ket. The target kets are {ket_list}. The kets with non-zero contributions are the following {truncated_non_zero_state_catalog} ... (truncated to 10 entries, (position, mode) tuples). If there are no kets with non-zero contributions, it could be that the state catalog is empty. This could be because the number of total particles (main+ancilla) is odd and the target (e.g. fidelity or count rate) relies on finding perfect matchings of a graph with an odd number of nodes, which is not possible by definition.")
+        term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in state_catalog[tuple(ket)]]
+        term_sum = ' + '.join(term_sum)
+        # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
+        creation_term = factorialProduct(ket)
+        if (creation_term**.5) % 1 == 0:
+            creation_term = int(creation_term**.5)
+        else:
+            creation_term = f'{creation_term}**.5'
+        equation_sum.append(f'({coef})*({creation_term})*({term_sum})')
+
     # equation_sum = ' + '.join(equation_sum).replace('0 + ','').replace(' + 0','')
     # if equation_sum == '0':
     equation_sum = ' + '.join(term for term in equation_sum if term != '0')

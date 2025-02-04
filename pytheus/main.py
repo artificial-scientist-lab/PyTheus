@@ -229,7 +229,7 @@ def setup_for_target(cnfg, state_cat=True):
             print('in_nodes and out_nodes given. target terms are read as a logic table for a quantum gate')
 
     if len(cnfg["out_nodes"]) + len(cnfg["in_nodes"]) != len(cnfg["target_state"][0]):
-        raise ValueError(f"Number of target nodes ({len(cnfg['target_state'][0])}) does not match number of in/out nodes ({len(cnfg["out_nodes"])} in + {len(cnfg["in_nodes"])} out).")
+        raise ValueError(f"Number of target nodes ({len(cnfg['target_state'][0])}) does not match number of in/out nodes ({len(cnfg['out_nodes'])} in + {len(cnfg['in_nodes'])} out).")
 
     # num_anc gives the number of photons that go into detectors that are not cnfg.out_nodes (including those coming from single photon sources)
     try:

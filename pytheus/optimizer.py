@@ -162,7 +162,7 @@ class topological_opti:
         testinit, _ = self.prepOptimizer(len(current_graph))
         for loss in callable_loss:
             try:
-                loss(testinit[0])
+                loss(testinit)
             except Exception:
                 raise RuntimeError('Loss function gives error for a test input, so it is not properly defined. This could be due to configuration parameters given for the optimization. Trying to compute perfect matchings for an odd number of total particles (main+ancilla) will lead to a meaningless loss function (0/0 --> division by zero).')
         return callable_loss

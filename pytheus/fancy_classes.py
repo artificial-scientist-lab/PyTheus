@@ -4,6 +4,11 @@ import pytheus.theseus as th
 # from pytheus.graphplot import graphPlot
 from copy import deepcopy
 
+
+import logging
+
+log = logging.getLogger(__name__)
+
 # +
 WRONG_IMAGINARY = 'The property `imaginary` is NOT defined correctly.'
 
@@ -67,6 +72,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                     raise ValueError('The input `full` does not allow to specify the weights.')
         # If the introduced edges are a list/tuple, they may include the weights           
         elif type(edges) in [list, tuple]:
+            if len(edges) == 0:
+                raise ValueError("No edges in the graph corresponding to the experimental setup, there is nothing to optimize. If the graph was generated automatically from a config file, check the specifications (not enough nodes introduced or too many removed_connections)") 
             edge_shape = np.shape(edges)
             if edge_shape[1] == 4:
                 pass  # seems legit

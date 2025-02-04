@@ -51,6 +51,9 @@ def run_main(filename, example, run_opt=True, state_cat=True):
 
     sys.setrecursionlimit(1000000000)
 
+    if 'loss_func' not in cnfg:
+        raise ValueError("Loss function not specified in config file. Needs to be specified by 'loss_func' key.")
+
     # step 2: build up target and starting graph
     if cnfg['loss_func'] == 'ent':  # optimization for entanglement requires specific setup
         dimensions, sys_dict, start_graph = setup_for_ent(cnfg)
@@ -59,7 +62,10 @@ def run_main(filename, example, run_opt=True, state_cat=True):
         edge_list = th.buildAllEdges(cnfg["dimensions"], imaginary=cnfg['imaginary'])
         print(f'start graph has {len(edge_list)} edges.')
         start_graph = Graph(edge_list, imaginary=cnfg['imaginary'])
-        dimensions = cnfg["dimensions"]
+        if 'dimensions' in cnfg:
+            dimensions = cnfg["dimensions"]
+        else:
+            raise ValueError("Dimensions not specified in config file. For custom loss functions defined by 'lff' this needs to be specified by 'dimensions' key.")
         target_state = None
         sys_dict = None
     elif cnfg['loss_func'] in ['fockcr', 'fockfid']:

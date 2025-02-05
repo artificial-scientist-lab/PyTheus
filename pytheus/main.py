@@ -157,6 +157,9 @@ def setup_for_fockbasis(cnfg):
         print('imaginary not given, assuming real numbers.')
         cnfg["imaginary"] = False
 
+    if 'loops' not in cnfg:
+        cnfg['loops'] = False
+
     sys_dict = None
 
     # term_list = [term + cnfg['num_anc'] * '1' for term in cnfg["target_state"]]
@@ -474,13 +477,13 @@ def read_config(is_example, filename):
     if not cnfg['topopt']:
         cnfg['bulk_thr'] = 0
 
-    if not cnfg['optimizer']:
+    if 'optimizer' not in cnfg:
         print('optimizer not specified, using L-BFGS-B')
         cnfg['optimizer'] = 'L-BFGS-B'
-    if not cnfg['ftol']:
+    if 'ftol' not in cnfg:
         print('ftol not specified, using 1e-6')
         cnfg['ftol'] = 1e-6
-    if not cnfg['samples']:
+    if 'samples' not in cnfg:
         print('number of samples not specified, using 1')
         cnfg['samples'] = 1
     

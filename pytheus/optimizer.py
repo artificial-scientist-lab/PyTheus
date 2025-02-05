@@ -159,6 +159,9 @@ class topological_opti:
         callable_loss = [func(current_graph, **loss_specs)
                          for func in lossfunctions]
         
+        if 'thresholds' not in self.config:
+            raise ValueError(f'thresholds not defined in config file. Please define thresholds as list of floats (length = {len(callable_loss)}).')
+        
         testinit, _ = self.prepOptimizer(len(current_graph))
         for loss in callable_loss:
             try:

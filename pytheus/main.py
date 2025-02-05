@@ -268,10 +268,14 @@ def setup_for_target(cnfg, state_cat=True):
         raise ValueError('in_nodes and single_emitters must be disjoint.')
     if set(cnfg["out_nodes"]).intersection(set(cnfg["single_emitters"])):
         raise ValueError('out_nodes and single_emitters must be disjoint.')
+    
+    non_ancs = cnfg["in_nodes"] + cnfg["single_emitters"] + cnfg["out_nodes"]
+    if sorted(non_ancs) != list(range(len(non_ancs))):
+        raise ValueError('the union set of nodes from in_nodes, single_emitters, and out_nodes must be contiguous and start at zero (0, 1, 2, ... N where N is the number of nodes or the length of a ket in the target state).')
 
     # add num_anc+len(single_emitters) vertices to graph (every ancillary detector and every single emitter needs a node)
     if cnfg["num_anc"] + len(cnfg["out_nodes"]) < len(cnfg["in_nodes"]) + len(cnfg["single_emitters"]):
-        print('not enough ancillas given')
+        raise ValueError('num_anc < (len(in_nodes) + len(single_emitters) - len(out_nodes)). Not enough ancillary detectors for the number of in_nodes and single_emitters. Each path entering via in_node or single_emitter needs to exit the setup somehow (in an out node or an ancillary detector).')
     additional_nodes = cnfg["num_anc"] + len(cnfg["single_emitters"])
     if not cnfg["out_nodes"]:
         additional_nodes += len(cnfg["in_nodes"])

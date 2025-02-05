@@ -213,6 +213,11 @@ def setup_for_ent(cnfg):
 def setup_for_target(cnfg, state_cat=True):
     # default values
     try:
+        cnfg["target_state"]
+    except KeyError:
+        print('no target state given')
+
+    try:
         cnfg["in_nodes"]
     except KeyError:
         cnfg["in_nodes"] = []
@@ -234,6 +239,9 @@ def setup_for_target(cnfg, state_cat=True):
         else:
             print('in_nodes and out_nodes given. target terms are read as a logic table for a quantum gate')
 
+    if set(cnfg["in_nodes"]).intersection(set(cnfg["out_nodes"])):
+        raise ValueError('in_nodes and out_nodes must be disjoint.')
+
     if len(cnfg["out_nodes"]) + len(cnfg["in_nodes"]) != len(cnfg["target_state"][0]):
         raise ValueError(f"Number of target nodes ({len(cnfg['target_state'][0])}) does not match number of in/out nodes ({len(cnfg['out_nodes'])} in + {len(cnfg['in_nodes'])} out).")
 
@@ -252,6 +260,11 @@ def setup_for_target(cnfg, state_cat=True):
     except KeyError:
         print('no single photon emitters used')
         cnfg["single_emitters"] = []
+
+    if set(cnfg["in_nodes"]).intersection(set(cnfg["single_emitters"])):
+        raise ValueError('in_nodes and single_emitters must be disjoint.')
+    if set(cnfg["out_nodes"]).intersection(set(cnfg["single_emitters"])):
+        raise ValueError('out_nodes and single_emitters must be disjoint.')
 
     # add num_anc+len(single_emitters) vertices to graph (every ancillary detector and every single emitter needs a node)
     if cnfg["num_anc"] + len(cnfg["out_nodes"]) < len(cnfg["in_nodes"]) + len(cnfg["single_emitters"]):
@@ -344,11 +357,6 @@ def setup_for_target(cnfg, state_cat=True):
         cnfg["num_pre"]
     except KeyError:
         cnfg["num_pre"] = 1
-
-    try:
-        cnfg["target_state"]
-    except KeyError:
-        print('no target state given')
 
     try:
         # define target
@@ -465,4 +473,15 @@ def read_config(is_example, filename):
         cnfg['seed'] = random.randrange(1, 2 ** 32 - 1)
     if not cnfg['topopt']:
         cnfg['bulk_thr'] = 0
+
+    if not cnfg['optimizer']:
+        print('optimizer not specified, using L-BFGS-B')
+        cnfg['optimizer'] = 'L-BFGS-B'
+    if not cnfg['ftol']:
+        print('ftol not specified, using 1e-6')
+        cnfg['ftol'] = 1e-6
+    if not cnfg['samples']:
+        print('number of samples not specified, using 1')
+        cnfg['samples'] = 1
+    
     return cnfg, filename

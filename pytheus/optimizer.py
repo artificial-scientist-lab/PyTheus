@@ -250,10 +250,9 @@ class topological_opti:
         print(f'best result from pre-opt: {abs(best_result.fun)}')
         log.info(f'best result from pre-opt: {abs(best_result.fun)}')
 
-        preopt_graph = Graph(graph.edges,
-                             weights=self.weights_to_valid_input(
-                                 best_result.x),
-                             imaginary=self.imaginary)
+        for ii, edge in enumerate(graph.edges):
+            graph[edge] = best_result.x[ii]
+        preopt_graph = graph.copy()
 
         try:
             bulk_thr = self.config['bulk_thr']
@@ -266,12 +265,12 @@ class topological_opti:
             num_deleted = 0
             while cont:
                 # delete smallest edges one by one
-                idx_of_edge = preopt_graph.minimum()
-                amplitude = preopt_graph[idx_of_edge]
+                min_edge = preopt_graph.minimum()
+                amplitude = preopt_graph[min_edge]
                 if self.imaginary == 'polar':
                     amplitude = amplitude[0]
                 if abs(amplitude) < bulk_thr:
-                    preopt_graph.remove(idx_of_edge)
+                    preopt_graph.remove(min_edge, update=True)
                     num_deleted += 1
                 else:
                     cont = False
@@ -290,10 +289,9 @@ class topological_opti:
                 print(f'result after truncation: {abs(trunc_result.fun)}')
                 log.info(f'result after truncation: {abs(trunc_result.fun)}')
                 valid = self.check(trunc_result, losses)
-            preopt_graph = Graph(preopt_graph.edges,
-                                 weights=self.weights_to_valid_input(
-                                     trunc_result.x),
-                                 imaginary=self.imaginary)
+        
+            for ii, edge in enumerate(preopt_graph.edges):
+                preopt_graph[edge] = trunc_result.x[ii]
 
         return preopt_graph
 
@@ -372,13 +370,11 @@ class topological_opti:
         # set up reduced graph
         reduced_graph = self.graph.copy()
         # find index of num_edge smallest edge
-        idx_of_edge = reduced_graph.minimum(num_edge)
+        min_edge = reduced_graph.minimum(num_edge)
         # store amplitude in case edge fails and needs to be put back in
-        amplitude = reduced_graph[idx_of_edge]
+        amplitude = reduced_graph[min_edge]
         # remove smallest edge
-        reduced_graph.remove(idx_of_edge, update=False)
-        # update state catalog of reduced graph
-        reduced_graph.getStateCatalog()
+        reduced_graph.remove(min_edge, update=True)
         # try a given number of times to delete this edge
         for ii in range(num_tries_one_edge):
             # if edge is tried for the first time, update loss function and other optimization parameters
@@ -396,10 +392,10 @@ class topological_opti:
                                                bounds=bounds,
                                                method=self.config['optimizer'],
                                                options={'ftol': self.config['ftol']})
-                except KeyError:
+                except Exception as e:
                     # if the target kets can not be produced with the given graph we can give up on this edge
                     # it wont work
-                    reduced_graph[idx_of_edge] = amplitude
+                    reduced_graph[min_edge] = amplitude
                     print('edge necessary for producing all kets')
                     log.info('edge necessary for producing all kets')
                     return reduced_graph, False  # no success keep current Graph
@@ -426,11 +422,12 @@ class topological_opti:
                 if self.save_hist:
                     self.history.append([str(self.graph),self.loss_val])
                 # return updated result graph
-                return Graph(reduced_graph.edges,
-                             weights=self.weights_to_valid_input(result.x),
-                             imaginary=self.imaginary), True
+                result_graph = reduced_graph.copy()
+                for ii, edge in enumerate(reduced_graph.edges):
+                    result_graph[edge] = result.x[ii]
+                return result_graph, True
         # all tries failed keep current Graph
-        reduced_graph[idx_of_edge] = amplitude
+        reduced_graph[min_edge] = amplitude
         return reduced_graph, False
 
     def topologicalOptimization(self, save_hist=True) -> Graph:

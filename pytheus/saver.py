@@ -228,7 +228,7 @@ class saver:
         else:
             clean = 'rough'
         file_name = clean + '-' + str(len(graph.graph)) + '-'
-        graph.getStateCatalog()
+        # graph.getStateCatalog()
         file_name += str(len(graph.perfect_matchings)) + '-'
         for lo in loss:
             file_name += f'{lo:.4f}_'

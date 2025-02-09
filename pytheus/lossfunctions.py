@@ -199,6 +199,26 @@ def count_rate(graph, target_state, cnfg):
         norm = th.writeNorm(cat, imaginary=cnfg["imaginary"])
     lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
+
+    # kets = list(graph._state_catalog.keys())
+    # target_unnormed = np.array([(key in target_state.kets)*1.0 for key in kets])
+    # target_normed = target_unnormed / np.linalg.norm(target_unnormed)
+
+    # state_catalog_tensor = np.array(graph._state_catalog_tensor)
+    # target_normed = np.array(target_normed)
+
+    # graph_state = lambda edges: edges[:,state_catalog_tensor].prod(axis=-1).sum(axis=-1)
+    # normed_state = lambda state: state / (1 + np.linalg.norm(state, axis=-1,keepdims=True))
+    # count_rate = lambda state: abs(state @ target_normed)**2
+    # func = lambda x: 1 - count_rate(normed_state(graph_state(x))).mean()
+
+    # #matrix that transforms weights of length len(graph.edges) to weights of length len(graph.complete_graph_edges)
+    # mat = np.zeros((len(graph.complete_graph_edges), len(graph.edges)))
+    # for i, edge in enumerate(graph.edges):
+    #     mat[graph.complete_graph_edges.index(edge),i] = 1
+
+    # func = lambda x: func(mat @ x)
+
     print('count rate done', flush=True)
     return func
 
@@ -228,6 +248,25 @@ def fidelity(graph, target_state, cnfg):
         norm = th.writeNorm(cat, imaginary=cnfg["imaginary"])
     lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
     func, lossstring = th.buildLossString(lambdaloss, variables)
+
+    # kets = list(graph._state_catalog.keys())
+    # target_unnormed = np.array([(key in target_state.kets)*1.0 for key in kets])
+    # target_normed = target_unnormed / np.linalg.norm(target_unnormed)
+
+    # state_catalog_tensor = np.array(graph._state_catalog_tensor)
+    # target_normed = np.array(target_normed)
+
+    # graph_state = lambda edges: edges[:,state_catalog_tensor].prod(axis=-1).sum(axis=-1)
+    # normed_state = lambda state: state / (np.linalg.norm(state, axis=-1,keepdims=True))
+    # count_rate = lambda state: abs(state @ target_normed)**2
+    # func = lambda x: 1 - count_rate(normed_state(graph_state(x))).mean()
+
+    # #matrix that transforms weights of length len(graph.edges) to weights of length len(graph.complete_graph_edges)
+    # mat = np.zeros((len(graph.complete_graph_edges), len(graph.edges)))
+    # for i, edge in enumerate(graph.edges):
+    #     mat[graph.complete_graph_edges.index(edge),i] = 1
+
+    # func = lambda x: func(mat @ x)
     print('fidelity done', flush=True)
     return func
 

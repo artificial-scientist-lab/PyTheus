@@ -46,10 +46,12 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         self.imaginary = imaginary
         self.order = order
         # The next line may redefine previous properties
+        self.complete_graph_edges = None
         self.graph = self.graphStarter(edges, weights, loops, dimensions)  # MAIN PROPERTY
         # The following properties are long to compute and not always needed.
         # We set them as None, defining them only when they are called (without the _)
         self._state_catalog = None
+        self._state_catalog_tensor = None
         self._state = None
         self._norm = None
 
@@ -65,7 +67,8 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             if dimensions is None:
                 raise ValueError('Introduce the dimensions to get a fully connected graph')
             else:
-                edges = th.buildAllEdges(dimensions,loops=loops)
+                self.complete_graph_edges = th.buildAllEdges(dimensions,loops=loops)
+                edges = self.complete_graph_edges.copy()
                 if len(weights) == 0:
                     weights = defaultValues(len(edges), self.imaginary)
                 else:
@@ -275,29 +278,34 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         return self._state_catalog
 
     # imaginary could be redefined as one of these properties
-    def getStateCatalog(self, order=None):
+    def getStateCatalog(self, order=None, full=False):
         if order is None: order = self.order
         if type(order) in [list,tuple]:
             self._state_catalog = dict()
             for integer in order:
-                if self.full:
+                if full:
                     self._state_catalog.update(th.allEdgeCovers(self.dimensions,
                                                     order=integer, loops=self.loops))
                 else:
                     self._state_catalog.update(th.stateCatalog(th.findEdgeCovers(self.edges,
                                                     order=integer, loops=self.loops)))
         elif order==0:
-            if self.full:
+            if full:
                 self._state_catalog = th.allPerfectMatchings(self.dimensions)
             else:
                 self._state_catalog = th.stateCatalog(th.findPerfectMatchings(self.edges))
         else:
-            if self.full:
+            if full:
                 self._state_catalog = th.allEdgeCovers(self.dimensions, 
                                                         order=order, loops=self.loops)
             else:
                 self._state_catalog = th.stateCatalog(th.findEdgeCovers(self.edges, 
                                                         order=order, loops=self.loops))
+        
+        self._state_catalog_tensor = {} 
+        for ket, pm_list in self._state_catalog.items():
+            self._state_catalog_tensor[ket] = [[self.complete_graph_edges.index(edge) for edge in pm] for pm in pm_list]
+        self._state_catalog_tensor = np.array(list(self._state_catalog_tensor.values()))
         
     @property
     def state(self):

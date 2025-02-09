@@ -386,24 +386,42 @@ def setup_for_target(cnfg, state_cat=True):
     cnfg["verts"] = np.unique(list(itertools.chain(*th.edgeBleach(edge_list).keys())))
     cnfg["anc_detectors"] = [ii for ii in cnfg["verts"] if
                             ii not in cnfg["out_nodes"] + cnfg["single_emitters"] + cnfg["in_nodes"]]
+    
+
+    # create complete graph
+    graph = Graph('full', imaginary=cnfg["imaginary"],dimensions=cnfg["dimensions"])
+    graph.getStateCatalog(full=True)
+
     # introduce topological constraints
-    # start with explicitly removed connections
-    removed_connections = cnfg["removed_connections"]
-    # add other restrictions imposed by specific kinds of nodes
-    disjoint_nodes = cnfg["single_emitters"] + cnfg["in_nodes"]
-    removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
-    if cnfg['bipartite']:
-        disjoint_nodes = cnfg["out_nodes"] + cnfg['anc_detectors']
-        removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
-    edge_list = hf.removeConnections(edge_list, removed_connections)
     # apply unicolor simplification
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
-        edge_list = hf.makeUnicolor(edge_list, num_data_nodes)
-    print(f'start graph has {len(edge_list)} edges.')
+        for edge in graph.edges.keys():
+            if edge[0] < num_data_nodes and edge[1] < num_data_nodes and edge[2] != edge[3]:
+                graph.remove(edge)
 
-    # turn edge list into graph
-    graph = Graph(edge_list, imaginary=cnfg["imaginary"])  # , state_cat=state_cat)
+    # explicitly removed connections
+    removed_connections = cnfg["removed_connections"]
+    removed_connections = [sorted(con) for con in removed_connections]
+    # add other restrictions imposed by specific kinds of nodes
+    disjoint_nodes = cnfg["single_emitters"] + cnfg["in_nodes"]
+    incoming_removed_connections = [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
+    for con in incoming_removed_connections:
+        if con in removed_connections:
+            raise ValueError('removed_connections explicitly specified that a connection between two nodes should be removed, but the nodes are also in in_nodes or single_emitters. removed_connections is reserved for nodes that correspond to detectors (out_nodes or ancillary detectors).')
+    removed_connections += incoming_removed_connections
+    if cnfg['bipartite']:
+        disjoint_nodes = cnfg["out_nodes"] + cnfg['anc_detectors']
+        removed_connections += [sorted(con) for con in list(itertools.combinations(disjoint_nodes, 2))]
+    
+    for connection in removed_connections:
+        for edge in graph.edges:
+            if edge[0] == connection[0] and edge[1] == connection[1]:
+                graph.remove(edge)
+            if edge[0] == connection[1] and edge[1] == connection[0]:
+                graph.remove(edge)
+
+    print(f'start graph has {len(edge_list)} edges.')
     return target_state, graph, cnfg
 
 

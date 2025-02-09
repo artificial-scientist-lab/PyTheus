@@ -412,7 +412,7 @@ def buildRandomGraph(dimensions, num_edges, cover_all=True, loops=False):
 def allPerfectMatchings(dimensions):
     '''
     Given a collection of nodes with different dimensions/colors available, it produces all possible
-    states that erase from these and the different graphs that can produce such states.
+    states that arises from these and the different graphs that can produce such states.
     The graphs nodes can present different colors/dimensions and be connected by more than one edge.
 
     A fully connected (uncolored) graph with 2n nodes has (2n)!/((2**n)⋅n!) perfect matchings.
@@ -780,8 +780,6 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
     # if norm2 != 1: # Is this useless? I think so (Carlos)
     #     norm2 = str(norm2)
-    if state_catalog is None:
-        state_catalog = {tuple(ket): allColorGraphs(ket) for ket in ket_list}
     non_zero_state_catalog = {key: value for key, value in state_catalog.items() if len(value) > 0}
     equation_sum = []
     for coef, ket in zip(np.conjugate(amplitudes), ket_list):

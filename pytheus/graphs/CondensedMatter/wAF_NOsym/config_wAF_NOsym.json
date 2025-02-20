@@ -1,0 +1,38 @@
+{
+    "description": "Condensed matter state weak antiferromagnetic 1 of three particles",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "wAF1_3",
+    "ftol": 1e-05,
+    "loss_func": "fid",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [
+        "214",
+        "223",
+        "304",
+        "313",
+        "322",
+        "403",
+        "412"
+    ],
+    "amplitudes": [
+        0.25,
+        0.5,
+        0.125,
+        2,
+        0.5,
+        0.125,
+        0.25
+    ],
+    "thresholds": [
+        0.05,
+        1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

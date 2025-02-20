@@ -1,0 +1,80 @@
+{
+    "description": "NOON states in Fock basis.",
+    "bulk_thr": 0.1,
+    "edges_tried": 30,
+    "foldername": "noon_5_3_anc7_cr",
+    "ftol": 0.0001,
+    "loss_func": "fockcr",
+    "num_anc": 7,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 30,
+    "target_state": [
+        [
+            0,
+            0,
+            0,
+            0,
+            3
+        ],
+        [
+            0,
+            0,
+            0,
+            3,
+            0
+        ],
+        [
+            0,
+            0,
+            3,
+            0,
+            0
+        ],
+        [
+            0,
+            3,
+            0,
+            0,
+            0
+        ],
+        [
+            3,
+            0,
+            0,
+            0,
+            0
+        ]
+    ],
+    "amplitudes": [
+        1,
+        1,
+        1,
+        1,
+        1
+    ],
+    "thresholds": [
+        0.1,
+        0.01
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false,
+    "loops": true,
+    "topopt": true,
+    "dimensions": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    ]
+}

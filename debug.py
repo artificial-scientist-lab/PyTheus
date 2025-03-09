@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from theseus.cli import run
+from pytheus.cli import run
 from pathlib import Path
 
 import os
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     runner = CliRunner()
     path = Path(__file__).parent
     os.chdir(path)
-    input_file = path / 'configs' / 'to_be_confirmed' / 'heraldedW.json'
+    input_file = path / 'error7.json'
     logging.info(input_file)
     result = runner.invoke(run, [str(input_file)], catch_exceptions=False)
     print(result.output)

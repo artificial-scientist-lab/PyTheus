@@ -1,0 +1,29 @@
+{
+  "description": "Creation of four particle three-dimensional GHZ state with six single photon emitters.",
+  "bulk_thr": 0,
+  "edges_tried": 30,
+  "foldername": "ghz43_sp",
+  "ftol": 1e-06,
+  "loss_func": "cr",
+  "num_anc": 2,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "real": true,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "1111",
+    "2222"
+  ],
+  "single_emitters": [
+    6,7,8,9,10,11
+  ],
+  "thresholds": [
+    0.35,
+    0.1
+  ],
+  "tries_per_edge": 5,
+  "unicolor": false
+}

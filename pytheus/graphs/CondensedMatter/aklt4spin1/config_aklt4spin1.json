@@ -1,0 +1,82 @@
+{
+    "description": "Creation of AKLT state of four particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 20,
+    "foldername": "AKLT_4",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 0,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0112",
+        "0121",
+        "0202",
+        "0211",
+        "1012",
+        "1021",
+        "1102",
+        "1111",
+        "1120",
+        "1201",
+        "1210",
+        "2011",
+        "2020",
+        "2101",
+        "2110"
+    ],
+    "amplitudes": [
+        -1,
+        1,
+        2,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        2,
+        1,
+        -1
+    ],
+    "thresholds": [
+        0.1,
+        0.001
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false,
+    "topopt": true,
+    "seed": 1478769822,
+    "in_nodes": [],
+    "out_nodes": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "single_emitters": [],
+    "removed_connections": [],
+    "heralding_out": false,
+    "number_resolving": false,
+    "brutal_covers": false,
+    "save_hist": true,
+    "dimensions": [
+        3,
+        3,
+        3,
+        3
+    ],
+    "verts": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "anc_detectors": []
+}

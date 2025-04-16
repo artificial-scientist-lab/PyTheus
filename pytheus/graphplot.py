@@ -215,9 +215,11 @@ def plotFromFile(filename, number_nodes=True, outfile=""):
         raise IOError(f'File does not exist: {filename}')
     with open(filename) as input_file:
         sol_dict = json.load(input_file)
-    # graph = Graph(sol_dict['graph'])
-    # graphPlot(graph.graph, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
-    graphPlotOld(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    graph = Graph(sol_dict['graph'])
+    ancillas = [ii for ii, dim in enumerate(graph.dimensions) if dim==1]
+    print('WARNING: single photons are presented as ancillas. Single photon sources and other types of nodes are not available.')
+    graphPlotNew(graph.graph, type_photons=[ancillas,[],[]])#, scaled_weights=True, number_nodes=number_nodes, filename=outfile)
+    # graphPlot(sol_dict['graph'], scaled_weights=True, number_nodes=number_nodes, filename=outfile)
 
 # # Experiment plotting tools
 
@@ -301,21 +303,21 @@ def Plot_Vertices(ax, num_nodes, side_length, type_photons = None, font_size =12
     elif isinstance(type_photons, tuple) or isinstance(type_photons, list):
         if len(type_photons)==3:
             ancilla, single_emitters, in_nodes = type_photons
-            for i, vertex in enumerate(vertices):
-                if i in ancilla:
-                    if i in single_emitters:
+            for ii, vertex in enumerate(vertices):
+                if ii in ancilla:
+                    if ii in single_emitters:
                         plot_triangle(ax, vertex ,2.5*r, 10, linewidth=linewidth  )
                     else:
                         x =vertex[0]-r
                         y = vertex[1]-r
                         ax.add_patch(Rectangle((x,y),2*r, 2*r,fc = 'w', \
                                        ec = 'k',zorder = 10, linewidth=linewidth))
-                elif i in single_emitters or i in in_nodes:
+                elif ii in single_emitters or ii in in_nodes:
                     plot_triangle(ax, vertex ,2.5*r, 10, linewidth=linewidth  )
                 else:
                     ax.add_patch(Circle(vertex, radius= r, facecolor='w',\
                                     edgecolor='black', zorder = 10, linewidth=linewidth))
-                ax.text(vertex[0], vertex[1], str(i), ha='center', \
+                ax.text(vertex[0], vertex[1], str(ii), ha='center', \
                         va='center', fontsize=font_size,zorder = 12 )
         else:
                raise ValueError("The type_photons is not valid.")
@@ -1138,5 +1140,3 @@ def graphPlotNew(graph, type_photons = None, DistanceOfVertices=0.1,filename='',
     return fig
 
 cols = ['#66c2a5', '#fc8d62', '#8da0cb']
-
-

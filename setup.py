@@ -17,7 +17,7 @@ url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    return "1.2.18"
+    return "1.2.19"
 
 
 setup(

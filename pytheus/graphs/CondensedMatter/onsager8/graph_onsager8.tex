@@ -1,0 +1,71 @@
+\documentclass[border=10pt]{standalone}
+
+
+        \usepackage{tikz}
+        \usetikzlibrary{decorations.markings, shapes.geometric}
+        \usetikzlibrary{backgrounds} 
+
+        
+\definecolor{vertexcol}{RGB}{250,250,250}\definecolor{col0}{RGB}{0,0,204}\definecolor{col1}{RGB}{204,0,0}\definecolor{col2}{RGB}{0,204,0}\definecolor{col3}{RGB}{255, 165, 0}\definecolor{col4}{RGB}{128,0,128}\definecolor{col5}{RGB}{255, 255, 0}\definecolor{col6}{RGB}{102, 0, 102}\definecolor{fontcolor}{RGB}{0,0,0}
+
+        \begin{document}
+
+        \tikzset{
+            bicolor/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
+            },
+            bicolor_neg/.style n args={2}{
+                postaction={draw=#1, decoration={curveto,  pre=moveto, pre length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={draw=#2, decoration={curveto,  post=moveto, post length=0.5*\pgfmetadecoratedpathlength}, decorate},
+                postaction={decoration={markings, mark=at position 0.5 with {\node[diamond, fill=white, aspect=0.7,draw, thin, minimum width=10pt,opacity=1] {};}}, decorate},
+            },
+            vertex/.style={circle, draw=black, ultra thick ,fill=vertexcol!80,minimum size=15pt},   
+        }
+
+        \begin{tikzpicture}
+
+        
+\node[vertex] (0) at (3.0,0.0) [circle] {\color{fontcolor}0};
+\node[vertex] (1) at (2.121320343559643,2.1213203435596424) [circle] {\color{fontcolor}1};
+\node[vertex] (2) at (1.8369701987210297e-16,3.0) [circle] {\color{fontcolor}2};
+\node[vertex] (3) at (-2.1213203435596424,2.121320343559643) [circle] {\color{fontcolor}3};
+\node[vertex] (4) at (-3.0,3.6739403974420594e-16) [circle] {\color{fontcolor}4};
+\node[vertex] (5) at (-2.121320343559643,-2.1213203435596424) [circle] {\color{fontcolor}5};
+\node[vertex] (6) at (-5.51091059616309e-16,-3.0) [circle] {\color{fontcolor}6};
+\node[vertex] (7) at (2.1213203435596424,-2.121320343559643) [circle] {\color{fontcolor}7};
+\begin{scope}[on background layer]
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=0.9929627456186501] (0) to (1);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.4965683412740041] (0) to (1);
+\path[line width=4.0,bicolor_neg={col0}{col0}, bend right=0.0, opacity=0.5897942894810142] (0) to (3);
+\path[line width=4.0,bicolor={col0}{col1}, bend right=0.0, opacity=0.308922484880863] (0) to (4);
+\path[line width=4.0,bicolor_neg={col1}{col1}, bend right=0.0, opacity=0.7123259987341841] (0) to (7);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=0.0, opacity=0.8255746592079728] (1) to (2);
+\path[line width=4.0,bicolor={col0}{col1}, bend right=0.0, opacity=0.6586838795815284] (1) to (3);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=0.0, opacity=0.6836773046411102] (1) to (4);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=0.0, opacity=0.694453364345303] (1) to (6);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=0.9823536497715826] (2) to (3);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.49120171596320017] (2) to (3);
+\path[line width=4.0,bicolor_neg={col1}{col0}, bend right=0.0, opacity=0.5116056847373537] (2) to (4);
+\path[line width=4.0,bicolor_neg={col0}{col0}, bend right=-11.25, opacity=0.408783693489107] (3) to (4);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.3] (3) to (4);
+\path[line width=4.0,bicolor={col1}{col0}, bend right=0.0, opacity=0.9614194793506172] (3) to (5);
+\path[line width=4.0,bicolor_neg={col0}{col0}, bend right=0.0, opacity=0.4107926266154857] (3) to (6);
+\path[line width=4.0,bicolor={col1}{col0}, bend right=0.0, opacity=0.9334760392943663] (3) to (7);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=1.0] (4) to (5);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.7848598045108426] (4) to (5);
+\path[line width=4.0,bicolor={col1}{col0}, bend right=0.0, opacity=0.3] (4) to (6);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=0.9766075117523162] (4) to (7);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.3] (4) to (7);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=0.5821966232912573] (5) to (6);
+\path[line width=4.0,bicolor_neg={col1}{col1}, bend right=11.25, opacity=0.8049778731100583] (5) to (6);
+\path[line width=4.0,bicolor_neg={col1}{col0}, bend right=0.0, opacity=0.3] (5) to (7);
+\path[line width=4.0,bicolor={col0}{col0}, bend right=-11.25, opacity=1.0] (6) to (7);
+\path[line width=4.0,bicolor={col1}{col1}, bend right=11.25, opacity=0.7842155848449917] (6) to (7);
+
+            \end{scope}
+
+        \end{tikzpicture}
+
+        \end{document}
+        

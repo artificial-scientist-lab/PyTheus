@@ -1,0 +1,47 @@
+{
+  "description": "Heralded CNOT(3,3) gate with ancillary particles from single photon sources.",
+  "bulk_thr": 0.01,
+  "edges_tried": 30,
+  "foldername": "cnot33_sp",
+  "ftol": 1e-08,
+  "loss_func": "cr",
+  "num_anc": 5,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 10,
+  "target_state": [
+    "0000",
+    "0101",
+    "0202",
+    "1011",
+    "1112",
+    "1210",
+    "2022",
+    "2120",
+    "2221"
+  ],
+  "in_nodes": [
+    0,
+    1
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "single_emitters": [
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "thresholds": [
+    1,
+    0.1
+  ],
+  "heralding_out": false,
+  "tries_per_edge": 5,
+  "unicolor": false
+}

@@ -13,6 +13,7 @@ from itertools import combinations, product
 from itertools import combinations_with_replacement
 from pytheus.custom_loss.assembly_index import assembly_index, top_n_assembly
 import logging
+from .fermion_loss import fermion_fidelity, fermion_count_rate
 
 log = logging.getLogger(__name__)
 
@@ -434,4 +435,7 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'lff': [loss_from_function],
             'fockfid': [fock_fidelity, fock_countrate],
             'fockcr': [fock_countrate, fock_fidelity]
+                'fermfid': [fermion_fidelity, fermion_count_rate],
+    'fermcr': [fermion_count_rate, fermion_fidelity],
+
             }

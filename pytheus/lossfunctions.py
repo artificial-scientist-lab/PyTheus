@@ -434,7 +434,7 @@ loss_dic = {'ent': [make_lossString_entanglement],
             'cr': [count_rate, fidelity],
             'lff': [loss_from_function],
             'fockfid': [fock_fidelity, fock_countrate],
-            'fockcr': [fock_countrate, fock_fidelity]
+            'fockcr': [fock_countrate, fock_fidelity],
                 'fermfid': [fermion_fidelity, fermion_count_rate],
     'fermcr': [fermion_count_rate, fermion_fidelity],
 

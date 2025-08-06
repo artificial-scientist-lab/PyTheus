@@ -1,5 +1,4 @@
 import numpy as np
-from .lossfunctions import count_rate
 
 
 def fermion_sign(subgraph):

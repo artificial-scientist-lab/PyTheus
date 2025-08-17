@@ -108,7 +108,7 @@ def prepEdgeList(edge_list, cnfg):
     return edge_list
 
 
-def get_all_bi_partions(num_par: int, lenght=None):
+def get_all_bi_partions(num_par: int, length=None):
 
     """
     returns all bi-partions as a generator for a given number of particles:
@@ -116,15 +116,15 @@ def get_all_bi_partions(num_par: int, lenght=None):
         e.g. : num_par = 3 : [([0], [1, 2]), ([1], [0, 2]), ([2], [0, 1])]
 
     """
-    if lenght is None or lenght == 'all':
+    if length is None or length == 'all':
         def check_len(bipar):
             return True
     else:
-        assert (type(lenght) is int and int(num_par / 2) >= lenght), \
-            "invalid lenght given(or Typeerror): int(num_par/2) > given lenght"
+        assert (type(length) is int and int(num_par / 2) >= length), \
+            "invalid length given(or Typeerror): int(num_par/2) > given length"
 
         def check_len(bipar):
-            return len(bipar) == lenght
+            return len(bipar) == length
 
     S = {i for i in range(num_par)}
     doubles = []

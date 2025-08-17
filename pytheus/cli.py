@@ -71,7 +71,7 @@ def plot(filename, pdf):
               help='list of which infos appear in info plot')
 def analyze(which_directory, all_weights_plus_minus_one,
             create_perfect_machting_pdf, which_infos):
-    """Run anlyzer tool depending on inputs."""
+    """Run analyzer tool depending on inputs."""
     try:
         get_analyse(which_directory,
                     all_weights_plus_minus_one=all_weights_plus_minus_one,

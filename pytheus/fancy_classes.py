@@ -92,7 +92,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             weights = [edges[key] for key in sorted(edges.keys())]
             edges = [kk if isinstance(kk, tuple) else eval(kk) for kk in sorted(edges.keys())]
 
-            # Verification of appropiate edges
+            # Verification of appropriate edges
             if all(isinstance(edge, tuple) for edge in edges):
                 if all(len(edge) == 4 for edge in edges):
                     pass  # seems legit
@@ -200,7 +200,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
     
     def __matmul__(self, other):
         '''
-        Braket operation, the inner product between the stored state. 
+        Bracket operation, the inner product between the stored state. 
         It can be used with @.
         '''
         return self.state @ other
@@ -465,7 +465,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 for kk, vv in self.graph.items():
                     self.graph[kk] = vv[0] * np.exp(1j * vv[1])
             else:
-                raise ValueError('The propery `imaginary` is NOT defined correctly.')
+                raise ValueError('The property `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.graph.items():
                 self.graph[kk] = True
@@ -483,7 +483,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
                 for kk, vv in self.graph.items():
                     self.graph[kk] = [abs(vv), np.angle(vv)]
             else:
-                raise ValueError('The propery `imaginary` is NOT defined correctly.')
+                raise ValueError('The property `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.graph.items():
                 self.graph[kk] = [True, False]
@@ -688,7 +688,7 @@ class State():
         Function to initiate a State instance with different inputs.
         This version is not so flexible with the input format as the analogous from Graph.
         '''
-        # Verification of appropiate kets
+        # Verification of appropriate kets
         if type(kets) == dict:
             amplitudes = [kets[key] for key in sorted(kets.keys())]
             kets = sorted(kets.keys())
@@ -701,7 +701,7 @@ class State():
         else:
             raise ValueError(invalidInput('kets'))
 
-        # Verification and setting of appropiate amplitudes
+        # Verification and setting of appropriate amplitudes
         if len(amplitudes) == 0:  # The default option True behaves (mostly) as 1
             amplitudes = defaultValues(len(kets), self.imaginary)
         else:
@@ -816,7 +816,7 @@ class State():
 
     def __matmul__(self, other):
         '''
-        Braket operation, the inner product between state. 
+        Bracket operation, the inner product between state. 
         It can be used with @.
         '''
         conversion_a = self.imaginary == 'polar'
@@ -937,7 +937,7 @@ class State():
                 for kk, vv in self.state.items():
                     self.state[kk] = vv[0] * np.exp(1j * vv[1])
             else:
-                raise ValueError('The propery `imaginary` is NOT defined correctly.')
+                raise ValueError('The property `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.state.items():
                 self.state[kk] = True
@@ -955,7 +955,7 @@ class State():
                 for kk, vv in self.state.items():
                     self.state[kk] = [abs(vv), np.angle(vv)]
             else:
-                raise ValueError('The propery `imaginary` is NOT defined correctly.')
+                raise ValueError('The property `imaginary` is NOT defined correctly.')
         else:
             for kk, vv in self.state.items():
                 self.state[kk] = [True, False]

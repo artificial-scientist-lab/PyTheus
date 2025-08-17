@@ -46,7 +46,7 @@ def string_wrapper(string: str, max_chars_per_line=80,
                    latex = '$',
                    line_break_char = '+' ) -> str:
     """
-    wraps a string to a given line lenght 
+    wraps a string to a given line length 
 
     Parameters
     ----------
@@ -178,9 +178,9 @@ class entanglement_measure():
         calculate the maximal sum of given entanglement measurement 
 
         k_uniform : int, optional
-            which bipartion of lenght k one consider,
+            which bipartion of length k one consider,
             if k = 0:
-            the sum of all possible bipartion and the corrosponding
+            the sum of all possible bipartion and the corresponding
             max value will be returned
 
         """
@@ -203,12 +203,12 @@ class entanglement_measure():
             and 3 splits with 2|2 particles
 
         """
-        lenghts = []
+        lengths = []
         for kk in range(1, 1+int(self.num_par/2)):
             ls = [1 for bipar in hf.get_all_bi_partions(self.num_par)
                   if len(bipar[0]) == kk]
-            lenghts.append(len(ls))
-        return lenghts
+            lengths.append(len(ls))
+        return lengths
 
     def max_values(self,  k_uniform=0, full_vec=False) -> list:
         """
@@ -294,7 +294,7 @@ class state_analyzer():
         self.pre = precision
         self.len = len(self.dic)  # number of summands
         if len(weights) != 0:
-            assert self.len == len(weights), "lenght of weight should match"
+            assert self.len == len(weights), "length of weight should match"
 
         if len(dim) == 0:
             ni = len(list(self.dic.keys())[0])
@@ -359,7 +359,7 @@ class state_analyzer():
             except KeyError:
                 pass
         if all(state_vec == 0) is True:
-            raise TypeError('State Vector is zero for all entrys, hmm?')
+            raise TypeError('State Vector is zero for all entries, hmm?')
         self.norm = np.linalg.norm(state_vec)
         if normalized:
             return state_vec * 1/(self.norm)
@@ -500,7 +500,7 @@ class state_analyzer():
     def calc_k_uniform(self) -> (int, np.array):
         """
         get k uniform of state and normalized vector for each k-bipartion
-        where 1 means  maximal mixed and 0 seperable for that bipartion
+        where 1 means  maximal mixed and 0 separable for that bipartion
         e.g. :
             return is ( 1 , [ [1,1,1,1], [0,1,1] ] ) means state is 1-uniform
             and for all bipartions with cardinality 2 also maximal entangeld
@@ -648,7 +648,7 @@ class analyser():
     def plot_losses(self):
         """
         plots y-axis: concurrence, x-axis: number of edges for a whole
-        list of state dicts, plotvline plots a vertical line for a given positon
+        list of state dicts, plotvline plots a vertical line for a given position
 
         Parameters
         ----------
@@ -806,7 +806,7 @@ class analyser():
                                      dpi=dpi)
             
             if row_len == 1:
-                ax = [ax]  # make ax subscriptable when lenght one
+                ax = [ax]  # make ax subscriptable when length one
             for ii, cover in enumerate(vv):
                 weights_for_cover = [graph[edge] for edge in cover]
                 total_weight += np.prod(weights_for_cover)
@@ -973,7 +973,7 @@ def input_with_check_ints(question: str, restriciton=[]):
                 return user_input
         except:
             counter += 1
-        print(f'inproper input!: try again ({3-counter} trys left)')
+        print(f'inproper input!: try again ({3-counter} tries left)')
 
     import sys
     sys.exit()
@@ -1025,7 +1025,7 @@ def convert_input_path(path: str):
         path = Path(output_dir) / str(folder_list[idx_folder])
 
     path = Path(path)
-    # first check if given path is an absolut path and if exists then return
+    # first check if given path is an absolute path and if exists then return
     for folder in walk(output_dir):
         if str(path) in str(folder):
             path = folder
@@ -1049,17 +1049,17 @@ def get_analyse(which_directory, all_weights_plus_minus_one=False,
     path = convert_input_path(which_directory)
     a = analyser(path, only_pm=all_weights_plus_minus_one)
     #a.plot_losses()
-    indexs = input_with_check_ints(
+    indexes = input_with_check_ints(
         f'which state? (int from 0 - {len(a.files)-1} or idx_1 - idx_2): ',
         [0, len(a.files)-1])
-    if len(indexs) == 1:
-        indexs.append(indexs[0])
-    for idx in range(indexs[0],indexs[1]+1):
+    if len(indexes) == 1:
+        indexes.append(indexes[0])
+    for idx in range(indexes[0],indexes[1]+1):
         a.info_statex(idx, infos=which_infos)
         if create_perfect_machting_pdf:
             a.all_perfect_matchings_to_pdf(idx)
     plt.show()
-    input('press arbitary key to exit')
+    input('press arbitrary key to exit')
     return 0
 
 

@@ -93,7 +93,7 @@ different events are selected out of all possibilities (post-selection rules).
 All experiments that our package is applied to can be described by a graph. When describing state creation using SPDC
 each edge can be interpreted as a pair-creation. In this case all edges of the complete graph can be considered
 physically legitimate. When describing other experiments edges can be interpreted differently. Not every edge will be
-physically meaningful. Consequentially there are constraints on which connections of the complete graph are used in the
+physically meaningful. Consequently there are constraints on which connections of the complete graph are used in the
 optimization.
 
 *(A) Single Photon Sources and Input Photons*
@@ -132,7 +132,7 @@ Heralding is a less strict form of selecting events. Instead of putting a detect
 coincidence, only a subset of the paths are detected _heralding_ an output state in the unmeasured paths. This selection
 rule not only allows for possibilities where one photon is in every path (perfect matchings) but also for other
 possibilities (edge covers) as long as they cover the heralding detectors. This can lead to cross-terms that are not
-present when post-selecting for coincidence in all paths. Consequentially it is more difficult to find a graph with
+present when post-selecting for coincidence in all paths. Consequently it is more difficult to find a graph with
 fidelity one, also requiring more experimental resources.
 
 *(B) Single Photon Sources and Input Photons*
@@ -317,7 +317,7 @@ photon sources and two for ancillary detectors.
 If `num_anc` is larger than the sum of lengths of `in_nodes` and `single_emitters`, the necessary amount of particles is
 created through SPDC.
 
-Additionaly `heralding_out` is set to `true` here. The photons corresponding to `out_nodes` will not be detected.
+Additionally `heralding_out` is set to `true` here. The photons corresponding to `out_nodes` will not be detected.
 
 ### Measurement
 

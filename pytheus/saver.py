@@ -14,21 +14,21 @@ import json
 
 def read_json(abspath: Path) -> dict:
     """
-    return the dictonary for a given abspath that is a json file
+    return the dictionary for a given abspath that is a json file
 
     """
     with abspath.open('r', encoding="UTF-8") as openfile:
         # Reading from json file
-        dictonary = json.load(openfile)
+        dictionary = json.load(openfile)
         openfile.close()
 
-    return dictonary
+    return dictionary
 
 
 def write_json(abspath: Path, dictionary: dict,
                overwrite_existing_file = False) -> None:
     """
-    getting an Path object and a dictonary then write the dictionary
+    getting an Path object and a dictionary then write the dictionary
     in a json file for the given path
 
     """
@@ -232,4 +232,4 @@ class saver:
         file_name += str(len(graph.perfect_matchings)) + '-'
         for lo in loss:
             file_name += f'{lo:.4f}_'
-        return file_name[:-1] # delet last _
+        return file_name[:-1] # delete last _

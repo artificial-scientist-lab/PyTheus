@@ -1,5 +1,5 @@
 {
-  "description": "Measurment for three particle three-dimensional GHZ state. Two ancillary particles",
+  "description": "Measurement for three particle three-dimensional GHZ state. Two ancillary particles",
   "bulk_thr": 0.01,
   "edges_tried": 30,
   "foldername": "ghz_analyzer_3d",

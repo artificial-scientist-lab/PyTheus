@@ -71,9 +71,10 @@ def write_json(abspath: Path, dictionary: dict,
 
 class saver:
 
-    def __init__(self, config=None, name_config_file = '', dim = []):
-
-        self.name_config_file = Path(name_config_file).name
+    def __init__(self, config=None, name_config_file='', dim=[]):
+        config_path = Path(name_config_file).resolve()
+        self.name_config_file = config_path.name
+        self.config_dir = config_path.parent
         self.config = config
         self.config['dimensions'] = dim
         self.best_state = None
@@ -102,7 +103,7 @@ class saver:
 
         i = 0
         while True:  # iterate as long as one could find a proper safe folder
-            pt = Path.cwd() / 'output' / folder_name  # move data directory
+            pt = self.config_dir / 'output' / folder_name
             pt.mkdir(parents=True, exist_ok=True)
             summary_path = pt / 'summary.json'
             if summary_path.exists():

@@ -396,7 +396,7 @@ def setup_for_target(cnfg, state_cat=True):
     # apply unicolor simplification
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
-        for edge in graph.edges.keys():
+        for edge in list(graph.edges):
             if edge[0] < num_data_nodes and edge[1] < num_data_nodes and edge[2] != edge[3]:
                 graph.remove(edge)
 
@@ -454,9 +454,11 @@ def get_dimensions_and_target_state(cnfg):
         term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
         # include amplitudes in target state if given
         if 'amplitudes' in cnfg:
-            target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
+            target_state = State(term_list, amplitudes=cnfg['amplitudes'],
+                                 imaginary=cnfg['imaginary'], normalize=False)
         else:
-            target_state = State(term_list, imaginary=cnfg['imaginary'])
+            target_state = State(term_list, imaginary=cnfg['imaginary'],
+                                 normalize=False)
         # print readable expression of the target state
         print(hf.readableState(target_state))
         target_kets = target_state.kets

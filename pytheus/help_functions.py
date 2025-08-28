@@ -29,7 +29,10 @@ def stateToString(state, ket=False):
 def readableState(state):
     readable_dict = {}
     for key in state.kets:
-        readable_dict[stateToString([key], ket=True)] = state[key]
+        val = state[key]
+        if isinstance(val, (int, float, complex, np.number)):
+            val = bool(val)
+        readable_dict[stateToString([key], ket=True)] = val
     return readable_dict
 
 
@@ -176,7 +179,7 @@ def get_sysdict(dimensions_of_H: list, bipar_for_opti='all', imaginary = False):
                              for ket in
                              get_all_kets_for_given_dim(dimensions_of_H, str)]
 
-    sysdict['dim_total'] = np.product(dimensions_of_H)
+    sysdict['dim_total'] = np.prod(dimensions_of_H)
     sysdict['bipar_for_opti'] = list(
         get_all_bi_partions(sysdict['num_particles'], bipar_for_opti))
     sysdict['imaginary'] = imaginary

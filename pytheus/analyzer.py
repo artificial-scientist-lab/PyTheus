@@ -350,9 +350,9 @@ class state_analyzer():
 
         """
         if any(isinstance(ampl, complex) for ampl in self.dic.values()):
-            state_vec = np.zeros(np.product(self.dim), dtype=np.complex64)
+            state_vec = np.zeros(np.prod(self.dim), dtype=np.complex64)
         else:
-            state_vec = np.zeros(np.product(self.dim))
+            state_vec = np.zeros(np.prod(self.dim))
         for idx, ket in enumerate(hf.get_all_kets_for_given_dim(self.dim, str)):
             try:
                 state_vec[idx] = self.dic[ket]

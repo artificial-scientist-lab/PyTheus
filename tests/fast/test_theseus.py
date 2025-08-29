@@ -5,11 +5,11 @@ from random import random
 import numpy as np
 from numpy.random import RandomState
 
-from build.lib.theseus.main import read_config
+from pytheus.main import read_config
 from tests.fast.config import GHZ_346
 from pytheus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
     stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach, \
-    targetEdges, removeNodes, recursiveEdgeCover, findEdgeCovers, edgeWeight, weightProduct, writeNorm, targetEquation, \
+    targetEdges, removeNodes, findEdgeCovers, edgeWeight, weightProduct, writeNorm, targetEquation, \
     compute_entanglement, buildLossString
 
 
@@ -151,15 +151,6 @@ class TestTheseusModule(unittest.TestCase):
         actual = removeNodes(node, graph_input)
         self.assertEqual([(1, 3), (1, 4), (1, 5), (3, 4), (3, 5), (4, 5)], actual)
         self.assertEqual(6, len(actual))
-
-    def test_recursiveEdgeCover(self):
-        graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
-        possible_edge_covers = []
-        actual = recursiveEdgeCover(graph_input, possible_edge_covers)
-        self.assertIn([(0, 3), (1, 2), (1, 2)], possible_edge_covers)
-        self.assertEqual([(0, 1), (0, 2), (1, 3)], possible_edge_covers[2])
-        self.assertEqual([(0, 2), (1, 2), (1, 3)], possible_edge_covers[12])
-        self.assertEqual(22, len(possible_edge_covers))
 
     def test_findEdgeCovers(self):
         graph_input = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]

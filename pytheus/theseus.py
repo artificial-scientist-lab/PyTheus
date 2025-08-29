@@ -90,9 +90,10 @@ def edgeBleach(color_edges):
         {(node1, node2): [(color1, color2), ...], (node1, node3): [(color2, color1), ...], ...}
     '''
     raw_edges = np.unique(np.array(color_edges)[:, :2], axis=0)
-    bleached_edges = {tuple(edge): [] for edge in raw_edges}
+    bleached_edges = {tuple(map(int, edge)): [] for edge in raw_edges}
     for edge in color_edges:
-        bleached_edges[edge[:2]].append(edge[2:])
+        key = (int(edge[0]), int(edge[1]))
+        bleached_edges[key].append(tuple(map(int, edge[2:])) if len(edge) > 2 else ())
     return bleached_edges
 
 
@@ -625,8 +626,8 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False
     avail_colors = edgeBleach(graph)
     raw_edges = sorted(avail_colors.keys())
 
-    if nodes_left is None: 
-        nodes_left = set(np.array(raw_edges)[:, :2].flat)
+    if nodes_left is None:
+        nodes_left = set(int(n) for n in np.array(raw_edges)[:, :2].flat)
     if edges_left is None: 
         edges_left = order + (len(nodes_left) // 2)
 
@@ -642,7 +643,8 @@ def findEdgeCovers(graph, edges_left=None, nodes_left=None, order=1, loops=False
         for coloring in itertools.product(*[avail_colors[edge] for edge in cover]):
             painted_covers.add(tuple(sorted(edge + color
                                             for edge, color in zip(cover, coloring))))
-    return sorted(painted_covers)
+    return [list(map(lambda e: (int(e[0]), int(e[1])), cover))
+            for cover in sorted(painted_covers)]
 
 
 # # String Expressions
@@ -736,14 +738,14 @@ def writeNorm(state_catalog, imaginary=False, hot=False):
             term_sum = ' + '.join([f'{weightProduct(graph, imaginary)}' for graph in values])
             if term_sum == '':
                 term_sum = '0'
+            coeff = factorialProduct(key)
             if imaginary == False:
                 # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
                 # The factor should be squared or, in this case, left outside the square
-                norm_sum.append(f'(({term_sum})**2)')
+                norm_sum.append(f'{coeff}*(({term_sum})**2)')
             else:
-                norm_sum.append(f'(abs({term_sum})**2)')
-        norm_sum = ' + '.join(norm_sum)
-        return norm_sum
+                norm_sum.append(f'{coeff}*(abs({term_sum})**2)')
+        return ' + '.join(norm_sum).replace('+ 1*', '+ ')
 
 
 def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=False, ignore_missing_kets=False):
@@ -777,6 +779,9 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
             raise ValueError('The number of amplitudes and kets should be the same')
     if imaginary == 'polar':
         amplitudes = [amp[0] * np.exp(1j * amp[1]) for amp in amplitudes]
+    if state_catalog is None:
+        dimensions = stateDimensions(ket_list)
+        state_catalog = allEdgeCovers(dimensions)
     norm2 = abs(np.conjugate(amplitudes) @ amplitudes)
     # if norm2 != 1: # Is this useless? I think so (Carlos)
     #     norm2 = str(norm2)

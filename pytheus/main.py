@@ -10,7 +10,7 @@ import os.path
 import sys
 from pathlib import Path
 
-import pkg_resources
+import importlib.resources as importlib_resources
 import logging
 
 log = logging.getLogger(__name__)
@@ -396,7 +396,7 @@ def setup_for_target(cnfg, state_cat=True):
     # apply unicolor simplification
     if cnfg['unicolor']:
         num_data_nodes = len(cnfg['target_state'][0])
-        for edge in graph.edges.keys():
+        for edge in list(graph.edges):
             if edge[0] < num_data_nodes and edge[1] < num_data_nodes and edge[2] != edge[3]:
                 graph.remove(edge)
 
@@ -454,9 +454,11 @@ def get_dimensions_and_target_state(cnfg):
         term_list = [term + cnfg['num_anc'] * '0' for term in cnfg['target_state']]
         # include amplitudes in target state if given
         if 'amplitudes' in cnfg:
-            target_state = State(term_list, amplitudes=cnfg['amplitudes'], imaginary=cnfg['imaginary'])
+            target_state = State(term_list, amplitudes=cnfg['amplitudes'],
+                                 imaginary=cnfg['imaginary'], normalize=False)
         else:
-            target_state = State(term_list, imaginary=cnfg['imaginary'])
+            target_state = State(term_list, imaginary=cnfg['imaginary'],
+                                 normalize=False)
         # print readable expression of the target state
         print(hf.readableState(target_state))
         target_kets = target_state.kets
@@ -472,14 +474,15 @@ def read_config(is_example, filename):
 
     # option for running files from example folder
     if is_example:
-        configs_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
-        walk = os.walk(configs_dir)
-        for root, dirs, files in walk:
-            if os.path.basename(root) == filename:
-                for file in files:
-                    if file.startswith('config'):
-                        filename = os.path.join(root, file)
-                        break
+        with importlib_resources.as_file(
+            importlib_resources.files(pytheus) / "graphs"
+        ) as configs_dir:
+            for root, _, files in os.walk(configs_dir):
+                if os.path.basename(root) == filename:
+                    for file in files:
+                        if file.startswith('config'):
+                            filename = os.path.join(root, file)
+                            break
 
     # check if filename ends in json, add extension if needed
     if not filename.endswith('.json'):

@@ -152,7 +152,7 @@ def graphPlot(graph, scaled_weights=False, show=True, max_thickness=10,
     ax.set_ylim([-1.1, 1.1])
     ax.axis('off')
     # if weight_product:
-    #     total_weight = np.product(weight_list)
+    #     total_weight = np.prod(weight_list)
     #     wp = '${}$'.format(anal.num_in_str(total_weight))
     #     if wp == '$$':
     #         wp = str(total_weight)

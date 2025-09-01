@@ -10,7 +10,7 @@ import os.path
 import sys
 from pathlib import Path
 
-import pkg_resources
+import importlib.resources as importlib_resources
 import logging
 
 log = logging.getLogger(__name__)
@@ -474,14 +474,15 @@ def read_config(is_example, filename):
 
     # option for running files from example folder
     if is_example:
-        configs_dir = pkg_resources.resource_filename(pytheus.__name__, "graphs")
-        walk = os.walk(configs_dir)
-        for root, dirs, files in walk:
-            if os.path.basename(root) == filename:
-                for file in files:
-                    if file.startswith('config'):
-                        filename = os.path.join(root, file)
-                        break
+        with importlib_resources.as_file(
+            importlib_resources.files(pytheus) / "graphs"
+        ) as configs_dir:
+            for root, _, files in os.walk(configs_dir):
+                if os.path.basename(root) == filename:
+                    for file in files:
+                        if file.startswith('config'):
+                            filename = os.path.join(root, file)
+                            break
 
     # check if filename ends in json, add extension if needed
     if not filename.endswith('.json'):

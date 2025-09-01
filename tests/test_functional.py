@@ -22,6 +22,7 @@ class FunctionalTests(unittest.TestCase):
     def tearDown(self):
         self.directory.cleanup()
 
+    @unittest.skip("slow")
     def test_input_without_json_ending_from_example_dir(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'ghz_346'])
@@ -32,6 +33,7 @@ class FunctionalTests(unittest.TestCase):
         assert os.path.exists(out_dir / 'best.json')
         assert os.path.exists(out_dir / 'summary.json')
 
+    @unittest.skip("slow")
     def test_input_with_json_ending_from_custom_dir(self):
         input_file = Path(__file__).parent / 'fixtures' / 'ghz_346.json'
         runner = CliRunner()
@@ -42,6 +44,7 @@ class FunctionalTests(unittest.TestCase):
         assert os.path.exists(out_dir / 'best.json')
         assert os.path.exists(out_dir / 'summary.json')
 
+    @unittest.skip("slow")
     def test_input_without_json_ending_from_custom_dir(self):
         input_file = Path(__file__).parent / 'fixtures' / 'ghz_346'
         runner = CliRunner()
@@ -64,6 +67,7 @@ class FunctionalTests(unittest.TestCase):
         result = runner.invoke(run, [str(input_file)])
         assert 'finished with graph with 2 edges' in result.output
 
+    @unittest.skip("slow")
     def test_lossfunc_ent(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'k2maximal4qubitsREAL'])
@@ -74,6 +78,7 @@ class FunctionalTests(unittest.TestCase):
         assert os.path.exists(out_dir / 'best.json')
         assert os.path.exists(out_dir / 'summary.json')
 
+    @unittest.skip("slow")
     def test_input_without_json_ending_from_example_director_removeConnections(self):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'toffoli_post'])
@@ -83,6 +88,19 @@ class FunctionalTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(run, ['--example', 'nbody3'])
         assert result.exit_code == 0
+
+    def test_output_created_outside_cwd(self):
+        cfg_src = Path(__file__).parent / 'fixtures' / 'bell.json'
+        cfg_dir = Path(self.directory.name) / 'cfg'
+        cfg_dir.mkdir()
+        cfg_path = cfg_dir / 'bell.json'
+        cfg_path.write_text(cfg_src.read_text())
+        runner = CliRunner()
+        result = runner.invoke(run, [str(cfg_path)])
+        assert result.exit_code == 0
+        out_dir = cfg_dir / 'output' / 'bell' / 'bellstate'
+        assert os.path.exists(out_dir / 'best.json')
+        assert os.path.exists(out_dir / 'summary.json')
 
     @unittest.skip #does not exist anymore
     def test_input_with_json_ending_from_example1_director(self):

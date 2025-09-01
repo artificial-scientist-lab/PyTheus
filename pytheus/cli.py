@@ -18,7 +18,7 @@ import sys
 import json
 
 import click
-import pkg_resources
+import importlib.resources as importlib_resources
 
 import pytheus
 from pytheus.main import run_main
@@ -85,10 +85,11 @@ def analyze(which_directory, all_weights_plus_minus_one,
 @cli.command()
 def list():
     """List all included examples."""
-    configs_dir = pkg_resources.resource_filename(pytheus.__name__, 'graphs')
-    walk = os.walk(configs_dir)
-    for root, dirs, files in walk:
-        for file in files:
-            if file.startswith('config'):
-                click.echo(
-                print(os.path.basename(root)))
+    with importlib_resources.as_file(
+        importlib_resources.files(pytheus) / 'graphs'
+    ) as configs_dir:
+        for root, _, files in os.walk(configs_dir):
+            for file in files:
+                if file.startswith('config'):
+                    click.echo(os.path.basename(root))
+                    break

@@ -1,0 +1,28 @@
+{
+  "name": "quiz-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js & vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.8",
+    "@mui/material": "^5.14.8",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "youtube-transcript": "^1.0.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+  }
+}

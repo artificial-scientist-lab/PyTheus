@@ -5,8 +5,10 @@
 *Carlos Ruiz-Gonzalez, Sören Arlt, Jan Petermann, Sharareh Sayyad, Tareq Jaouni, Ebrahim Karimi, Nora Tischler, Xuemei Gu, Mario Krenn* \
 Quantum **7**, 1204 (2023).
 
-[**Digital Discovery of a Scientific Concept at the Core of Experimental Quantum Optics**](https://arxiv.org/abs/2210.09981) \
-*Sören Arlt, Carlos Ruiz-Gonzalez, Mario Krenn*
+[**Emulating multiparticle emitters with pair-sources: digital discovery of a quantum optics building block**](https://iopscience.iop.org/article/10.1088/2058-9565/ad904f) \
+*Sören Arlt, Carlos Ruiz-Gonzalez, Mario Krenn* \
+Quantum Science and Technology **10** (1), 015042 (2025).
+
 
 ## Installation
 

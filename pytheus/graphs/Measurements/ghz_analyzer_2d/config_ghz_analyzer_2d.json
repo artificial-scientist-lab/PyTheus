@@ -1,5 +1,5 @@
 {
-  "description": "Measurment for three particle two-dimensional GHZ state",
+  "description": "Measurement for three particle two-dimensional GHZ state",
   "bulk_thr": 0.01,
   "edges_tried": 30,
   "foldername": "ghz_analyzer_2d",

@@ -183,7 +183,7 @@ class topological_opti:
 
         Returns
         -------
-        list of losses for corrosponding weights stored in result.x
+        list of losses for corresponding weights stored in result.x
 
         """
         loss_values = [result.fun]
@@ -211,7 +211,7 @@ class topological_opti:
         log.info('losses done')
         valid = False
         counter = 0
-        # repeat optimization of complete graph until a good solution is found (which satifies self.check())
+        # repeat optimization of complete graph until a good solution is found (which satisfies self.check())
         while not valid:
             # prepare optimizer
             initial_values, bounds = self.prepOptimizer(len(graph))
@@ -394,7 +394,7 @@ class topological_opti:
                                                options={'ftol': self.config['ftol']})
                 except Exception as e:
                     # if the target kets can not be produced with the given graph we can give up on this edge
-                    # it wont work
+                    # it won't work
                     reduced_graph[min_edge] = amplitude
                     print('edge necessary for producing all kets')
                     log.info('edge necessary for producing all kets')

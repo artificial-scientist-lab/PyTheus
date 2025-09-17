@@ -312,7 +312,7 @@ def buildAllEdges(dimensions, string=False, imaginary=False, loops=False):
     Parameters
     ----------
     dimensions : list
-        Accesible dimensions/colors for each of the nodes of the graph.
+        Accessible dimensions/colors for each of the nodes of the graph.
     string : boolean, optional
         If True, it returns a list of strings instead of tuples. 
     imaginary : boolean, str ('cartesian' or 'polar'), optional
@@ -383,7 +383,7 @@ def buildRandomGraph(dimensions, num_edges, cover_all=True, loops=False):
     Parameters
     ----------
     dimensions : list
-        Accesible dimensions/colors for each of the nodes of the graph.
+        Accessible dimensions/colors for each of the nodes of the graph.
     num_edges : int
         Number of edges of the random graph.
     cover_all : boolean, optional
@@ -420,7 +420,7 @@ def allPerfectMatchings(dimensions):
     Parameters
     ----------
     dimensions : list
-        Accesible dimensions/colors for each of the nodes of the graph.
+        Accessible dimensions/colors for each of the nodes of the graph.
         
     Returns
     -------
@@ -459,7 +459,7 @@ def allEdgeCovers(dimensions, order=0, loops=False): # This function should repl
     Parameters
     ----------
     dimensions : list
-        Accesible dimensions/colors for each of the nodes of the graph.
+        Accessible dimensions/colors for each of the nodes of the graph.
     order : int, optional
         Orders above the minimum required to cover all nodes.
         If 0, the output are only perfect machings, with all nodes having degree 1.
@@ -479,7 +479,7 @@ def allEdgeCovers(dimensions, order=0, loops=False): # This function should repl
     num_nodes = len(dimensions)
     # Given a list with N different nodes, if order>0 some nodes will have degree
     # larger than 1, i.e., their creator operators will be repeated.
-    # crowded_graph stores all ways in which these repeatitions may occur.
+    # crowded_graph stores all ways in which these repetitions may occur.
     # For N=4 and order=1: 000123, 001123, 001223, 001233, 011123, 011223...
     additions = list(itertools.combinations_with_replacement(range(num_nodes), 2 * order))
     crowded_graph = [list(range(num_nodes))] * len(additions)
@@ -824,7 +824,7 @@ def mixedTarget(ket_list, mixed_catalog, amplitudes=None, imaginary=False, targe
         List of target kets written as: [((node1, dimension1), (node2, dimension2), ...), ...].
         The kets must include ALL nodes which are NOT traced out.
     mixed_catalog : dictionary
-        Dictionary of state_catalogs that produce the kets from ket_list. The catalogs are splitted by 
+        Dictionary of state_catalogs that produce the kets from ket_list. The catalogs are split by 
         the ancilla creators, which are the keys of the mixed_catalog. 
         It can be obtained from the input `state_catalog`.  
     amplitudes : list, optional
@@ -839,7 +839,7 @@ def mixedTarget(ket_list, mixed_catalog, amplitudes=None, imaginary=False, targe
     -------
     str (if target_dict False)
         Non-normalized fidelity string with all the contributions from the reduced density matrix.
-    dictinary of str (if target_dict True)
+    dictionary of str (if target_dict True)
         Dictionary whose values are non-normalized fidelity string with all the contributions from the 
         reduced density matrix.
     
@@ -920,7 +920,7 @@ def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor=0) -> floa
     Parameters
     ----------
     qstate : np.array
-        basis vector of corrosponding state as np.array
+        basis vector of corresponding state as np.array
     sys_dict : dict
         that stores essential_infos (see help_functions)
 
@@ -941,12 +941,12 @@ def compute_entanglement(qstate: np.array, sys_dict: dict, var_factor=0) -> floa
         return np.einsum('ij,ji', red, red)  # is equivalent to trace( red**2 ) but faster
 
     loss_vec = [calc_con(qstate, par[0]) for par in sys_dict['bipar_for_opti']]
-    lenght = len(loss_vec)
-    mean = sum(loss_vec) / lenght
+    length = len(loss_vec)
+    mean = sum(loss_vec) / length
     if var_factor == 0:  # no need to compute variance if factor = 0
         return mean
     else:
-        var = sum([(x - mean) ** 2 for x in loss_vec]) / (lenght)
+        var = sum([(x - mean) ** 2 for x in loss_vec]) / (length)
         return mean + var_factor * var
 
 

@@ -1,4 +1,0 @@
-Development
-===========
-
-Bla bla bla

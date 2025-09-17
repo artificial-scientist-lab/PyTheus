@@ -1,0 +1,42 @@
+{
+    "description": "Postselected 3d Toffoli gate.",
+    "bulk_thr": 0,
+    "edges_tried": 30,
+    "foldername": "toffoli_post",
+    "ftol": 1e-07,
+    "loss_func": "cr",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "in_nodes": [
+        0,
+        1,
+        2
+    ],
+    "out_nodes": [
+        3,
+        4,
+        5
+    ],
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "000000",
+        "001001",
+        "002002",
+        "010010",
+        "011011",
+        "012012",
+        "100100",
+        "101101",
+        "102102",
+        "110111",
+        "111112",
+        "112110"
+    ],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5
+}

@@ -1,0 +1,37 @@
+{
+  "description": "Heralded CNOT gate between a qubit (control) and a qutrit (target). Four ancilla photons from SPDC.",
+  "edges_tried": 20,
+  "foldername": "cnot23",
+  "ftol": 1e-08,
+  "loss_func": "cr",
+  "num_anc": 4,
+  "num_pre": 1,
+  "optimizer": "L-BFGS-B",
+  "imaginary": false,
+  "safe_hist": true,
+  "samples": 1000,
+  "target_state": [
+    "0000",
+    "0101",
+    "0202",
+    "1011",
+    "1112",
+    "1210"
+  ],
+  "in_nodes": [
+    0,
+    1
+  ],
+  "out_nodes": [
+    2,
+    3
+  ],
+  "heralding_out": true,
+  "number_resolving": true,
+  "novac": false,
+  "thresholds": [
+    0.2,
+    0.1
+  ],
+  "tries_per_edge": 10
+}

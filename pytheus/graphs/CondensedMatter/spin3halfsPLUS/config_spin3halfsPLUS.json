@@ -1,0 +1,36 @@
+{
+    "description": "Condensed matter state spin3plus of three particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 10,
+    "foldername": "spin3plus_3",
+    "ftol": 1e-05,
+    "loss_func": "cr",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [
+        "012",
+        "021",
+        "102",
+        "120",
+        "201",
+        "210"
+    ],
+    "amplitudes": [
+        1.732,
+        -1.732,
+        -1.732,
+        1.732,
+        1.732,
+        -1.732
+    ],
+    "thresholds": [
+        0.2,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}

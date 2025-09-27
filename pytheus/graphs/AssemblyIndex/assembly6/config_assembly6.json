@@ -1,0 +1,31 @@
+{
+    "description": "assembly index maximization for 6 qubits and 10 edges",
+    "foldername": "assembly",
+    "loss_func": "lff",
+    "lff_name": "assembly_index",
+    "dimensions": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+    ],
+    "num_vertices": 6,
+    "num_cols": 2,
+    "size_of_graph": 10,
+    "sample_size": 1,
+    "optimizer": "L-BFGS-B",
+    "ftol": 1e-06,
+    "samples": 1,
+    "thresholds": [
+        99999
+    ],
+    "topopt": false,
+    "edges_tried": 30,
+    "tries_per_edge": 5,
+    "unicolor": false,
+    "imaginary": false,
+    "num_pre": 1,
+    "bulk_thr": 0
+}

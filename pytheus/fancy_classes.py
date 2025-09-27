@@ -301,8 +301,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
             else:
                 self._state_catalog = th.stateCatalog(th.findEdgeCovers(self.edges, 
                                                         order=order, loops=self.loops))
-        
-        if self._state_catalog_tensor is not None:
+        if self._state_catalog_tensor is None:
             self._state_catalog_tensor = {} 
             for ket, pm_list in self._state_catalog.items():
                 self._state_catalog_tensor[ket] = [[self.complete_graph_edges.index(edge) for edge in pm] for pm in pm_list]

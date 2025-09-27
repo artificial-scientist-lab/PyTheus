@@ -8,6 +8,7 @@ from math import factorial
 from collections import Counter
 import numpy as np
 import warnings
+import math
 
 
 import logging
@@ -733,7 +734,7 @@ def writeNorm(state_catalog, imaginary=False, hot=False):
         return ' + '.join(norm_sum).replace('/1 +', ' +').replace('/1)', ')').replace('+ 1*', '+ ')
     else:
         for key, values in state_catalog.items():
-            term_sum = ' + '.join([f'{weightProduct(graph, imaginary)}' for graph in values])
+            term_sum = f"math.fsum([{', '.join([f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in values])}])"
             if term_sum == '':
                 term_sum = '0'
             if imaginary == False:
@@ -742,7 +743,12 @@ def writeNorm(state_catalog, imaginary=False, hot=False):
                 norm_sum.append(f'(({term_sum})**2)')
             else:
                 norm_sum.append(f'(abs({term_sum})**2)')
-        norm_sum = ' + '.join(norm_sum)
+        # norm_sum = ' + '.join(norm_sum)
+        terms = [t for t in norm_sum if t != '0']
+        print(f'total number of target terms {len(terms)}')
+        norm_sum = (
+            "0.0" if not terms else f"math.fsum([{', '.join(terms)}])"
+        )
         return norm_sum
 
 
@@ -793,7 +799,7 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
                 truncated_non_zero_state_catalog = {key: value for key, value in non_zero_state_catalog.items() if key in truncated_non_zero_state_catalog_keys}
                 raise ValueError(f"At least one of the target kets can not be produced by the setup. This could be because there is no perfect matching or edgecover that produces this ket. The target kets are {ket_list}. There are {len(non_zero_state_catalog)} total kets with non-zero contributions. Examples:  {truncated_non_zero_state_catalog_keys} ... (truncated to max. 10 entries, (position, mode) tuples). If there are no kets with non-zero contributions, it could be because the number of total particles (main+ancilla) is odd and the target (e.g. fidelity or count rate) relies on finding perfect matchings of a graph with an odd number of nodes, which is not possible by definition.")
         term_sum = [f'{weightProduct(graph, imaginary)}/{factorialProduct(graph)}' for graph in state_catalog[tuple(ket)]]
-        term_sum = ' + '.join(term_sum)
+        term_sum = f"math.fsum([{', '.join(term_sum)}])"
         # The multiplication with factorialProduct from creator operators: wikipedia.org/wiki/Creation_operators
         creation_term = factorialProduct(ket)
         if (creation_term**.5) % 1 == 0:
@@ -804,9 +810,12 @@ def targetEquation(ket_list, amplitudes=None, state_catalog=None, imaginary=Fals
 
     # equation_sum = ' + '.join(equation_sum).replace('0 + ','').replace(' + 0','')
     # if equation_sum == '0':
-    equation_sum = ' + '.join(term for term in equation_sum if term != '0')
-    if equation_sum == '':
-        return '0'
+    # equation_sum = ' + '.join(term for term in equation_sum if term != '0')
+    terms = [t for t in equation_sum if t != '0']
+    print(f'total number of target terms {len(terms)}')
+    equation_sum = f"math.fsum([{', '.join(terms)}])"
+    if len(terms)==0:
+        return "0.0"
     elif imaginary == False:
         return f'(({equation_sum})**2)/{norm2}'.replace('/1 +', ' +').replace('/1)', ')').replace('(1)*', '')
     else:
@@ -855,11 +864,49 @@ def mixedTarget(ket_list, mixed_catalog, amplitudes=None, imaginary=False, targe
         return '  +  '.join(target for target in mixed_target.values() if target != '0')
 
 
-def buildLossString(loss_function, variables):
+def buildLossString_old(loss_function, variables):
     loss_string = 'lambda ' + ', '.join(variables) + f': {loss_function}'
     loss_string = f'func = lambda inputs: ({loss_string})(*inputs) '
     exec(loss_string, globals())
     return func, loss_string  # we can keep the second as a security check
+
+def buildLossString(loss_expr: str, variables):
+    """
+    loss_expr: a Python expression string using names in `variables`.
+    variables: iterable of variable names, e.g. ['x0','x1',...]
+    Returns: (func, debug_string) where func(inputs) -> value.
+    """
+    import ast
+
+    def ast_max_depth(expr: str) -> int:
+        node = ast.parse(expr, mode="eval")
+        def depth(n):
+            kids = list(ast.iter_child_nodes(n))
+            return 1 + (max(map(depth, kids)) if kids else 0)
+        return depth(node.body)
+    
+    print(f'estimated AST depth of loss expression {ast_max_depth(loss_expr)}')
+
+    code = loss_expr
+    variables = tuple(variables)  # ensure stable order
+
+    def func(inputs, debug=False):
+        if len(inputs) != len(variables):
+            raise ValueError(f"Expected {len(variables)} inputs, got {len(inputs)}")
+        # Build the local namespace mapping names -> values
+        local_ns = dict(zip(variables, inputs))
+        if debug:
+            print(code)
+            #print code replaced with values
+            code_ = code
+            for var, val in local_ns.items():
+                print(f"  {var} = {val}")
+                code_ = code_.replace(var, repr(val))
+            print(code_)
+        return eval(code, {"__builtins__": {}, "math": math}, local_ns)
+
+    debug = f"eval({loss_expr}) with {{{', '.join(variables)}}}"
+    return func, debug
 
 
 def stringFunction(str_function, variables):

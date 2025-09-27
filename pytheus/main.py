@@ -421,7 +421,7 @@ def setup_for_target(cnfg, state_cat=True):
             if edge[0] == connection[1] and edge[1] == connection[0]:
                 graph.remove(edge)
 
-    print(f'start graph has {len(edge_list)} edges.')
+    print(f'start graph has {len(graph.edges)} edges.')
     return target_state, graph, cnfg
 
 

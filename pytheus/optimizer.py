@@ -13,7 +13,7 @@ from scipy import optimize
 import json
 
 import logging
-
+import time
 log = logging.getLogger(__name__)
 
 
@@ -29,11 +29,16 @@ class topological_opti:
         else:
             self.target = target_state  # object of State class
 
+        self.best_loss = np.inf
         # do preoptimization on complete starting graph, this might already take some time
         self.graph = self.pre_optimize_start_graph(start_graph)
-        self.saver = saver
+
         self.save_hist = safe_history
         self.history = []
+        
+        self.saver = saver
+        #save preoptimized graph to file
+        self.saver.save_graph(self)
 
     def check(self, result: object, lossfunctions: object):
         """
@@ -57,13 +62,9 @@ class topological_opti:
             if abs(result.fun) - abs(self.loss_val[0]) > self.config['thresholds'][0]:
                 return False
         else:
-            # uncomment to see where checks fail
-            # print(result.fun, self.config['thresholds'][0])
-            if result.fun > self.config['thresholds'][0]:
-                # if check fails return false
-                return False
             # check if all loss functions are under the corresponding threshold
-            for ii in range(1, len(lossfunctions)):
+            for ii in range(len(lossfunctions)):
+                print(f'loss {ii}: {lossfunctions[ii](result.x):.4f}, threshold: {self.config["thresholds"][ii]:.4f}')
                 if lossfunctions[ii](result.x) > self.config['thresholds'][ii]:
                     # if check fails return false
                     return False
@@ -166,7 +167,8 @@ class topological_opti:
         for loss in callable_loss:
             try:
                 loss(testinit)
-            except Exception:
+            except Exception as e:
+                print(f'Error in loss function {loss}: {e}')
                 raise RuntimeError('Loss function gives error for a test input, so it is not properly defined. This could be due to configuration parameters given for the optimization. Trying to compute perfect matchings for an odd number of total particles (main+ancilla) will lead to a meaningless loss function (0/0 --> division by zero).')
         return callable_loss
 
@@ -204,94 +206,115 @@ class topological_opti:
         preopt_graph
 
         """
-        # losses is a list of callable lossfunctions, e.g. [countrate(x), fidelity(x)], where x is a vector of edge weights
-        # that can be given to scipy.optimize
-        log.info('loading losses')
-        losses = self.get_loss_functions(graph)
-        log.info('losses done')
-        valid = False
-        counter = 0
-        # repeat optimization of complete graph until a good solution is found (which satifies self.check())
-        while not valid:
-            # prepare optimizer
-            initial_values, bounds = self.prepOptimizer(len(graph))
-            # optimization with scipy
-            log.info('begin preopt')
-            best_result = optimize.minimize(losses[0], x0=initial_values,
-                                            bounds=bounds,
-                                            method=self.config['optimizer'],
-                                            options={'ftol': self.config['ftol']})
-            log.info('end preopt')
-            self.loss_val = self.update_losses(best_result, losses)
-            # check if solution is valid
-            valid = self.check(best_result, losses)
-            counter += 1
-            # print a warning if preoptimization is stuck in a loop
-            if counter % 10 == 0:
-                print('10 invalid preoptimization, consider changing parameters.')
-                log.info('10 invalid preoptimization, consider changing parameters.')
-            if counter % 100 == 0:
-                print('100 invalid preoptimization, state cannot be found.')
-                log.info('100 invalid preoptimization, state cannot be found.')
-                raise ValueError('100 invalid preoptimization steps. Conclusion: State cannot be created with provides parameters. Consider adding more ancillas or using less restrictions if possible (e.g. removed_connections).')
-                
-        # if num_pre is set to larger than 1 in config, do num_pre preoptimization and choose the best one.
-        # for optimizations with concrete target state, num_pre = 1 is enough
-        for __ in range(self.config['num_pre'] - 1):
-            initial_values, bounds = self.prepOptimizer(len(graph))
-            result = optimize.minimize(losses[0], x0=initial_values,
-                                       bounds=bounds,
-                                       method=self.config['optimizer'],
-                                       options={'ftol': self.config['ftol']})
-
-            if result.fun < best_result.fun:
-                best_result = result
-        self.loss_val = self.update_losses(best_result, losses)
-        print(f'best result from pre-opt: {abs(best_result.fun)}')
-        log.info(f'best result from pre-opt: {abs(best_result.fun)}')
-
-        for ii, edge in enumerate(graph.edges):
-            graph[edge] = best_result.x[ii]
-        preopt_graph = graph.copy()
-
-        try:
-            bulk_thr = self.config['bulk_thr']
-        except:
-            bulk_thr = 0
-        if bulk_thr > 0:
-            # cut all edges smaller than bulk_thr and optimize again
-            # this can save a lot of time
-            cont = True
-            num_deleted = 0
-            while cont:
-                # delete smallest edges one by one
-                min_edge = preopt_graph.minimum()
-                amplitude = preopt_graph[min_edge]
-                if self.imaginary == 'polar':
-                    amplitude = amplitude[0]
-                if abs(amplitude) < bulk_thr:
-                    preopt_graph.remove(min_edge, update=True)
-                    num_deleted += 1
+        if 'init_graph' in self.config:
+            print('SKIPPING PREOPTIMIZATION, USING INIT_GRAPH FROM CONFIG', flush=True)
+            init_edges = self.config['init_graph']
+            init_edges = {eval(k): v for k, v in init_edges.items()}
+            print(init_edges)
+            print(graph.edges)
+            for edge in list(graph.edges):
+                if edge in init_edges:
+                    graph[edge] = init_edges[edge]
                 else:
-                    cont = False
-            print(f'{num_deleted} edges deleted')
-            log.info(f'{num_deleted} edges deleted')
+                    graph.remove(edge)
+            print(graph)
+            preopt_graph = graph.copy()
+        else:
+            # losses is a list of callable lossfunctions, e.g. [countrate(x), fidelity(x)], where x is a vector of edge weights
+            # that can be given to scipy.optimize
+            log.info('loading losses')
+            losses = self.get_loss_functions(graph)
+            log.info('losses done')
             valid = False
+            counter = 0
+            # repeat optimization of complete graph until a good solution is found (which satifies self.check())
             while not valid:
-                # it is necessary that the truncated graph passes the checks
-                initial_values, bounds = self.prepOptimizer(len(preopt_graph))
-                losses = self.get_loss_functions(preopt_graph)
-                trunc_result = optimize.minimize(losses[0], x0=initial_values,
-                                                 bounds=bounds,
-                                                 method=self.config['optimizer'],
-                                                 options={'ftol': self.config['ftol']})
-                self.loss_val = self.update_losses(trunc_result, losses)
-                print(f'result after truncation: {abs(trunc_result.fun)}')
-                log.info(f'result after truncation: {abs(trunc_result.fun)}')
-                valid = self.check(trunc_result, losses)
-        
-            for ii, edge in enumerate(preopt_graph.edges):
-                preopt_graph[edge] = trunc_result.x[ii]
+                # prepare optimizer
+                initial_values, bounds = self.prepOptimizer(len(graph))
+                # optimization with scipy
+                log.info('begin preopt')
+                self.tt = time.time()
+                def callback(xk):
+                    print(f'preopt step with loss {losses[0](xk):.3f}', flush=True)
+                    print(f'time for last step: {time.time()-self.tt:.1f}s', flush=True)
+                    self.tt = time.time()
+                best_result = optimize.minimize(losses[0], x0=initial_values,
+                                                bounds=bounds,
+                                                method=self.config['optimizer'],
+                                                options={'ftol': self.config['ftol']},
+                                                callback=callback)
+                log.info('end preopt')
+                self.loss_val = self.update_losses(best_result, losses)
+                # check if solution is valid
+                valid = self.check(best_result, losses)
+                counter += 1
+                # print a warning if preoptimization is stuck in a loop
+                if counter % 10 == 0:
+                    print('10 invalid preoptimization, consider changing parameters.')
+                    log.info('10 invalid preoptimization, consider changing parameters.')
+                if counter % 100 == 0:
+                    print('100 invalid preoptimization, state cannot be found.')
+                    log.info('100 invalid preoptimization, state cannot be found.')
+                    raise ValueError('100 invalid preoptimization steps. Conclusion: State cannot be created with provides parameters. Consider adding more ancillas or using less restrictions if possible (e.g. removed_connections).')
+                    
+            # if num_pre is set to larger than 1 in config, do num_pre preoptimization and choose the best one.
+            # for optimizations with concrete target state, num_pre = 1 is enough
+            for __ in range(self.config['num_pre'] - 1):
+                initial_values, bounds = self.prepOptimizer(len(graph))
+                result = optimize.minimize(losses[0], x0=initial_values,
+                                        bounds=bounds,
+                                        method=self.config['optimizer'],
+                                        options={'ftol': self.config['ftol']})
+
+                if result.fun < best_result.fun:
+                    best_result = result
+            self.loss_val = self.update_losses(best_result, losses)
+            print(f'best result from pre-opt: {abs(best_result.fun)}')
+            log.info(f'best result from pre-opt: {abs(best_result.fun)}')
+            self.best_loss = best_result.fun
+
+            for ii, edge in enumerate(graph.edges):
+                graph[edge] = best_result.x[ii]
+            preopt_graph = graph.copy()
+
+            try:
+                bulk_thr = self.config['bulk_thr']
+            except:
+                bulk_thr = 0
+            if bulk_thr > 0:
+                # cut all edges smaller than bulk_thr and optimize again
+                # this can save a lot of time
+                cont = True
+                num_deleted = 0
+                while cont:
+                    # delete smallest edges one by one
+                    min_edge = preopt_graph.minimum()
+                    amplitude = preopt_graph[min_edge]
+                    if self.imaginary == 'polar':
+                        amplitude = amplitude[0]
+                    if abs(amplitude) < bulk_thr:
+                        preopt_graph.remove(min_edge, update=True)
+                        num_deleted += 1
+                    else:
+                        cont = False
+                print(f'{num_deleted} edges deleted')
+                log.info(f'{num_deleted} edges deleted')
+                valid = False
+                while not valid:
+                    # it is necessary that the truncated graph passes the checks
+                    initial_values, bounds = self.prepOptimizer(len(preopt_graph))
+                    losses = self.get_loss_functions(preopt_graph)
+                    trunc_result = optimize.minimize(losses[0], x0=initial_values,
+                                                    bounds=bounds,
+                                                    method=self.config['optimizer'],
+                                                    options={'ftol': self.config['ftol']})
+                    self.loss_val = self.update_losses(trunc_result, losses)
+                    print(f'result after truncation: {abs(trunc_result.fun)}')
+                    log.info(f'result after truncation: {abs(trunc_result.fun)}')
+                    valid = self.check(trunc_result, losses)
+            
+                for ii, edge in enumerate(preopt_graph.edges):
+                    preopt_graph[edge] = trunc_result.x[ii]
 
         return preopt_graph
 
@@ -418,6 +441,9 @@ class topological_opti:
                 # all weights are +-1 and solution is pretty good, it is interesting enough to be saved
                 # to a file even if topological optimization can be continued
                 if all(np.array(abs(self.graph)) > 0.95):
+                    self.saver.save_graph(self)
+                elif result.fun < self.best_loss:
+                    self.best_loss = result.fun
                     self.saver.save_graph(self)
                 if self.save_hist:
                     self.history.append([str(self.graph),self.loss_val])

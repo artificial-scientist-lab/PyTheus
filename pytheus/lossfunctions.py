@@ -180,13 +180,13 @@ def count_rate(graph, target_state, cnfg):
     new_loss = cnfg.get("new_loss", False)
     if not new_loss:
         # set up target equation
-        target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
         # get variable names
         variables = th.stringEdges(graph.edges, imaginary=cnfg["imaginary"])
 
         # non-heralded, post-selection case
         if not cnfg["heralding_out"]:
             # only looking at perfect matchings
+            target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
             graph.getNorm()
             norm = graph.norm
         # heralded case, more complicated selection rules
@@ -199,6 +199,7 @@ def count_rate(graph, target_state, cnfg):
                 edgecovers = brutal_covers(cnfg, graph)
             cat = th.stateCatalog(edgecovers)
             norm = th.writeNorm(cat, imaginary=cnfg["imaginary"])
+            target = target_state.targetEquation(state_catalog=cat, imaginary=cnfg["imaginary"])
         lambdaloss = "".join(["1-", target, "/(1+", norm, ")"])
         func, lossstring = th.buildLossString(lambdaloss, variables)
     else:
@@ -209,17 +210,32 @@ def count_rate(graph, target_state, cnfg):
         state_catalog_tensor = np.array(graph._state_catalog_tensor)
         target_normed = np.array(target_normed)
 
-        graph_state = lambda edges: edges[state_catalog_tensor].prod(axis=-1).sum(axis=-1)
-        normed_state = lambda state: state / (1 + np.linalg.norm(state, axis=-1))
-        count_rate = lambda state: abs(state @ target_normed)**2
-        func0 = lambda x: 1 - count_rate(normed_state(graph_state(x)))
+        # print(state_catalog_tensor)
+        def graph_state(edges):
+            result = edges[state_catalog_tensor].prod(axis=-1).sum(axis=-1)
+            return result
 
+        def normed_state(state):
+            print(f"[normed_state] Input shape: {state.shape}")
+            norm_val = np.linalg.norm(state, axis=-1)
+            result = state / (1 + norm_val)
+            return result
+
+        def count_rate(state):
+            result = abs(state @ target_normed) ** 2
+            return result
+
+        def func0(x):
+            state = graph_state(x)
+            normalized_state = normed_state(state)
+            return 1 - count_rate(normalized_state)
         #matrix that transforms weights of length len(graph.edges) to weights of length len(graph.complete_graph_edges)
         mat = np.zeros((len(graph.complete_graph_edges), len(graph.edges)))
         for i, edge in enumerate(graph.edges):
             mat[graph.complete_graph_edges.index(edge),i] = 1
 
-        func = lambda x: func0(mat @ x)
+        def func(x):
+            return func0(mat @ x)
 
     print('count rate done', flush=True)
     return func
@@ -230,8 +246,6 @@ def fidelity(graph, target_state, cnfg):
     new_loss = cnfg.get("new_loss", False)
 
     if not new_loss:
-        # set up target equation
-        target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
         # get variable names
         variables = th.stringEdges(graph.edges, imaginary=cnfg["imaginary"])
 
@@ -240,6 +254,7 @@ def fidelity(graph, target_state, cnfg):
             # only looking at perfect matchings
             graph.getNorm()
             norm = graph.norm
+            target = target_state.targetEquation(state_catalog=graph.state_catalog, imaginary=cnfg["imaginary"])
         # heralded case, more complicated selection rules
         else:
             if not cnfg["brutal_covers"]:
@@ -250,6 +265,7 @@ def fidelity(graph, target_state, cnfg):
                 edgecovers = brutal_covers(cnfg, graph)
             cat = th.stateCatalog(edgecovers)
             norm = th.writeNorm(cat, imaginary=cnfg["imaginary"])
+            target = target_state.targetEquation(state_catalog=cat, imaginary=cnfg["imaginary"])
         lambdaloss = "".join(["1-", target, "/(0+", norm, ")"])
         func, lossstring = th.buildLossString(lambdaloss, variables)
 

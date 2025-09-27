@@ -128,8 +128,8 @@ def leiwand(data, name='graph'):
             poly = reversed(list(dict(sorted(poly.items(), key=lambda x: x[0])).values()))
         for i, coord in enumerate(poly):
             print(r"\node[vertex] ({name}) at ({x},{y}) {xname};".format(name=vertices[i],
-                                                                         xname=r"{\color{fontcolor}" + vertices[
-                                                                             i] + "}", x=coord[0], y=coord[1]),
+                                                                         xname=r"{\color{fontcolor}" + str(vertices[
+                                                                             i]) + "}", x=coord[0], y=coord[1]),
                   file=outf)
 
         # edge_string = r"\path ({v1}) edge[{options}, opacity={opacity}] ({v2});"

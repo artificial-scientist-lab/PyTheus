@@ -218,7 +218,14 @@ class topological_opti:
                 else:
                     graph.remove(edge)
             print(graph)
-            preopt_graph = graph.copy()
+            preopt_graph = graph.copy() 
+            callable_loss = self.get_loss_functions(preopt_graph)
+            self.loss_val = []
+            for loss in callable_loss:
+                try:self.loss_val.append(loss(preopt_graph.weights))
+                except Exception as e:
+                    print('warning: init_graph from config leads to error in loss function:', e)
+                    self.loss_val.append(np.inf)
         else:
             # losses is a list of callable lossfunctions, e.g. [countrate(x), fidelity(x)], where x is a vector of edge weights
             # that can be given to scipy.optimize

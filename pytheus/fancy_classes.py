@@ -396,7 +396,7 @@ class Graph():  # should this be an overpowered dictionary? NOPE
         del self.graph[edge]
         if update:
             for ket, pm_list in list(self.state_catalog.items()):
-                if ((edge[0], edge[2]) and (edge[1], edge[3])) in ket:
+                if ((edge[0], edge[2]) in ket) and ((edge[1], edge[3]) in ket):
                     self.state_catalog[ket] = [pm for pm in pm_list if edge not in pm]
                     if len(self.state_catalog[ket]) == 0:
                         del self.state_catalog[ket]

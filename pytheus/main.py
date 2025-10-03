@@ -422,6 +422,12 @@ def setup_for_target(cnfg, state_cat=True):
                 graph.remove(edge)
 
     print(f'start graph has {len(graph.edges)} edges.')
+    num_to_remove=int(0.0*random.random()*len(graph.edges))
+    for ii in range(num_to_remove):
+        curr_edge = random.choice(graph.edges)
+        graph.remove(curr_edge)
+    print(f'start graph has {len(graph.edges)} edges after removing.')    
+    
     return target_state, graph, cnfg
 
 

@@ -1,0 +1,22 @@
+{
+    "description": "tetrahedron states in Fock basis.",
+    "bulk_thr": 0.1,
+    "edges_tried": 20,
+    "foldername": "fock_tetrahedron",
+    "ftol": 1e-05,
+    "loss_func": "fockfid",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [[4,0],[1,3]],
+    "amplitudes": [1, 1.4142135623730951],
+    "thresholds": [0.0001,0.1],
+    "tries_per_edge": 1,
+    "unicolor": false,
+    "loops":true
+  }
+   
+  

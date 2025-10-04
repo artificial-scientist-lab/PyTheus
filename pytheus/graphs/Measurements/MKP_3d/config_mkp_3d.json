@@ -1,0 +1,34 @@
+{
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "mkp_3",
+    "ftol": 1e-06,
+    "loss_func": "cr",
+    "num_anc": 0,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": "polar",
+    "real": true,
+    "safe_hist": true,
+    "samples": 10,
+    "in_nodes": [0,1],
+    "target_state": [
+        "00",
+        "01",
+        "02",
+        "10",
+        "12",
+        "20", 
+        "21"
+    ],
+    "amplitudes": [[1, 0], [-0.5,0.288675134594813], [-0.5,0.288675134594813], [-0.5,0.288675134594813], [0.5,-0.288675134594813], [-0.5,0.288675134594813],[0.5,0.288675134594813]],
+    "thresholds": [
+        0.3,
+        0.1
+    ],
+    "tries_per_edge": 5,
+    "unicolor": false
+}
+
+
+

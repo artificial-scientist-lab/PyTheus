@@ -7,7 +7,7 @@ from numpy.random import RandomState
 
 from build.lib.theseus.main import read_config
 from tests.fast.config import GHZ_346
-from theseus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
+from pytheus.theseus import stateDimensions, buildAllEdges, graphDimensions, findPerfectMatchings, stateCatalog, \
     stringEdges, allPerfectMatchings, allEdgeCovers, allColorGraphs, buildRandomGraph, nodeDegrees, edgeBleach, \
     targetEdges, removeNodes, recursiveEdgeCover, findEdgeCovers, edgeWeight, weightProduct, writeNorm, targetEquation, \
     compute_entanglement, buildLossString

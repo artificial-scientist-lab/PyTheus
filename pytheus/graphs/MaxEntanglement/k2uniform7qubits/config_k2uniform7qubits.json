@@ -1,0 +1,17 @@
+{
+  "description": "Maximizing entanglement in all bi-partitions for seven qubits.",
+  "K": "all",
+  "dim": 22222221,
+  "ftol": 1e-05,
+  "loss_func": "ent",
+  "min_edge": 8,
+  "num_pre": 3,
+  "optimizer": "SLSQP",
+  "imaginary": false,
+  "samples": 200,
+  "thresholds": [
+    0.001
+  ],
+  "tries_per_edge": 3,
+  "var_factor": 0
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Maximizing entanglement in k=2 bi-partitions for five qubits.",
+  "K": 2,
+  "dim": 222221,
+  "ftol": 1e-07,
+  "loss_func": "ent",
+  "min_edge": 8,
+  "num_pre": 2,
+  "optimizer": "SLSQP",
+  "imaginary": false,
+  "samples": 10,
+  "thresholds": [
+    0.000001
+  ],
+  "tries_per_edge": 3,
+  "var_factor": 0
+}

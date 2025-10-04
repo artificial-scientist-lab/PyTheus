@@ -7,21 +7,17 @@ import re
 from setuptools import setup, find_packages
 
 author = 'artificial-scientist-lab'
-email = ''  # TODO: insert email
-description = 'Theseus, a highly-efficient inverse-design algorithm for quantum optical experiments'
-dist_name = 'theseuslab'
-package_name = 'theseus'
-year = '2022'
-url = 'https://github.com/artificial-scientist-lab/Theseus'  # TODO: insert public repo URL
+email = 'cruizgo@proton.me, soeren.arlt@mpl.mpg.de, mario.krenn@mpl.mpg.de'
+description = 'PyTheus, a highly-efficient inverse-design algorithm for quantum optical experiments'
+dist_name = 'pytheusQ'
+package_name = 'pytheus'
+year = '2024'
+url = 'https://github.com/artificial-scientist-lab/Pytheus'
 
 
 def get_version():
     content = open(Path(package_name) / '__init__.py').readlines()
-    for line in content:
-        match = re.match('^ *__version__ *= *[\'"]([^\'"]+)', line)
-        if match:
-            return match.group(0)
-    raise Exception('Cannot extract version string.')
+    return "1.2.21"
 
 
 setup(
@@ -40,7 +36,7 @@ setup(
     install_requires=[
         'sphinx', 'numpy', 'scipy', 'matplotlib', 'termcolor', 'Click'
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     classifiers=['Operating System :: OS Independent',
                  'Programming Language :: Python :: 3',
                  ],
@@ -48,7 +44,7 @@ setup(
     py_modules=[package_name],
     entry_points={
         'console_scripts': [
-            'theseus = theseus.cli:cli',
+            'pytheus = pytheus.cli:cli',
         ],
     }
 )

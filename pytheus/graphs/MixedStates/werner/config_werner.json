@@ -1,0 +1,67 @@
+{
+    "description": "Werner state (mixed state) corrected for alpha=69",
+    "bulk_thr": 0.01,
+    "edges_tried": 30,
+    "foldername": "werner",
+    "ftol": 1e-06,
+    "loss_func": "fid",
+    "num_anc": 1,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "real": true,
+    "safe_hist": true,
+    "samples": 100,
+    "target_state": [
+        "000",
+        "011",
+        "100",
+        "111",
+        "201",
+        "310"
+    ],
+    "amplitudes": [
+        0.6194755846681934,
+        0.6194755846681934,
+        0.19685019685029528,
+        0.19685019685029528,
+        0.2783882181415011,
+        0.2783882181415011
+    ],
+    "thresholds": [
+        0.01,
+        0.5
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false,
+    "topopt": true,
+    "seed": 3050550828,
+    "in_nodes": [],
+    "out_nodes": [
+        0,
+        1,
+        2
+    ],
+    "single_emitters": [],
+    "removed_connections": [],
+    "heralding_out": false,
+    "number_resolving": false,
+    "brutal_covers": false,
+    "bipartite": false,
+    "save_hist": true,
+    "dimensions": [
+        4,
+        2,
+        2,
+        1
+    ],
+    "verts": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "anc_detectors": [
+        3
+    ]
+}

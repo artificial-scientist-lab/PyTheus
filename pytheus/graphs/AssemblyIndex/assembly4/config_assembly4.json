@@ -1,0 +1,29 @@
+{
+    "description": "assembly index maximization for 4 qubits and 8 edges",
+    "foldername": "assembly_4",
+    "loss_func": "lff",
+    "lff_name": "top_n_assembly",
+    "dimensions": [
+        2,
+        2,
+        2,
+        2
+    ],
+    "num_vertices": 4,
+    "num_cols": 2,
+    "size_of_graph": 8,
+    "optimizer": "L-BFGS-B",
+    "ftol": 0.001,
+    "samples": 1,
+    "thresholds": [
+        99999
+    ],
+    "topopt": false,
+    "edges_tried": 10,
+    "tries_per_edge": 5,
+    "unicolor": false,
+    "imaginary": false,
+    "num_pre": 1,
+    "save_history": true,
+    "bulk_thr": 0
+}

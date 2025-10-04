@@ -1,0 +1,62 @@
+{
+    "description": "Four particle four-dimensional GHZ state. Two ancillary particles",
+    "bulk_thr": 0.001,
+    "edges_tried": 50,
+    "foldername": "446GHZfid",
+    "ftol": 1e-06,
+    "loss_func": "fid",
+    "num_anc": 2,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 10,
+    "target_state": [
+        "0000",
+        "1111",
+        "2222",
+        "3333"
+    ],
+    "thresholds": [
+        0.5,
+        0.21
+    ],
+    "tries_per_edge": 10,
+    "unicolor": false,
+    "topopt": true,
+    "seed": 1079550320,
+    "in_nodes": [],
+    "out_nodes": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "single_emitters": [],
+    "removed_connections": [],
+    "amplitudes": [],
+    "heralding_out": false,
+    "number_resolving": false,
+    "brutal_covers": false,
+    "save_hist": true,
+    "dimensions": [
+        4,
+        4,
+        4,
+        4,
+        1,
+        1
+    ],
+    "verts": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "anc_detectors": [
+        4,
+        5
+    ]
+}

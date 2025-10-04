@@ -1,0 +1,30 @@
+{
+    "description": "PXP scar of six particles.",
+    "bulk_thr": 0.01,
+    "edges_tried": 40,
+    "foldername": "PXPfid",
+    "ftol": 1e-05,
+    "loss_func": "fid",
+    "num_anc": 0,
+    "num_pre": 1,
+    "optimizer": "L-BFGS-B",
+    "imaginary": false,
+    "safe_hist": true,
+    "samples": 30,
+    "target_state": ["000000",
+                     "000010",
+                     "010000",
+                     "010100",
+                     "100000",
+                     "100100",
+                     "101000",
+                     "101010"],
+    "amplitudes": [1,-1, 1.4142135623730951, -2,
+                  -1, 1.4142135623730951, -1, 1],
+    "thresholds": [
+        0.0001,
+        0.04
+    ],
+    "tries_per_edge": 3,
+    "unicolor": false
+}
